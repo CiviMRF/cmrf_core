@@ -1,0 +1,91 @@
+<?php
+
+/**
+ * @file
+ * Short file description here.
+ *
+ * Long description here.
+ */
+
+use CMRF\Drupal\Core;
+
+// add include path
+// TODO: replace with appropriate autoloader
+
+$include_paths = explode(PATH_SEPARATOR, ini_get('include_path'));
+$modulepath = dirname(__FILE__);
+if (!in_array($modulepath, $include_paths)) {
+  $include_paths[] = $modulepath;
+  ini_set('include_path', implode(PATH_SEPARATOR, $include_paths));
+}
+
+
+/**
+ * global function to get the CMRF core
+ */
+static $_cmrf_core_singleton = NULL;
+function cmrf_core_get_core() {
+  global $_cmrf_core_singleton;
+  if ($_cmrf_core_singleton===NULL) {
+    include_once('CMRF_Drupal/Core.php');
+    $_cmrf_core_singleton = new Core();
+  }
+  return $_cmrf_core_singleton;
+}
+
+
+
+/**
+ * Implements hook_menu().
+ */
+// function cmrf_core_menu() {
+
+//   $items['example'] = array(
+//     'title' => 'Example Page',
+//     'page callback' => 'custom_module_page',
+//     'access arguments' => array('access content'),
+//     'type' => MENU_NORMAL_ITEM,
+//   );
+
+//   return $items;
+// }
+
+/**
+ * Implements hook_help().
+ */
+// function custom_module_help($path, $arg) {
+
+//   switch ($path) {
+//     case 'admin/help#custom_module':
+
+//       // Return a line-break version of the README.
+//       $readme = file_get_contents(drupal_get_path('module', 'custom_module') . '/README.txt');
+//       return nl2br($readme);
+//   }
+// }
+
+/**
+ * Page example callback, referenced in hook_menu().
+ *
+ * Description of what the page displays.
+ * Second line of the description.
+ *
+ * @return string
+ *   The content of the page.
+ */
+// function cmrf_core_page() {
+
+//   return 'example';
+// }
+
+/**
+ * Implements hook_page_build().
+ *
+ * Add JavaScript and CSS code to every page.
+ */
+// function cmrf_core_page_build() {
+
+//   drupal_add_js(drupal_get_path('module', 'custom_module') . '/js/custom_module.js');
+//   drupal_add_css(drupal_get_path('module', 'custom_module') . '/css/custom_module.css');
+
+// }
