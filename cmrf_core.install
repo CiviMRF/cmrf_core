@@ -23,3 +23,89 @@ function cmrf_core_uninstall() {
 
   // Do some things on uninstall, like deleting all variables.
 }
+
+
+/**
+ * Implements hook_schema().
+ */
+function cmrf_core_schema() {
+  $schema = array();
+  $schema['cmrf_core_call'] = array(
+    'description' => 'CMRF CiviCRM integration API calls',
+    'fields' => array(
+      'cid' => array(
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'description' => 'Call ID',
+      ),
+      'status_id' => array(
+        'description' => 'Status ID',
+        'type' => 'int',
+        'size' => 'tiny',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'connector_id' => array(
+        'description' => 'Connector ID',
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'default' => '',
+      ),
+      'request' => array(
+        'description' => 'The request data sent',
+        'type' => 'text',
+        'serialize' => TRUE,
+        'not null' => TRUE,
+      ),
+      'reply' => array(
+        'description' => 'The reply data received',
+        'type' => 'text',
+        'serialize' => TRUE,
+        'not null' => FALSE,
+      ),
+      'metadata' => array(
+        'description' => 'Custom metadata on the request',
+        'type' => 'text',
+        'serialize' => TRUE,
+        'not null' => FALSE,
+      ),
+      'request_hash' => array(
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'default' => '',
+        'description' => 'SHA1 hash of the request, enables quick lookups for caches',
+      ),
+      'create_date' => array(
+        'mysql_type' => 'timestamp',
+        'not null' => TRUE,
+        'description' => 'Creation timestamp of this call',
+      ),
+      'reply_date' => array(
+        'mysql_type' => 'timestamp',
+        'not null' => FALSE,
+        'description' => 'Reply timestamp of this call',
+      ),
+      'cached_until' => array(
+        'mysql_type' => 'timestamp',
+        'not null' => FALSE,
+        'description' => 'Cache timeout of this call',
+      ),
+      'retry_count' => array(
+        'description' => 'Retry counter for multiple submissions',
+        'type' => 'int',
+        'size' => 'tiny',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+    ),
+    'indexes' => array(
+      'cmrf_by_connector'  => array('connector_id', 'status_id'),
+      'cmrf_cache_index'   => array('connector_id', 'request_hash', 'cached_until'),
+    ),
+    'primary key' => array('cid'),
+  );
+  return $schema;
+}
