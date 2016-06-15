@@ -19,32 +19,40 @@ class Call extends AbstractCall {
   protected $request  = NULL;
   protected $reply    = NULL;
 
-
-  public function __construct($connector_id, $core, $entity, $action, $parameters, $options, $callback) {
-    AbstractCall::__construct($core, $connector_id);
-
+  public static function createNew($connector_id, $core, $entity, $action, $parameters, $options, $callback) {
+    $call = new Call($core, $connector_id);
+    
     // compile request
-    $this->request = $this->compileRequest($parameters, $options);
-    $this->request['entity'] = $entity;
-    $this->request['action'] = $action;
+    $call->request = $call->compileRequest($parameters, $options);
+    $call->request['entity'] = $entity;
+    $call->request['action'] = $action;
 
     // create DB entry
-    $this->record = array(
+    $call->record = array(
       'status'       => CallInterface::STATUS_INIT,
-      'connector_id' => $this->getConnectorID(),
-      'request'      => json_encode($this->request), 
+      'connector_id' => $call->getConnectorID(),
+      'request'      => json_encode($call->request), 
       'metadata'     => '{}',
-      'request_hash' => $this->getHash(),
+      'request_hash' => $call->getHash(),
       'create_date'  => date('YmdHis'),
       );
 
     // set the caching flag
     if (!empty($options['cache'])) {
-      $this->record['cached_until'] = date('YmdHis', strtotime("now +" . $options['cache']));
+      $call->record['cached_until'] = date('YmdHis', strtotime("now +" . $options['cache']));
     }
 
-    drupal_write_record('cmrf_core_call', $this->record);
-    $this->id = $this->record['cid'];
+    drupal_write_record('cmrf_core_call', $call->record);
+    $call->id = $call->record['cid'];
+    return $call;
+  }
+
+  public static function createWithRecord($connector_id, $core, $record) {
+    $call = new Call($core, $connector_id, $record->cid);
+    $call->record  = json_decode(json_encode($record), TRUE);
+    $call->request = json_decode($call->record['request'], TRUE); 
+    $call->reply   = json_decode($call->record['reply'], TRUE);
+    return $call;
   }
 
   public function setReply($data, $newstatus = CallInterface::STATUS_DONE) {
@@ -54,7 +62,6 @@ class Call extends AbstractCall {
       'status'     => $newstatus,
       'reply_date' => date('YmdHis'),
       'reply'      => json_encode($data));
-    error_log(print_r($update,1));
     drupal_write_record('cmrf_core_call', $update, array('cid'));
 
     // update the cached data

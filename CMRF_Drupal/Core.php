@@ -9,12 +9,14 @@
 namespace CMRF\Drupal;
 
 include_once('CMRF/Core/Core.php');
+include_once('CMRF/Core/AbstractCall.php');
 include_once('CMRF/Connection/Curl.php');
 include_once('CMRF_Drupal/Call.php');
 
-use CMRF\Core\Core       as AbstractCore;
-use CMRF\Connection\Curl as CurlConnection;
-use CMRF\Drupal\Call     as DrupalCall;
+use CMRF\Core\Core         as AbstractCore;
+use CMRF\Core\AbstractCall as AbstractCall;
+use CMRF\Connection\Curl   as CurlConnection;
+use CMRF\Drupal\Call       as DrupalCall;
 
 
 class Core extends AbstractCore {
@@ -22,7 +24,6 @@ class Core extends AbstractCore {
   protected $connections = array();
 
   public function __construct() {
-    
   }
 
   public function getDefaultProfile() {
@@ -48,16 +49,25 @@ class Core extends AbstractCore {
 
 
 
-  public function createCall($connector_id, $entity, $action, $parameters, $options = NULL, $callback = NULL) {
-    if (empty($options['cache'])) {
-      return new DrupalCall($connector_id, $this, $entity, $action, $parameters, $options, $callback);
-    } else {
-      // caching enabled -> see if it exists
-      // TODO: implement
-      return new DrupalCall($connector_id, $this, $entity, $action, $parameters, $options, $callback);
-      // $id = $this->generateURN("call:curl");
-      // return new LocalCall($id, $this, $entity, $action, $parameters, $options, $callback);
+  public function createCall($connector_id, $entity, $action, $parameters = array(), $options = array(), $callback = NULL) {
+    if (!empty($options['cache'])) {
+      $hash = AbstractCall::getHashFromParams($entity, $action, $parameters, $options);
+      $result = db_query(
+        "SELECT *
+         FROM {cmrf_core_call}
+         WHERE request_hash = :hash
+           AND connector_id = :connectorid
+           AND cached_until > NOW()
+         LIMIT 1;",
+         array(":hash" => $hash, ":connectorid" => $connector_id));
+      
+      foreach ($result as $cached_entry) {
+        return DrupalCall::createWithRecord($connector_id, $this, $cached_entry);
+      }
     }
+    
+    // not cached/no caching:
+    return DrupalCall::createNew($connector_id, $this, $entity, $action, $parameters, $options, $callback);
   }
 
   public function getCall($call_id) {
@@ -76,7 +86,6 @@ class Core extends AbstractCore {
    *********************************************************/
 
   public function getConnectionProfiles() {
-    error_log("B.getConnectionProfiles");
     return variable_get('cmrf_core_connection_profiles');
   }
 
