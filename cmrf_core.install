@@ -39,12 +39,12 @@ function cmrf_core_schema() {
         'not null' => TRUE,
         'description' => 'Call ID',
       ),
-      'status_id' => array(
-        'description' => 'Status ID',
-        'type' => 'int',
-        'size' => 'tiny',
+      'status' => array(
+        'description' => 'Status',
+        'type' => 'varchar',
+        'length' => 8,
         'not null' => TRUE,
-        'default' => 0,
+        'default' => 'INIT',
       ),
       'connector_id' => array(
         'description' => 'Connector ID',
@@ -56,19 +56,19 @@ function cmrf_core_schema() {
       'request' => array(
         'description' => 'The request data sent',
         'type' => 'text',
-        'serialize' => TRUE,
+        'serialize' => FALSE,
         'not null' => TRUE,
       ),
       'reply' => array(
         'description' => 'The reply data received',
         'type' => 'text',
-        'serialize' => TRUE,
+        'serialize' => FALSE,
         'not null' => FALSE,
       ),
       'metadata' => array(
         'description' => 'Custom metadata on the request',
         'type' => 'text',
-        'serialize' => TRUE,
+        'serialize' => FALSE,
         'not null' => FALSE,
       ),
       'request_hash' => array(
@@ -79,16 +79,19 @@ function cmrf_core_schema() {
         'description' => 'SHA1 hash of the request, enables quick lookups for caches',
       ),
       'create_date' => array(
+        'type' => NULL,
         'mysql_type' => 'timestamp',
         'not null' => TRUE,
         'description' => 'Creation timestamp of this call',
       ),
       'reply_date' => array(
+        'type' => NULL,
         'mysql_type' => 'timestamp',
         'not null' => FALSE,
         'description' => 'Reply timestamp of this call',
       ),
       'cached_until' => array(
+        'type' => NULL,
         'mysql_type' => 'timestamp',
         'not null' => FALSE,
         'description' => 'Cache timeout of this call',
@@ -102,7 +105,7 @@ function cmrf_core_schema() {
       ),
     ),
     'indexes' => array(
-      'cmrf_by_connector'  => array('connector_id', 'status_id'),
+      'cmrf_by_connector'  => array('connector_id', 'status'),
       'cmrf_cache_index'   => array('connector_id', 'request_hash', 'cached_until'),
     ),
     'primary key' => array('cid'),

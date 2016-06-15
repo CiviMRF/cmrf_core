@@ -11,7 +11,6 @@ use CMRF\Drupal\Core;
 
 // add include path
 // TODO: replace with appropriate autoloader
-
 $include_paths = explode(PATH_SEPARATOR, ini_get('include_path'));
 $modulepath = dirname(__FILE__);
 if (!in_array($modulepath, $include_paths)) {

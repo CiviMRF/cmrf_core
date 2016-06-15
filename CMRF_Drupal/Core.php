@@ -10,27 +10,35 @@ namespace CMRF\Drupal;
 
 include_once('CMRF/Core/Core.php');
 include_once('CMRF/Connection/Curl.php');
-include_once('CMRF/Local/Call.php');
+include_once('CMRF_Drupal/Call.php');
 
 use CMRF\Core\Core       as AbstractCore;
 use CMRF\Connection\Curl as CurlConnection;
-use CMRF\Local\Call      as Call;
+use CMRF\Drupal\Call     as DrupalCall;
 
 
 class Core extends AbstractCore {
+
+  protected $connections = array();
+
+  public function __construct() {
+    
+  }
 
   public function getDefaultProfile() {
     return 'default';
   }
 
+  protected function getConnection($connector_id) {
+    if (!isset($this->connections[$connector_id])) {
+      $this->connections[$connector_id] = new CurlConnection($this, $connector_id);
+    }
 
-  public function _createConnection($connection_id, $connector_id) {
-    return new CurlConnection($connection_id, $this, $connector_id);
+    return $this->connections[$connector_id];
   }
 
   public function isReady() {
-    // TODO:
-    return TRUE;
+    return $this->getConnection('test')->isReady();
   }
 
 
@@ -39,15 +47,17 @@ class Core extends AbstractCore {
    ************************************/
 
 
-  public function createCall($entity, $action, $parameters, $options = NULL, $callback = NULL) {
-    // TODO: implement drupal table based call store
-    $id = $this->generateURN("call:curl");
-    return new Call($id, $this, $entity, $action, $parameters, $options, $callback);
-  }
 
-  public function getCallStatus($call_id) {
-    // TODO: implmenet
-    return NULL;
+  public function createCall($connector_id, $entity, $action, $parameters, $options = NULL, $callback = NULL) {
+    if (empty($options['cache'])) {
+      return new DrupalCall($connector_id, $this, $entity, $action, $parameters, $options, $callback);
+    } else {
+      // caching enabled -> see if it exists
+      // TODO: implement
+      return new DrupalCall($connector_id, $this, $entity, $action, $parameters, $options, $callback);
+      // $id = $this->generateURN("call:curl");
+      // return new LocalCall($id, $this, $entity, $action, $parameters, $options, $callback);
+    }
   }
 
   public function getCall($call_id) {
@@ -59,8 +69,6 @@ class Core extends AbstractCore {
     // TODO: implmenet
     return NULL;
   }
-
-
 
 
   /*********************************************************
@@ -90,16 +98,6 @@ class Core extends AbstractCore {
 
   protected function storeSettings($settings) {
     return variable_set('cmrf_core_settings', $settings);
-  }
-
-  public function getConnections() {
-    // FIXME: needs to go into DB structure
-    return variable_get('cmrf_core_connections');
-  }
-
-  protected function storeConnections($connections) {
-    // FIXME: needs to go into DB structure
-    return variable_set('cmrf_core_connections', $connections);
   }
 
 }
