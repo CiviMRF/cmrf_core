@@ -86,7 +86,7 @@ class Call extends AbstractCall {
   }
 
   public function getStatus() {
-    return $this->record['status_id'];
+    return $this->record['status'];
   }
 
   public function getStats() {
