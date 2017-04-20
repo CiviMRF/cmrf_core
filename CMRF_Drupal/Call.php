@@ -21,7 +21,7 @@ class Call extends AbstractCall {
 
   public static function createNew($connector_id, $core, $entity, $action, $parameters, $options, $callback) {
     $call = new Call($core, $connector_id);
-    
+
     // compile request
     $call->request = $call->compileRequest($parameters, $options);
     $call->request['entity'] = $entity;
@@ -31,7 +31,7 @@ class Call extends AbstractCall {
     $call->record = array(
       'status'       => CallInterface::STATUS_INIT,
       'connector_id' => $call->getConnectorID(),
-      'request'      => json_encode($call->request), 
+      'request'      => json_encode($call->request),
       'metadata'     => '{}',
       'request_hash' => $call->getHash(),
       'create_date'  => date('YmdHis'),
@@ -50,7 +50,7 @@ class Call extends AbstractCall {
   public static function createWithRecord($connector_id, $core, $record) {
     $call = new Call($core, $connector_id, $record->cid);
     $call->record  = json_decode(json_encode($record), TRUE);
-    $call->request = json_decode($call->record['request'], TRUE); 
+    $call->request = json_decode($call->record['request'], TRUE);
     $call->reply   = json_decode($call->record['reply'], TRUE);
     return $call;
   }
@@ -107,9 +107,18 @@ class Call extends AbstractCall {
 
 
   public function setStatus($status, $error_message, $error_code = NULL) {
-    $this->data['status']        = $status;
-    $this->data['error_message'] = $error_message;
-    $this->data['error_code']    = $error_code;
+    $error = array(
+      'is_error'      => '1',
+      'error_message' => $error_message,
+      'error_code'    => $error_code);
+
+    // update the DB
+    $update = array(
+      'cid'        => $this->id,
+      'status'     => $status,
+      'reply_date' => date('YmdHis'),
+      'reply'      => json_encode($error));
+    drupal_write_record('cmrf_core_call', $update, array('cid'));
   }
 }
 
