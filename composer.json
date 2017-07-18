@@ -16,9 +16,8 @@
                 }
             }
         }
+    ],
+    "require": {
+        "CiviMRF/CMRF_Abstract_Core": "0.1"
     }
-],
-"require": {
-    "CiviMRF/CMRF_Abstract_Core": "0.1"
-}
 }
