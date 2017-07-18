@@ -2,13 +2,10 @@
 CMRF is a CiviCRM remote integration toolkit. This repository is a **Drupal module** wrapping the core.
 
 # Install
-Currently:
+Use composer to install the abstract core library:
 
- 1. Checkout https://github.com/CiviMcRestFace/CMRF_Abstract_Core
  1. ``> cd cmrf_core``
- 1. ``ln -s ../path/to/CMRF_Abstract_Core/CMRF CMRF``
-
-Obviously, we should be using composer... Feel free to contribute.
+ 1. ``composer install``
 
 # Setup
 

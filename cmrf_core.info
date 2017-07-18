@@ -2,7 +2,6 @@ name = CMRF Core
 description = CMRF CiviCRM REST Connection
 core = 7.x
 
-; Information added by Drupal.org packaging script on 2014-10-18
+package = "CiviMRF"
 project = "cmrf_core"
 version = "7.x-0.1"
-datestamp = "1492613168"

@@ -1,0 +1,9 @@
+name = CMRF Example code
+description = CMRF CiviCRM REST Connection example code
+core = 7.x
+
+package = "CiviMRF"
+project = "cmrf_example"
+version = "7.x-0.1"
+
+dependencies[] = cmrf_core
