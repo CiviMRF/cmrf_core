@@ -11,8 +11,6 @@ namespace CMRF\Drupal;
 use CMRF\Core\AbstractCall as AbstractCall;
 use CMRF\Core\Call         as CallInterface;
 
-include_once('CMRF/Core/AbstractCall.php');
-
 class Call extends AbstractCall {
 
   protected $record   = NULL;

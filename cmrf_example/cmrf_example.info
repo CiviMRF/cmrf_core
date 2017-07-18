@@ -7,3 +7,5 @@ project = "cmrf_example"
 version = "7.x-0.1"
 
 dependencies[] = cmrf_core
+
+configure = admin/cmrf/example

@@ -9,6 +9,8 @@
 
 use CMRF\Drupal\Core;
 
+require_once('vendor/autoload.php');
+
 // add include path
 // TODO: replace with appropriate autoloader
 $include_paths = explode(PATH_SEPARATOR, ini_get('include_path'));

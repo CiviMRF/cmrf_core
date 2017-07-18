@@ -8,11 +8,6 @@
 
 namespace CMRF\Drupal;
 
-include_once('CMRF/Core/Core.php');
-include_once('CMRF/Core/AbstractCall.php');
-include_once('CMRF/Connection/Curl.php');
-include_once('CMRF_Drupal/Call.php');
-
 use CMRF\Core\Core         as AbstractCore;
 use CMRF\Core\AbstractCall as AbstractCall;
 use CMRF\Connection\Curl   as CurlConnection;

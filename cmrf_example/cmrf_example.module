@@ -1,5 +1,43 @@
 <?php
 
-function cmrf_example_get_connector() {
+function cmrf_example_sendCall($entity, $action, $parameters, $options) {
+  $connector_name = 'cmrf_exmaple';
 
+  $core = cmrf_core_get_core();
+  $connector_id = $core->registerConnector($connector_name);
+
+  $call = $core->createCall($connector_id, $entity, $action, $parameters, $options);
+  $core->executeCall($call);
+  return $call;
+}
+
+/**
+ * Implements hook_menu().
+ */
+function cmrf_example_menu() {
+  $items['admin/cmrf/example'] = array(
+    'title' => 'Example CMRF Calls',
+    'page callback' => 'cmrf_exmaple_page',
+    'access arguments' => array('cmrf access example'),
+    'type' => MENU_NORMAL_ITEM,
+  );
+  return $items;
+}
+
+/**
+ * Implements hook_permission().
+ */
+function cmrf_example_permission() {
+  return array(
+    'cmrf access example' => array(
+      'title' => t('Access CMRF example page'),
+    ),
+  );
+}
+
+function cmrf_exmaple_page() {
+  $result = cmrf_example_sendCall('Contact', 'getsingle', array(), array('limit' => 1));
+
+  $page['heading']['#markup'] = '<p>hello world</p>';
+  return $page;
 }
