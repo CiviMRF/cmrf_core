@@ -1,0 +1,5 @@
+name: CMRF Core
+type: module
+description: CMRF CiviCRM REST Connection
+core: 8.x
+package: CiviCRM
