@@ -11,15 +11,6 @@ use CMRF\Drupal\Core;
 
 require_once('vendor/autoload.php');
 
-// add include path
-// TODO: replace with appropriate autoloader
-$include_paths = explode(PATH_SEPARATOR, ini_get('include_path'));
-$modulepath = dirname(__FILE__);
-if (!in_array($modulepath, $include_paths)) {
-  $include_paths[] = $modulepath;
-  ini_set('include_path', implode(PATH_SEPARATOR, $include_paths));
-}
-
 
 /**
  * global function to get the CMRF core
@@ -39,54 +30,36 @@ function cmrf_core_get_core() {
 /**
  * Implements hook_menu().
  */
-// function cmrf_core_menu() {
-
-//   $items['example'] = array(
-//     'title' => 'Example Page',
-//     'page callback' => 'custom_module_page',
-//     'access arguments' => array('access content'),
-//     'type' => MENU_NORMAL_ITEM,
-//   );
-
-//   return $items;
-// }
-
-/**
- * Implements hook_help().
- */
-// function custom_module_help($path, $arg) {
-
-//   switch ($path) {
-//     case 'admin/help#custom_module':
-
-//       // Return a line-break version of the README.
-//       $readme = file_get_contents(drupal_get_path('module', 'custom_module') . '/README.txt');
-//       return nl2br($readme);
-//   }
-// }
+function cmrf_core_menu() {
+  $items['admin/config/civimrf'] = [
+    'title' => 'CiviMRF',
+    'description' => 'Edit connection profile settings for CiviMRF.',
+    'page callback' => 'cmrf_core_admin',
+    'position' => 'left',
+    'weight' => 15,
+    'page callback' => 'system_admin_menu_block_page',
+    'access arguments' => array('access administration pages'),
+    'file' => 'system.admin.inc',
+  ];
+  $items['admin/config/civimrf/profiles'] = [
+    'title' => 'CiviMRF Profiles',
+    'description' => 'Edit connection profile settings for CiviMRF.',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('cmrf_core_admin_form'),
+    'type' => MENU_NORMAL_ITEM,
+    'access arguments' => ['administer cmrf'],
+    'file' => 'cmrf_core.admin.inc',
+  ];
+  return $items;
+}
 
 /**
- * Page example callback, referenced in hook_menu().
- *
- * Description of what the page displays.
- * Second line of the description.
- *
- * @return string
- *   The content of the page.
+ * Implements hook_permission().
  */
-// function cmrf_core_page() {
-
-//   return 'example';
-// }
-
-/**
- * Implements hook_page_build().
- *
- * Add JavaScript and CSS code to every page.
- */
-// function cmrf_core_page_build() {
-
-//   drupal_add_js(drupal_get_path('module', 'custom_module') . '/js/custom_module.js');
-//   drupal_add_css(drupal_get_path('module', 'custom_module') . '/css/custom_module.css');
-
-// }
+function cmrf_core_permission() {
+  return array(
+    'administer cmrf' => array(
+      'title' => t('Administer CiviMRF'),
+    ),
+  );
+}

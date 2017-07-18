@@ -11,12 +11,12 @@
                 "reference": "master"
             },
             "autoload": {
-                "psr-0" : {
-                    "CMRF" : ""
+                "psr-0": {
+                    "CMRF": ""
                 }
             }
         }
-    ],
+    }],
     "require": {
         "CiviMRF/CMRF_Abstract_Core": "0.1"
     }

@@ -8,6 +8,8 @@
 
 namespace CMRF\Drupal;
 
+include_once('Call.php');
+
 use CMRF\Core\Core         as AbstractCore;
 use CMRF\Core\AbstractCall as AbstractCall;
 use CMRF\Connection\Curl   as CurlConnection;
@@ -81,12 +83,16 @@ class Core extends AbstractCore {
    *********************************************************/
 
   public function getConnectionProfiles() {
-    return variable_get('cmrf_core_connection_profiles');
+    $cmrf_core_connection_profiles['default']['url'] = variable_get('cmrf_core_default_url', '');
+    $cmrf_core_connection_profiles['default']['site_key'] = variable_get('cmrf_core_default_site_key', '');
+    $cmrf_core_connection_profiles['default']['api_key'] = variable_get('cmrf_core_default_api_key', '');
+
+    return $cmrf_core_connection_profiles;
   }
 
-  protected function storeConnectionProfiles($profiles) {
-    return variable_set('cmrf_core_connection_profiles', $profiles);
-  }
+  /*protected function storeConnectionProfiles($profiles) {
+    variable_set('cmrf_core_connection_profiles', $profiles);
+  }*/
 
   public function getRegisteredConnectors() {
     return variable_get('cmrf_core_connectors');

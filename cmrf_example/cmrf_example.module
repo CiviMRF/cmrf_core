@@ -1,12 +1,24 @@
 <?php
 
 function cmrf_example_sendCall($entity, $action, $parameters, $options) {
-  $connector_name = 'cmrf_exmaple';
+  $connector_name = 'cmrf_exmaple_connector';
 
+  // get config
+  $config = variable_get($connector_name);
+  if ($config == NULL) {
+    $config = array();
+    variable_set($connector_name, $config);
+  }
+
+  // get core
   $core = cmrf_core_get_core();
-  $connector_id = $core->registerConnector($connector_name);
 
-  $call = $core->createCall($connector_id, $entity, $action, $parameters, $options);
+  if (empty($config['connector_id'])) {
+    $config['connector_id'] = $core->registerConnector('cmrf_example');
+    variable_set($connector_name, $config);
+  }
+
+  $call = $core->createCall($config['connector_id'], $entity, $action, $parameters, $options);
   $core->executeCall($call);
   return $call;
 }
@@ -15,7 +27,7 @@ function cmrf_example_sendCall($entity, $action, $parameters, $options) {
  * Implements hook_menu().
  */
 function cmrf_example_menu() {
-  $items['admin/cmrf/example'] = array(
+  $items['admin/config/civimrf/example'] = array(
     'title' => 'Example CMRF Calls',
     'page callback' => 'cmrf_exmaple_page',
     'access arguments' => array('cmrf access example'),
