@@ -27,12 +27,13 @@ function cmrf_example_sendCall($entity, $action, $parameters, $options) {
  * Implements hook_menu().
  */
 function cmrf_example_menu() {
-  $items['admin/config/civimrf/example'] = array(
-    'title' => 'Example CMRF Calls',
-    'page callback' => 'cmrf_exmaple_page',
+  $items['admin/config/civimrf/examples'] = array(
+    'title' => 'Example CiviMRF Calls',
+    'page callback' => 'cmrf_example_page',
     'access arguments' => array('cmrf access example'),
     'type' => MENU_NORMAL_ITEM,
   );
+
   return $items;
 }
 
@@ -47,7 +48,7 @@ function cmrf_example_permission() {
   );
 }
 
-function cmrf_exmaple_page() {
+function cmrf_example_page() {
   $call = cmrf_example_sendCall('Contact', 'getcount', array(), array());
   $contact_count_reply = $call->getReply();
   $page['contact_count']['heading']['#markup'] = '<h2>' . t('Contact count') . '</h2>';
