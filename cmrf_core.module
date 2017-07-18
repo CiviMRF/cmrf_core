@@ -4,21 +4,3 @@
  * @file
  * Contains cmrf_core.module.
  */
-
-use Drupal\Core\Routing\RouteMatchInterface;
-
-/**
- * Implements hook_help().
- */
-function cmrf_core_help($route_name, RouteMatchInterface $route_match) {
-  switch ($route_name) {
-    // Main module help for the cmrf_core module.
-    case 'help.page.cmrf_core':
-      $output = '';
-      $output .= '<h3>' . t('About') . '</h3>';
-      $output .= '<p>' . t('CMRF CiviCRM REST Connection') . '</p>';
-      return $output;
-
-    default:
-  }
-}

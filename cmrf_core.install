@@ -1,0 +1,5 @@
+<?php
+
+function cmrf_core_schema() {
+  return array();
+}
