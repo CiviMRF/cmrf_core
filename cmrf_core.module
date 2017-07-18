@@ -42,8 +42,8 @@ function cmrf_core_menu() {
     'file path' => drupal_get_path('module', 'system'),
   );
   $items['admin/config/civimrf/profiles'] = array(
-    'title' => 'CiviMRF Profiles',
-    'description' => 'Edit connection profile settings for CiviMRF.',
+    'title' => 'CiviMRF Default profile',
+    'description' => 'Edit the default connection profile settings for CiviMRF.',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('cmrf_core_admin_form'),
     'access arguments' => array('administer cmrf'),
