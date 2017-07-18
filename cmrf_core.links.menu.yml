@@ -1,8 +1,8 @@
-# CMRF Credential menu items definition
-entity.cmrf_credential.collection:
-  title: 'CMRF Credential'
-  route_name: entity.cmrf_credential.collection
-  description: 'List CMRF Credential (bundles)'
+# CMRF Credentials menu items definition
+entity.cmrf_credentials.collection:
+  title: 'CMRF Credentials'
+  route_name: entity.cmrf_credentials.collection
+  description: 'List CMRF Credentials (bundles)'
   parent: system.admin_structure
   weight: 99
 

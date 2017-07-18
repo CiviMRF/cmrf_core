@@ -9,7 +9,7 @@ use Drupal\Core\Url;
 /**
  * Builds the form to delete CMRF entities.
  */
-class CMRFCredentialDeleteForm extends EntityConfirmFormBase {
+class CMRFCredentialsDeleteForm extends EntityConfirmFormBase {
 
   /**
    * {@inheritdoc}
@@ -22,7 +22,7 @@ class CMRFCredentialDeleteForm extends EntityConfirmFormBase {
    * {@inheritdoc}
    */
   public function getCancelUrl() {
-    return new Url('entity.cmrf_credential.collection');
+    return new Url('entity.cmrf_credentials.collection');
   }
 
   /**

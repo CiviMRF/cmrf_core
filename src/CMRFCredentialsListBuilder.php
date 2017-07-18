@@ -8,7 +8,7 @@ use Drupal\Core\Entity\EntityInterface;
 /**
  * Provides a listing of CMRF entities.
  */
-class CMRFCredentialListBuilder extends ConfigEntityListBuilder {
+class CMRFCredentialsListBuilder extends ConfigEntityListBuilder {
 
   /**
    * {@inheritdoc}
