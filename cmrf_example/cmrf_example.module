@@ -48,8 +48,10 @@ function cmrf_example_permission() {
 }
 
 function cmrf_exmaple_page() {
-  $result = cmrf_example_sendCall('Contact', 'getsingle', array(), array('limit' => 1));
-
-  $page['heading']['#markup'] = '<p>hello world</p>';
+  $call = cmrf_example_sendCall('Contact', 'getcount', array(), array());
+  $contact_count_reply = $call->getReply();
+  $page['contact_count']['heading']['#markup'] = '<h2>' . t('Contact count') . '</h2>';
+  $page['contact_count']['description']['#markup'] = '<p>' . t('Number of contacts in your CiviCRM installation') . '</p>';
+  $page['contact_count']['content']['#markup'] = '<p>' . $contact_count_reply['result'] . '</p>';
   return $page;
 }
