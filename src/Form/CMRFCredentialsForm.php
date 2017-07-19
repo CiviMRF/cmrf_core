@@ -2,6 +2,7 @@
 
 namespace Drupal\cmrf_core\Form;
 
+use Drupal\cmrf_core\Entity\CMRFCredentials;
 use Drupal\Core\Entity\EntityForm;
 use Drupal\Core\Form\FormStateInterface;
 
@@ -16,13 +17,15 @@ class CMRFCredentialsForm extends EntityForm {
   public function form(array $form, FormStateInterface $form_state) {
     $form = parent::form($form, $form_state);
 
+    /** @var CMRFCredentials $cmrf_credentials */
     $cmrf_credentials = $this->entity;
+
     $form['label'] = [
       '#type' => 'textfield',
       '#title' => $this->t('Label'),
       '#maxlength' => 255,
       '#default_value' => $cmrf_credentials->label(),
-      '#description' => $this->t("Label for the CMRF."),
+      '#description' => $this->t("Label for this set of credentials."),
       '#required' => TRUE,
     ];
 
@@ -35,7 +38,31 @@ class CMRFCredentialsForm extends EntityForm {
       '#disabled' => !$cmrf_credentials->isNew(),
     ];
 
-    /* You will need additional form elements for your custom properties. */
+    $form['url'] = [
+        '#type' => 'url',
+        '#title' => $this->t('URL'),
+        '#default_value' => $cmrf_credentials->url,
+        '#description' => $this->t('The URL to your CiviCRM installation e.g. https://civi.my.site/sites/all/modules/civicrm/extern/rest.php.'),
+        '#required' => TRUE,
+    ];
+
+    $form['site_key'] = [
+        '#type' => 'textfield',
+        '#title' => $this->t('Site key'),
+        '#default_value' => $cmrf_credentials->site_key,
+        '#maxlength' => 255,
+        '#description' => $this->t('The site key of your civicrm installation.'),
+        '#required' => TRUE,
+    ];
+
+    $form['api_key'] = [
+        '#type' => 'textfield',
+        '#title' => $this->t('API key'),
+        '#default_value' => $cmrf_credentials->api_key,
+        '#maxlength' => 255,
+        '#description' => $this->t('The api key of your civicrm installation.'),
+        '#required' => TRUE,
+    ];
 
     return $form;
   }
