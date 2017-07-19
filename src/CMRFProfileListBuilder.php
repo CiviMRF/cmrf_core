@@ -2,6 +2,7 @@
 
 namespace Drupal\cmrf_core;
 
+use Drupal\cmrf_core\Entity\CMRFProfile;
 use Drupal\Core\Config\Entity\ConfigEntityListBuilder;
 use Drupal\Core\Entity\EntityInterface;
 
@@ -14,8 +15,9 @@ class CMRFProfileListBuilder extends ConfigEntityListBuilder {
    * {@inheritdoc}
    */
   public function buildHeader() {
-    $header['label'] = $this->t('CMRF');
+    $header['label'] = $this->t('CMRF profiles');
     $header['id'] = $this->t('Machine name');
+    $header['url'] = $this->t('URL');
     return $header + parent::buildHeader();
   }
 
@@ -23,9 +25,10 @@ class CMRFProfileListBuilder extends ConfigEntityListBuilder {
    * {@inheritdoc}
    */
   public function buildRow(EntityInterface $entity) {
+    /** @var CMRFProfile $entity */
     $row['label'] = $entity->label();
     $row['id'] = $entity->id();
-    // You probably want a few more properties here...
+    $row['url'] = $entity->url;
     return $row + parent::buildRow($entity);
   }
 
