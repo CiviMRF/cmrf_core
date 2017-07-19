@@ -8,21 +8,21 @@ use Drupal\Core\Config\Entity\ConfigEntityBase;
  * Defines the CMRF entity.
  *
  * @ConfigEntityType(
- *   id = "cmrf_credentials",
- *   label = @Translation("CMRF credentials"),
+ *   id = "cmrf_profile",
+ *   label = @Translation("CMRF profile"),
  *   handlers = {
  *     "view_builder" = "Drupal\Core\Entity\EntityViewBuilder",
- *     "list_builder" = "Drupal\cmrf_core\CMRFCredentialsListBuilder",
+ *     "list_builder" = "Drupal\cmrf_core\CMRFProfileListBuilder",
  *     "form" = {
- *       "add" = "Drupal\cmrf_core\Form\CMRFCredentialsForm",
- *       "edit" = "Drupal\cmrf_core\Form\CMRFCredentialsForm",
- *       "delete" = "Drupal\cmrf_core\Form\CMRFCredentialsDeleteForm"
+ *       "add" = "Drupal\cmrf_core\Form\CMRFProfileForm",
+ *       "edit" = "Drupal\cmrf_core\Form\CMRFProfileForm",
+ *       "delete" = "Drupal\cmrf_core\Form\CMRFProfileDeleteForm"
  *     },
  *     "route_provider" = {
- *       "html" = "Drupal\cmrf_core\CMRFCredentialsHtmlRouteProvider",
+ *       "html" = "Drupal\cmrf_core\CMRFProfileHtmlRouteProvider",
  *     },
  *   },
- *   config_prefix = "cmrf_credentials",
+ *   config_prefix = "cmrf_profile",
  *   admin_permission = "administer site configuration",
  *   entity_keys = {
  *     "id" = "id",
@@ -30,15 +30,15 @@ use Drupal\Core\Config\Entity\ConfigEntityBase;
  *     "uuid" = "uuid"
  *   },
  *   links = {
- *     "canonical" = "/admin/config/cmrf_credentials/{cmrf_credentials}",
- *     "add-form" = "/admin/config/cmrf_credentials/add",
- *     "edit-form" = "/admin/config/cmrf_credentials/{cmrf_credentials}/edit",
- *     "delete-form" = "/admin/config/cmrf_credentials/{cmrf_credentials}/delete",
- *     "collection" = "/admin/config/cmrf_credentials"
+ *     "canonical" = "/admin/config/cmrf_profile/{cmrf_profile}",
+ *     "add-form" = "/admin/config/cmrf_profile/add",
+ *     "edit-form" = "/admin/config/cmrf_profile/{cmrf_profile}/edit",
+ *     "delete-form" = "/admin/config/cmrf_profile/{cmrf_profile}/delete",
+ *     "collection" = "/admin/config/cmrf_profile"
  *   }
  * )
  */
-class CMRFCredentials extends ConfigEntityBase implements CMRFCredentialsInterface {
+class CMRFProfile extends ConfigEntityBase implements CMRFProfileInterface {
 
   /**
    * The CMRF ID.

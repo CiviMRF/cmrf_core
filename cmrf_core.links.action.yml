@@ -1,5 +1,5 @@
-entity.cmrf_credentials.add_form:
-  route_name: entity.cmrf_credentials.add_form
-  title: 'Add CMRF Credentials'
+entity.cmrf_profile.add_form:
+  route_name: entity.cmrf_profile.add_form
+  title: 'Add CMRF profile'
   appears_on:
-    - entity.cmrf_credentials.collection
+    - entity.cmrf_profile.collection

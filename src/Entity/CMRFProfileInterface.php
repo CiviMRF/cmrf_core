@@ -7,7 +7,7 @@ use Drupal\Core\Config\Entity\ConfigEntityInterface;
 /**
  * Provides an interface for defining CMRF entities.
  */
-interface CMRFCredentialsInterface extends ConfigEntityInterface {
+interface CMRFProfileInterface extends ConfigEntityInterface {
 
   // Add get/set methods for your configuration properties here.
 }

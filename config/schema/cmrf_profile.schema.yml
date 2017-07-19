@@ -1,4 +1,4 @@
-cmrf_core.cmrf_credentials.*:
+cmrf_core.cmrf_profile.*:
   type: config_entity
   label: 'CMRF config'
   mapping:
