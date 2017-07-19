@@ -10,6 +10,7 @@ namespace Drupal\Tests\cmrf_core\Functional;
 
 
 use Drupal\cmrf_core\Core;
+use Drupal\cmrf_core\Entity\CMRFProfile;
 use Drupal\KernelTests\KernelTestBase;
 use Drupal\Tests\UnitTestCase;
 
@@ -21,7 +22,14 @@ use Drupal\Tests\UnitTestCase;
  */
 class InstantiationTests extends KernelTestBase {
 
+  protected $profile = 'minimal';
   public static $modules = ['cmrf_core'];
+
+  protected function setUp() {
+    parent::setUp();
+    $this->installConfig(['cmrf_core']);
+  }
+
 
   public function testInstantiation() {
     $core = new Core();
@@ -38,5 +46,12 @@ class InstantiationTests extends KernelTestBase {
   public function testService() {
     $core = \Drupal::service('cmrf_core.core');
     $this->assertTrue($core != NULL);
+  }
+
+  public function testProfiles() {
+    /** @var Core $core */
+    $core = \Drupal::service('cmrf_core.core');
+    $profiles = $core->getConnectionProfiles();
+    $this->assertTrue(isset($profiles['default']));
   }
 }

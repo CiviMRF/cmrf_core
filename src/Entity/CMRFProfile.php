@@ -40,6 +40,7 @@ use Drupal\Core\Config\Entity\ConfigEntityBase;
  */
 class CMRFProfile extends ConfigEntityBase implements CMRFProfileInterface {
 
+  //TODO: we need to add the connection type (remote, local) to the entity
   /**
    * The CMRF ID.
    *

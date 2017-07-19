@@ -8,9 +8,11 @@
 
 namespace Drupal\cmrf_core;
 
+use CMRF\Connection\Curl;
 use CMRF\Core\Core as AbstractCore;
 use CMRF\PersistenceLayer\CallFactory;
 use CMRF\PersistenceLayer\SQLPersistingCallFactory;
+use Drupal\cmrf_core\Entity\CMRFProfile;
 
 
 class Core extends AbstractCore {
@@ -27,39 +29,81 @@ class Core extends AbstractCore {
   }
 
   protected function getConnection($connector_id) {
-    // TODO: Implement getConnection() method.
-  }
-
-  public function getCall($call_id) {
-    // TODO: Implement getCall() method.
-  }
-
-  public function findCall($options) {
-    // TODO: Implement findCall() method.
+    //TODO: store open connections for reuse.
+    return new Curl($this,$connector_id);
   }
 
   public function getConnectionProfiles() {
-    // TODO: Implement getConnectionProfiles() method.
+
+    $return=array();
+    $query = \Drupal::entityQuery('cmrf_profile');
+    $results=$query->execute();
+    $ids=array_keys($results);
+    /** @var CMRFProfile[] $loaded */
+    $loaded=CMRFProfile::loadMultiple($ids);
+    foreach($loaded as $entity) {
+      $return[$entity->id()]=array(
+        'url'=>$entity->url,
+        'api_key'=>$entity->api_key,
+        'site_key'=>$entity->site_key
+      );
+    }
+    return $return;
   }
 
   public function getDefaultProfile() {
-    // TODO: Implement getDefaultProfile() method.
+    $entity=CMRFProfile::load('default');
+    return array(
+      'url'=>$entity->url,
+      'api_key'=>$entity->api_key,
+      'site_key'=>$entity->site_key
+    );
   }
 
+  public function registerConnector($connector_name, $profile = NULL) {
+    // first, make sure the profile is o.k.
+    if ($profile === NULL) {
+      $profile = $this->getDefaultProfile();
+    }
+
+    $profiles = $this->getConnectionProfiles();
+
+    if (!isset($profiles[$profile])) {
+      throw new \Exception("Invalid profile '$profile'.", 1);
+    }
+
+    // find a new ID for the connector
+    $connector_id = $this->generateURN("connector:$connector_name", $connectors);
+    $connector = array(
+      'type'    => $connector_name,
+      'profile' => $profile,
+      'id'      => $connector_id
+    );
+    //TODO: implement config entity to store connector. and check if it's already present.
+    return $connector_id;
+  }
+
+  public function unregisterConnector($connector_identifier) {
+    //TODO: check if entity is present and delete it.
+  }
+
+
   protected function getRegisteredConnectors() {
-    // TODO: Implement getRegisteredConnectors() method.
+    // we're overriding registerConnector and unregisterConnector as the heavy lifting is handed over to drupal.
+    // therefore: nothing to find here.
   }
 
   protected function storeRegisteredConnectors($connectors) {
-    // TODO: Implement storeRegisteredConnectors() method.
+    // we're overriding registerConnector and unregisterConnector as the heavy lifting is handed over to drupal.
+    // therefore: nothing to find here.
   }
 
   protected function getSettings() {
-    // TODO: Implement getSettings() method.
+    return array();
   }
 
   protected function storeSettings($settings) {
-    // TODO: Implement storeSettings() method.
+    //no settings yet in d8.
   }
 
 }
