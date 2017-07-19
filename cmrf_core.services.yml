@@ -1,0 +1,3 @@
+services:
+  cmrf_core.core:
+    class: Drupal\cmrf_core\Core
