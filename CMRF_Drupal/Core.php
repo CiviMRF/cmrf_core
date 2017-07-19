@@ -24,7 +24,8 @@ class Core extends AbstractCore {
   }
 
   public function getDefaultProfile() {
-    return 'default';
+    $profile = cmrf_core_default_profile();
+    return $profile['name'];
   }
 
   /**

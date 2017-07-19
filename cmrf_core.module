@@ -96,6 +96,7 @@ function cmrf_core_list_profiles() {
           $profile['label'] = empty($profile['label']) ? $profile_name : $profile['label'];
           $profile['module'] = $module;
           $profile['storage'] = CRMF_CORE_PROFILE_STORAGE_CODE;
+          $profile['default'] = false;
           $profiles[$profile_name] = $profile;
         }
       }
@@ -111,6 +112,7 @@ function cmrf_core_list_profiles() {
         $profile['module'] = NULL;
         $profile['storage'] = CRMF_CORE_PROFILE_STORAGE_NORMAL;
         $profile['readonly'] = false;
+        $profile['default'] = false;
         if (isset($profiles[$profile_name]['module'])) {
           $profile['module'] = $profiles[$profile_name]['module'];
           $profile['storage'] = CRMF_CORE_PROFILE_STORAGE_OVERRIDE;
@@ -123,7 +125,26 @@ function cmrf_core_list_profiles() {
     }
   }
 
+  $default_profile = variable_get('cmrf_core_default_profile', '');
+  if (empty($default_profile) || !isset($profiles[$default_profile])) {
+    $first_profile = reset($profiles);
+    $default_profile = $first_profile['name'];
+    variable_set('cmrf_core_default_profile', $default_profile);
+  }
+  $profiles[$default_profile]['default'] = true;
+
+
   return $profiles;
+}
+
+function cmrf_core_default_profile() {
+  $profiles = cmrf_core_list_profiles();
+  foreach($profiles as $profile) {
+    if ($profile['default']) {
+      return $profile;
+    }
+  }
+  return reset($profiles);
 }
 
 function cmrf_core_cmrf_core_connectors() {

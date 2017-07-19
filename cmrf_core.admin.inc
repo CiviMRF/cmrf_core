@@ -95,6 +95,10 @@ function cmrf_core_profile_form($form, &$form_state, $profile=null) {
     ),
   );
 
+  $form['default']['#type'] = 'checkbox';
+  $form['default']['#title'] = t('Default profile');
+  $form['default']['#default_value'] = isset($profile['default']) && $profile['default'] ? 1 : 0;
+
   $form['actions']['#type'] = 'actions';
   $form['actions']['submit'] = array('#type' => 'submit', '#value' => t('Save configuration'));
 
@@ -146,6 +150,14 @@ function cmrf_core_profile_form_submit($form, &$form_state) {
   } else {
     drupal_set_message(t('Profile %name updated.', ['%name' => $profile['label']]));
   }
+
+  if (isset($form_state['profile']['default']) && $form_state['profile']['default'] && !$form_state['values']['default']) {
+    variable_del('cmrf_core_default_profile');
+  } elseif (isset($form_state['values']['default']) && $form_state['values']['default']) {
+    variable_set('cmrf_core_default_profile', $profile['name']);
+  }
+
+
   $form_state['redirect'] = 'admin/config/civimrf/profiles';
 }
 
@@ -203,7 +215,7 @@ function cmrf_core_profile_revert_form_submit($form, &$form_state) {
 function theme_cmrf_profile_list($variables) {
   $profiles = $variables['profiles'];
 
-  $header = array(t('Profile'), t('Machine name'), t('State'), array('data' => t('Operations'), 'colspan' => 3));
+  $header = array(t('Profile'), t('Machine name'), t('Default'), t('State'), array('data' => t('Operations'), 'colspan' => 3));
   $rows = array();
   foreach ($profiles as $profile_name => $profile) {
     $row = array();
@@ -213,6 +225,7 @@ function theme_cmrf_profile_list($variables) {
       $row[] = l($profile['label'], 'admin/config/civimrf/profiles/edit/' . $profile_name);
     }
     $row[] = $profile_name;
+    $row[] = $profile['default'] ? t('Default') : '';
     if ($profile['storage'] == CRMF_CORE_PROFILE_STORAGE_CODE) {
       $row[] = t('In code');
       if ($profile['readonly']) {
