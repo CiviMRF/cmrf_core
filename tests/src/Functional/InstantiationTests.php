@@ -34,4 +34,9 @@ class InstantiationTests extends KernelTestBase {
     $table=$prop->getValue($factory);
     $this->assertTrue(stristr($table,"civicrm_api_call") !== false);
   }
+
+  public function testService() {
+    $core = \Drupal::service('cmrf_core.core');
+    $this->assertTrue($core != NULL);
+  }
 }
