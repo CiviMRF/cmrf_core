@@ -1,0 +1,6 @@
+dependencies: {  }
+id: default
+label: default
+url: 'http://path/to/civicrm'
+site_key: SITE_KEY
+api_key: API_KEY
