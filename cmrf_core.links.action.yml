@@ -3,3 +3,9 @@ entity.cmrf_profile.add_form:
   title: 'Add CMRF profile'
   appears_on:
     - entity.cmrf_profile.collection
+
+entity.cmrf_connector.add_form:
+  route_name: entity.cmrf_connector.add_form
+  title: 'Add CMRF connector'
+  appears_on:
+    - entity.cmrf_connector.collection

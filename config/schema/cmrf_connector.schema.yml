@@ -1,0 +1,12 @@
+cmrf_core.cmrf_connector.*:
+  type: config_entity
+  label: 'CMRF connector config'
+  mapping:
+    id:
+      type: string
+      label: 'ID'
+    label:
+      type: label
+      label: 'Label'
+    uuid:
+      type: string

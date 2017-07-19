@@ -3,6 +3,12 @@ entity.cmrf_profile.collection:
   parent: system.admin_config_system
   route_name: entity.cmrf_profile.collection
   description: 'List and edit CMRF profiles'
-  weight: 99
+  weight: 98
 
+entity.cmrf_connector.collection:
+  title: 'CMRF connector'
+  route_name: entity.cmrf_connector.collection
+  description: 'List and edit CMRF connectors'
+  parent: system.admin_config_system
+  weight: 99
 
