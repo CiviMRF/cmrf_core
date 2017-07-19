@@ -9,7 +9,7 @@ use Drupal\Core\Config\Entity\ConfigEntityBase;
  *
  * @ConfigEntityType(
  *   id = "cmrf_credentials",
- *   label = @Translation("CMRF"),
+ *   label = @Translation("CMRF credentials"),
  *   handlers = {
  *     "view_builder" = "Drupal\Core\Entity\EntityViewBuilder",
  *     "list_builder" = "Drupal\cmrf_core\CMRFCredentialsListBuilder",
@@ -53,5 +53,26 @@ class CMRFCredentials extends ConfigEntityBase implements CMRFCredentialsInterfa
    * @var string
    */
   protected $label;
+
+  /**
+   * The URL of the CiviCRM installation
+   *
+   * @var string
+   */
+  public $url;
+
+  /**
+   * The site key for the CiviCRM installation
+   *
+   * @var string
+   */
+  public $site_key;
+
+  /**
+   * The API key for the CiviCRM installation
+   *
+   * @var string
+   */
+  public $api_key;
 
 }
