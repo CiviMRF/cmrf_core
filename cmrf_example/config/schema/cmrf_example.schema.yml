@@ -1,0 +1,6 @@
+cmrf_example.settings:
+  type: config_object
+  mapping:
+    connector:
+      type: string
+      label: Connector ID

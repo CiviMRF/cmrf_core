@@ -1,0 +1,5 @@
+services:
+  cmrf_example.client:
+    class: Drupal\cmrf_example\CiviClient
+    arguments:
+      - '@cmrf_core.core'

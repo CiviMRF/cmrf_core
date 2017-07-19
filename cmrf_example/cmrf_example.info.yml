@@ -1,0 +1,7 @@
+name: CMRF Example
+type: module
+description: Sample Module to do demonstrate Civi Calls
+core: 8.x
+package: CiviCRM
+dependencies:
+  - cmrf_core

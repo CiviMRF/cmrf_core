@@ -6,3 +6,12 @@ require_once dirname(__FILE__).'/vendor/autoload.php';
  * @file
  * Contains cmrf_core.module.
  */
+
+/**
+ * Implements hook_cache_flush().
+ */
+function cmrf_core_cache_flush() {
+  /** @var \Drupal\cmrf_core\Core $core */
+  $core=\Drupal::service('cmrf_core.core');
+  $core->getFactory()->purgeCachedCalls();
+}

@@ -1,0 +1,17 @@
+<?php
+
+function cmrf_example_install() {
+  $config=\Drupal::configFactory()->getEditable('cmrf_example.settings');
+  /** @var \Drupal\cmrf_core\Core $core */
+  $core=\Drupal::service('cmrf_core.core');
+  $identifier=$core->registerConnector('cmrf_example','default');
+  $config->set('connector',$identifier);
+  $config->save();
+}
+
+function cmrf_example_uninstall() {
+  $config=\Drupal::config('cmrf_example.settings');
+  /** @var \Drupal\cmrf_core\Core $core */
+  $core=\Drupal::service('cmrf_core.core');
+  $core->unregisterConnector($config->get('connector'));
+}
