@@ -170,6 +170,12 @@ function cmrf_core_local_connector(\CMRF\Core\Core $core, $connector_id) {
   return new \CMRF\Connection\Local($core, $connector_id);
 }
 
+function cmrf_core_cron() {
+  $core = cmrf_core_get_core();
+  $factory = $core->getFactory();
+  $factory->purgeCachedCalls();
+}
+
 
 /**
  * Implements hook_menu().

@@ -28,15 +28,6 @@ class Core extends AbstractCore {
 
     $table_name = \Database::getConnection()->prefixTables("{cmrf_core_call}");
     $connection = new \mysqli('localhost', 'admin', 'admin1234', 'civimcrestface');
-    /*$stmnt = $conn->prepare("SELECT count(*) FROM civicrm_contact");
-    var_dump($stmnt); exit();
-
-
-    $connection = new \mysqli($info['host'],$info['username'],$info['password'],$info['database'],$info['port']);
-    var_dump($connection); exit();
-    $stmt=$connection->prepare("select * from $table_name");
-    var_dump($connection->error_list);
-    var_dump($stmt); exit();*/
     $factory = new SQLPersistingCallFactory($connection, $table_name, array('\CMRF\Drupal\Call','createNew'), array('\CMRF\Drupal\Call','createWithRecord'));
     parent::__construct($factory);
   }
