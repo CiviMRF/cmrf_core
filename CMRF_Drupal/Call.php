@@ -17,8 +17,8 @@ class Call extends AbstractCall {
   protected $request  = NULL;
   protected $reply    = NULL;
 
-  public static function createNew($connector_id, $core, $entity, $action, $parameters, $options, $callback) {
-    $call = new Call($core, $connector_id);
+  public static function createNew($connector_id, $core, $entity, $action, $parameters, $options, $callback, $factory) {
+    $call = new Call($core, $connector_id, $factory);
 
     // compile request
     $call->request = $call->compileRequest($parameters, $options);
@@ -40,13 +40,11 @@ class Call extends AbstractCall {
       $call->record['cached_until'] = date('YmdHis', strtotime("now +" . $options['cache']));
     }
 
-    drupal_write_record('cmrf_core_call', $call->record);
-    $call->id = $call->record['cid'];
     return $call;
   }
 
-  public static function createWithRecord($connector_id, $core, $record) {
-    $call = new Call($core, $connector_id, $record->cid);
+  public static function createWithRecord($connector_id, $core, $record, $factory) {
+    $call = new Call($core, $connector_id, $factory, $record->cid);
     $call->record  = json_decode(json_encode($record), TRUE);
     $call->request = json_decode($call->record['request'], TRUE);
     $call->reply   = json_decode($call->record['reply'], TRUE);
@@ -60,11 +58,16 @@ class Call extends AbstractCall {
       'status'     => $newstatus,
       'reply_date' => date('YmdHis'),
       'reply'      => json_encode($data));
-    drupal_write_record('cmrf_core_call', $update, array('cid'));
+    $this->factory->update($this);
 
     // update the cached data
     $this->reply = $data;
     $this->record['status'] = $newstatus;
+  }
+
+  public function setID($id) {
+    parent::setID($id);
+    $this->record['cid'] = $id;
   }
 
   public function getEntity() {
@@ -116,7 +119,8 @@ class Call extends AbstractCall {
       'status'     => $status,
       'reply_date' => date('YmdHis'),
       'reply'      => json_encode($error));
-    drupal_write_record('cmrf_core_call', $update, array('cid'));
+
+    $this->factory->update($this);
   }
 }
 

@@ -11,9 +11,8 @@ namespace CMRF\Drupal;
 include_once('Call.php');
 
 use CMRF\Core\Core         as AbstractCore;
-use CMRF\Core\AbstractCall as AbstractCall;
 use CMRF\Core\Connection;
-use CMRF\Drupal\Call       as DrupalCall;
+use CMRF\PersistenceLayer\SQLPersistingCallFactory;
 
 
 class Core extends AbstractCore {
@@ -21,6 +20,25 @@ class Core extends AbstractCore {
   protected $connections = array();
 
   public function __construct() {
+    $info = \Database::getConnectionInfo('default');
+    $info = $info['default'];
+    if(!isset($info['port'])) {
+      $info['port'] = NULL;
+    }
+
+    $table_name = \Database::getConnection()->prefixTables("{cmrf_core_call}");
+    $connection = new \mysqli('localhost', 'admin', 'admin1234', 'civimcrestface');
+    /*$stmnt = $conn->prepare("SELECT count(*) FROM civicrm_contact");
+    var_dump($stmnt); exit();
+
+
+    $connection = new \mysqli($info['host'],$info['username'],$info['password'],$info['database'],$info['port']);
+    var_dump($connection); exit();
+    $stmt=$connection->prepare("select * from $table_name");
+    var_dump($connection->error_list);
+    var_dump($stmt); exit();*/
+    $factory = new SQLPersistingCallFactory($connection, $table_name, array('\CMRF\Drupal\Call','createNew'), array('\CMRF\Drupal\Call','createWithRecord'));
+    parent::__construct($factory);
   }
 
   public function getDefaultProfile() {
@@ -49,44 +67,6 @@ class Core extends AbstractCore {
     }
 
     return $this->connections[$connector_id];
-  }
-
-
-  /************************************
-   *    Call related infrastructure   *
-   ************************************/
-
-
-
-  public function createCall($connector_id, $entity, $action, $parameters = array(), $options = array(), $callback = NULL) {
-    if (!empty($options['cache'])) {
-      $hash = AbstractCall::getHashFromParams($entity, $action, $parameters, $options);
-      $result = db_query(
-        "SELECT *
-         FROM {cmrf_core_call}
-         WHERE request_hash = :hash
-           AND connector_id = :connectorid
-           AND cached_until > NOW()
-         LIMIT 1;",
-         array(":hash" => $hash, ":connectorid" => $connector_id));
-      
-      foreach ($result as $cached_entry) {
-        return DrupalCall::createWithRecord($connector_id, $this, $cached_entry);
-      }
-    }
-    
-    // not cached/no caching:
-    return DrupalCall::createNew($connector_id, $this, $entity, $action, $parameters, $options, $callback);
-  }
-
-  public function getCall($call_id) {
-    // TODO: implmenet
-    return NULL;
-  }
-
-  public function findCall($options) {
-    // TODO: implmenet
-    return NULL;
   }
 
 
