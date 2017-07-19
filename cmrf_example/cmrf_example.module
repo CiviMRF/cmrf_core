@@ -1,26 +1,20 @@
 <?php
 
-function cmrf_example_sendCall($entity, $action, $parameters, $options) {
-  $connector_name = 'cmrf_exmaple_connector';
-
-  // get config
-  $config = variable_get($connector_name);
-  if ($config == NULL) {
-    $config = array();
-    variable_set($connector_name, $config);
-  }
-
-  // get core
+function cmrf_example_sendCall($entity, $action, $parameters, $options, $profile) {
+  $connector_name = cmrf_example_get_connector_name($profile);
   $core = cmrf_core_get_core();
-
-  if (empty($config['connector_id'])) {
-    $config['connector_id'] = $core->registerConnector('cmrf_example');
-    variable_set($connector_name, $config);
+  $connector_id = variable_get($connector_name);
+  if (empty($connector_id)) {
+    $connector_id = $core->registerConnector($connector_name, $profile);
+    variable_set($connector_name, $connector_id);
   }
-
-  $call = $core->createCall($config['connector_id'], $entity, $action, $parameters, $options);
+  $call = $core->createCall($connector_id, $entity, $action, $parameters, $options);
   $core->executeCall($call);
   return $call;
+}
+
+function cmrf_example_get_connector_name($profile) {
+  return 'cmrf_example:'.$profile.':';
 }
 
 /**
@@ -29,7 +23,8 @@ function cmrf_example_sendCall($entity, $action, $parameters, $options) {
 function cmrf_example_menu() {
   $items['admin/config/civimrf/examples'] = array(
     'title' => 'Example CiviMRF Calls',
-    'page callback' => 'cmrf_example_page',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('cmrf_example_form'),
     'access arguments' => array('cmrf access example'),
     'type' => MENU_NORMAL_ITEM,
   );
@@ -48,11 +43,37 @@ function cmrf_example_permission() {
   );
 }
 
-function cmrf_example_page() {
-  $call = cmrf_example_sendCall('Contact', 'getcount', array(), array());
-  $contact_count_reply = $call->getReply();
-  $page['contact_count']['heading']['#markup'] = '<h2>' . t('Contact count') . '</h2>';
-  $page['contact_count']['description']['#markup'] = '<p>' . t('Number of contacts in your CiviCRM installation') . '</p>';
-  $page['contact_count']['content']['#markup'] = '<p>' . $contact_count_reply['result'] . '</p>';
-  return $page;
+function cmrf_example_form($form, &$form_state) {
+  $profiles = cmrf_core_list_profiles();
+  $profiles_options = array();
+  foreach($profiles as $profile_name => $profile) {
+    $profiles_options[$profile_name] = $profile['label'];
+  }
+  $form['profile']['#type'] = 'select';
+  $form['profile']['#title'] = t('Select connection profile');
+  $form['profile']['#options'] = $profiles_options;
+  $form['profile']['#required'] = true;
+
+  $form['actions']['#type'] = 'actions';
+  $form['actions']['submit']['#type'] = 'submit';
+  $form['actions']['submit']['#value'] = t('Test with this profile');
+  $form['actions']['submit']['#ajax'] = array(
+    'callback' => 'cmrf_example_form_ajax_submit',
+    'wrapper' => 'cmrf-example-form',
+    'method' => 'replace',
+    'effect' => 'fade',
+  );
+
+  return $form;
+}
+
+function cmrf_example_form_ajax_submit($form, $form_state) {
+  if (isset($form_state['values']['profile'])) {
+    $call = cmrf_example_sendCall('Contact', 'getcount', [], [], $form_state['values']['profile']);
+    $contact_count_reply = $call->getReply();
+    $form['contact_count']['heading']['#markup'] = '<h2>' . t('Contact count') . '</h2>';
+    $form['contact_count']['description']['#markup'] = '<p>' . t('Number of contacts in your CiviCRM installation') . '</p>';
+    $form['contact_count']['content']['#markup'] = '<p>' . $contact_count_reply['result'] . '</p>';
+  }
+  return $form;
 }

@@ -110,5 +110,63 @@ function cmrf_core_schema() {
     ),
     'primary key' => array('cid'),
   );
+
+  $schema['cmrf_core_profiles'] = array(
+    'description' => 'Stores CiviMRF connection profiles.',
+    'fields' => array(
+      'pid' => array(
+        'description' => 'The primary identifier for an profile.',
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+      'name' => array(
+        'description' => 'The profile machine name.',
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+      ),
+      'label' => array(
+        'description' => 'The profile administrative name.',
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'default' => '',
+      ),
+      'connector' => array(
+        'description' => 'The connector for this profile.',
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'default' => '',
+      ),
+      'url' => array(
+        'description' => 'The URL to the rest endpoint of CiviCRM.',
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => FALSE,
+        'default' => '',
+      ),
+      'site_key' => array(
+        'description' => 'The site key of CiviCRM.',
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => FALSE,
+        'default' => '',
+      ),
+      'api_key' => array(
+        'description' => 'The api key of CiviCRM.',
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => FALSE,
+        'default' => '',
+      ),
+    ),
+    'primary key' => array('pid'),
+    'unique keys' => array(
+      'name' => array('name'),
+    ),
+  );
+
   return $schema;
 }

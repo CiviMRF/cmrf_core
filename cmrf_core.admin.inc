@@ -1,29 +1,98 @@
 <?php
 
-function cmrf_core_admin_form() {
+function cmrf_core_admin_list_profiles() {
+  $page = array();
 
-  $form = array();
+  $profiles = cmrf_core_list_profiles();
+  $page['cmrf_profile_list'] = array(
+    '#markup' => theme('cmrf_profile_list', array('profiles' => $profiles)),
+  );
 
-  $form['cmrf_core_default_url'] = array(
+  return $page;
+}
+
+/**
+ * Form builder; Form for adding a new image style.
+ *
+ * @ingroup forms
+ * @see image_style_add_form_submit()
+ */
+function cmrf_core_profile_form($form, &$form_state, $profile=null) {
+  $form_state['profile'] = $profile;
+  $form['label'] = array(
     '#type' => 'textfield',
-    '#title' => t('URL'),
-    '#default_value' => variable_get('cmrf_core_default_url', ''),
-    '#description' => t("The URL to your CiviCRM installation e.g. https://civi.my.site/sites/all/modules/civicrm/extern/rest.php."),
+    '#title' => t('Profile name'),
+    '#default_value' => isset($profile['label']) ? $profile['label'] : '',
     '#required' => TRUE,
   );
-
-  $form['cmrf_core_default_site_key'] = array(
-    '#type' => 'password',
-    '#title' => t('Site key'),
-    '#default_value' => variable_get('cmrf_core_default_site_key', ''),
-    '#description' => t("The site key of your civicrm installation."),
+  $form['name'] = array(
+    '#type' => 'machine_name',
+    '#description' => t('The name is used in URLs for profiles. Use only lowercase alphanumeric characters, underscores (_), and hyphens (-).'),
+    '#size' => '64',
+    '#required' => TRUE,
+    '#default_value' => isset($profile['name']) ? $profile['name'] : '',
+    '#machine_name' => array(
+      'exists' => 'cmrf_core_profile_add_name_exists',
+      'source' => array('label'),
+      'replace_pattern' => '[^0-9a-z_\-]',
+      'error' => t('Please only use lowercase alphanumeric characters, underscores (_), and hyphens (-) for style names.'),
+    ),
   );
 
-  $form['cmrf_core_default_api_key'] = array(
+  $connectors = cmrf_core_list_connectors();
+  $connectors_options = array();
+  foreach($connectors as $connector_name => $connector) {
+    $connectors_options[$connector_name] = $connector['label'];
+  }
+  $form['connector']['#type'] = 'select';
+  $form['connector']['#title'] = t('Select connector');
+  $form['connector']['#options'] = $connectors_options;
+  $form['connector']['#required'] = true;
+  $form['connector']['#default_value'] = isset($profile['connector']) ? $profile['connector'] : '';
+
+  $form['url'] = array(
+    '#type' => 'textfield',
+    '#title' => t('URL'),
+    '#default_value' => isset($profile['url']) ? $profile['url'] : '',
+    '#description' => t("The URL to your CiviCRM installation e.g. https://civi.my.site/sites/all/modules/civicrm/extern/rest.php."),
+    '#states' => array(
+      'visible' => array(
+        ':input[name="connector"]' => array('value' => 'curl'),
+      ),
+      'required' => array(
+        ':input[name="connector"]' => array('value' => 'curl'),
+      ),
+    ),
+  );
+
+  $form['site_key'] = array(
+    '#type' => 'password',
+    '#title' => t('Site key'),
+    '#default_value' => isset($profile['site_key']) ? $profile['site_key'] : null,
+    '#description' => t("The site key of your civicrm installation."),
+    '#states' => array(
+      'visible' => array(
+        ':input[name="connector"]' => array('value' => 'curl'),
+      ),
+      'required' => array(
+        ':input[name="connector"]' => array('value' => 'curl'),
+      ),
+    ),
+  );
+
+  $form['api_key'] = array(
     '#type' => 'password',
     '#title' => t('Api key'),
-    '#default_value' => variable_get('cmrf_core_default_api_key', ''),
+    '#default_value' => isset($profile['api_key']) ? $profile['api_key'] : null,
     '#description' => t("The api key of your civicrm installation."),
+    '#states' => array(
+      'visible' => array(
+        ':input[name="connector"]' => array('value' => 'curl'),
+      ),
+      'required' => array(
+        ':input[name="connector"]' => array('value' => 'curl'),
+      ),
+    ),
   );
 
   $form['actions']['#type'] = 'actions';
@@ -33,46 +102,156 @@ function cmrf_core_admin_form() {
     drupal_set_message(t('The settings have not been saved because of the errors.'), 'error');
   }
 
-  $form['#validate'][] = 'cmrf_core_admin_form_validate';
-  $form['#submit'][] = 'cmrf_core_admin_form_submit';
+  $form['#validate'][] = 'cmrf_core_profile_form_validate';
+  $form['#submit'][] = 'cmrf_core_profile_form_submit';
   // By default, render the form using theme_system_settings_form().
   $form['#theme'] = 'system_settings_form';
 
   return $form;
 }
 
-/**
- * Validation for the admin_form. Check whether the site key or api key is empty. If so do not change the key.
- * 
- * @param $form
- * @param $form_state
- */
-function cmrf_core_admin_form_validate($form, &$form_state) {
-  if (empty($form_state['values']['cmrf_core_default_site_key'])) {
-    $form_state['values']['cmrf_core_default_site_key'] = variable_get('cmrf_core_default_site_key', '');
-    if (empty($form_state['values']['cmrf_core_default_site_key'])) {
-      form_set_error('cmrf_core_default_site_key', t('Site key is required'));
+function cmrf_core_profile_form_validate($form, &$form_state) {
+  if ($form_state['values']['connector'] == 'curl') {
+    if (empty($form_state['values']['url'])) {
+      form_set_error('url', t('Url is required'));
     }
-  }
-  if (empty($form_state['values']['cmrf_core_default_api_key'])) {
-    $form_state['values']['cmrf_core_default_api_key'] = variable_get('cmrf_core_default_api_key', '');
-    if (empty($form_state['values']['cmrf_core_default_api_key'])) {
-      form_set_error('cmrf_core_default_site_key', t('Api key is required'));
+
+    if (empty($form_state['values']['site_key'])) {
+      $form_state['values']['site_key'] = !empty($form_state['profile']['site_key']) ? $form_state['profile']['site_key'] : '';
+      if (empty($form_state['values']['site_key'])) {
+        form_set_error('site_key', t('Site key is required'));
+      }
+    }
+    if (empty($form_state['values']['api_key'])) {
+      $form_state['values']['api_key'] = !empty($form_state['profile']['site_key']) ? $form_state['profile']['api_key'] : '';
+      if (empty($form_state['values']['api_key'])) {
+        form_set_error('api_key', t('Api key is required'));
+      }
     }
   }
 }
 
-function cmrf_core_admin_form_submit($form, &$form_state) {
-  variable_set('cmrf_core_default_url', $form_state['values']['cmrf_core_default_url']);
-  variable_set('cmrf_core_default_site_key', $form_state['values']['cmrf_core_default_site_key']);
-  variable_set('cmrf_core_default_api_key', $form_state['values']['cmrf_core_default_api_key']);
-
-  // Test the connection by trying to retrieve one contact of the system.
-  $result = cmrf_example_sendCall('Contact', 'getcount', array(), array());
-  $reply = $result->getReply();
-  if (empty($result) || $result->getStatus() != \CMRF\Core\Call::STATUS_DONE || !empty($reply['is_error'])) {
-    drupal_set_message(t('Could not connect to your CiviCRM installation.'), 'error');
-  } else {
-    drupal_set_message(t('The configuration options have been saved.'));
+/**
+ * Submit handler for adding a new image style.
+ */
+function cmrf_core_profile_form_submit($form, &$form_state) {
+  form_state_values_clean($form_state);
+  $profile = $form_state['values'];
+  if (isset($form_state['profile']['pid']) && !empty($form_state['profile']['pid'])) {
+    $profile['pid'] = $form_state['profile']['pid'];
   }
+  $profile = cmrf_core_profile_save($profile);
+  if ($profile['is_new']) {
+    drupal_set_message(t('Profile %name created.', ['%name' => $profile['label']]));
+  } else {
+    drupal_set_message(t('Profile %name updated.', ['%name' => $profile['label']]));
+  }
+  $form_state['redirect'] = 'admin/config/civimrf/profiles';
+}
+
+function cmrf_core_profile_add_name_exists($value) {
+  $exists = db_query_range('SELECT 1 FROM {cmrf_core_profiles} WHERE name = :name', 0, 1, array(':name' => $value))->fetchField();
+  return $exists;
+}
+
+/**
+ * Form builder; Form for deleting a CiviMRF connection profile
+ *
+ * @param $profile
+ *   The profile
+ * @return array
+ */
+function cmrf_core_profile_delete_form($form, &$form_state, $profile) {
+  $form_state['profile'] = $profile;
+  return confirm_form($form, t('Are you sure you want to delete profile: %profile', array('%profile' => $profile['label'])),'admin/config/civimrf/profiles');
+}
+
+/**
+ * Submit handler to delete a CiviMRF connection profile.
+ */
+function cmrf_core_profile_delete_form_submit($form, &$form_state) {
+  $profile = $form_state['profile'];
+  cmrf_core_profile_delete($profile);
+  drupal_set_message(t('CiviMRF connection profile %name was deleted.', array('%name' => $profile['label'])));
+  $form_state['redirect'] = 'admin/config/civimrf/profiles';
+}
+
+/**
+ * Confirmation form to revert a database profile to its default.
+ */
+function cmrf_core_profile_revert_form($form, &$form_state, $profile) {
+  $form_state['profile'] = $profile;
+
+  return confirm_form(
+    $form,
+    t('Revert the %name profile?', array('%name' => $profile['label'])),
+    'admin/config/civimrf/profiles',
+    t('Reverting this profiles will delete the customized settings and restore the defaults provided by the @module module.', array('@module' => $profile['module'])),
+    t('Revert'),  t('Cancel')
+  );
+}
+
+/**
+ * Submit handler to convert an overridden profile to its default.
+ */
+function cmrf_core_profile_revert_form_submit($form, &$form_state) {
+  drupal_set_message(t('The %profile profile has been reverted to its defaults.', array('%profile' => $form_state['profile']['label'])));
+  cmrf_core_profile_delete($form_state['profile']);
+  $form_state['redirect'] = 'admin/config/civimrf/profiles';
+}
+
+function theme_cmrf_profile_list($variables) {
+  $profiles = $variables['profiles'];
+
+  $header = array(t('Profile'), t('Machine name'), t('State'), array('data' => t('Operations'), 'colspan' => 3));
+  $rows = array();
+  foreach ($profiles as $profile_name => $profile) {
+    $row = array();
+    if ($profile['readonly']) {
+      $row[] = $profile['label'];
+    } else {
+      $row[] = l($profile['label'], 'admin/config/civimrf/profiles/edit/' . $profile_name);
+    }
+    $row[] = $profile_name;
+    if ($profile['storage'] == CRMF_CORE_PROFILE_STORAGE_CODE) {
+      $row[] = t('In code');
+      if ($profile['readonly']) {
+        $row[] = '';
+        $row[] = '';
+      } else {
+        $row[] = l(t('edit'), 'admin/config/civimrf/profiles/edit/' . $profile_name);
+        $row[] = '';
+      }
+    }
+    elseif ($profile['storage'] == CRMF_CORE_PROFILE_STORAGE_OVERRIDE) {
+      $row[] = t('Overridden');
+      if ($profile['readonly']) {
+        $row[] = '';
+        $row[] = '';
+      } else {
+        $row[] = l(t('edit'), 'admin/config/civimrf/profiles/edit/' . $profile_name);
+        $row[] = l(t('revert'), 'admin/config/civimrf/profiles/revert/' .$profile_name);
+      }
+    }
+    else {
+      $row[] = t('User defined');
+      if ($profile['readonly']) {
+        $row[] = '';
+        $row[] = '';
+      } else {
+        $row[] = l(t('edit'), 'admin/config/civimrf/profiles/edit/' . $profile_name);
+        $row[] = l(t('delete'), 'admin/config/civimrf/profiles/delete/' .$profile_name);
+      }
+    }
+    $rows[] = $row;
+  }
+
+  if (empty($rows)) {
+    $rows[] = array(array(
+      'colspan' => 4,
+      'data' => t('There are currently no profiles. <a href="!url">Add a new one</a>.', array('!url' => url('admin/config/civimrf/profiles/add'))),
+    ));
+  }
+
+  return theme('table', array('header' => $header, 'rows' => $rows));
 }

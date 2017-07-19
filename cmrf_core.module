@@ -7,9 +7,22 @@
  * Long description here.
  */
 
-use CMRF\Drupal\Core;
-
 require_once('vendor/autoload.php');
+
+/**
+ * CiviMRF Connection profile constant for user presets in the database.
+ */
+define('CRMF_CORE_PROFILE_STORAGE_NORMAL', 1);
+
+/**
+ * CiviMRF Connection profile constant for user presets that override module-defined presets.
+ */
+define('CRMF_CORE_PROFILE_STORAGE_OVERRIDE', 2);
+
+/**
+ * CiviMRF Connection profile constant for module-defined presets in code.
+ */
+define('CRMF_CORE_PROFILE_STORAGE_CODE', 4);
 
 
 /**
@@ -20,11 +33,121 @@ function cmrf_core_get_core() {
   global $_cmrf_core_singleton;
   if ($_cmrf_core_singleton===NULL) {
     include_once('CMRF_Drupal/Core.php');
-    $_cmrf_core_singleton = new Core();
+    $_cmrf_core_singleton = new \CMRF\Drupal\Core();
   }
   return $_cmrf_core_singleton;
 }
 
+/**
+ * Gets an array of all connectors
+ *
+ * @return array
+ *   An array of connectors keyed by the connector system name and a user label and a callback function to instantiate the connector class.
+ */
+function cmrf_core_list_connectors() {
+  $connectors = &drupal_static(__FUNCTION__);
+
+  // Grab from cache or build the array.
+  if (!isset($connectors)) {
+    if ($cache = cache_get('cmrf_core_connectors', 'cache')) {
+      $connectors = $cache->data;
+    }
+    else {
+      $connectors = [];
+
+      // Select the module-defined styles.
+      foreach (module_implements('cmrf_core_connectors') as $module) {
+        $module_connectors = module_invoke($module, 'cmrf_core_connectors');
+        foreach ($module_connectors as $connector_name => $connector) {
+          if (function_exists($connector['callback'] )) {
+            $connectors[$connector_name] = $connector;
+          }
+        }
+      }
+      drupal_alter('cmrf_core_connectors', $connectors);
+      cache_set('cmrf_core_connectors', $connectors);
+    }
+  }
+  return $connectors;
+}
+
+  /**
+ * Gets an array of all profiles
+ *
+ * @return array
+ *   An array of profiles keyed by the profile system name.
+ */
+function cmrf_core_list_profiles() {
+  $profiles = &drupal_static(__FUNCTION__);
+
+  // Grab from cache or build the array.
+  if (!isset($profiles)) {
+    if ($cache = cache_get('cmrf_core_profiles', 'cache')) {
+      $profiles = $cache->data;
+    }
+    else {
+      $profiles = array();
+
+      // Select the module-defined styles.
+      foreach (module_implements('cmrf_core_profiles') as $module) {
+        $module_profiles = module_invoke($module, 'cmrf_core_profiles');
+        foreach ($module_profiles as $profile_name => $profile) {
+          $profile['name'] = $profile_name;
+          $profile['label'] = empty($profile['label']) ? $profile_name : $profile['label'];
+          $profile['module'] = $module;
+          $profile['storage'] = CRMF_CORE_PROFILE_STORAGE_CODE;
+          $profiles[$profile_name] = $profile;
+        }
+      }
+
+      $user_profiles = db_select('cmrf_core_profiles', NULL, array('fetch' => PDO::FETCH_ASSOC))
+        ->fields('cmrf_core_profiles')
+        ->orderBy('name')
+        ->execute()
+        ->fetchAllAssoc('name', PDO::FETCH_ASSOC);
+
+      // Allow the user styles to override the module styles.
+      foreach ($user_profiles as $profile_name => $profile) {
+        $profile['module'] = NULL;
+        $profile['storage'] = CRMF_CORE_PROFILE_STORAGE_NORMAL;
+        $profile['readonly'] = false;
+        if (isset($profiles[$profile_name]['module'])) {
+          $profile['module'] = $profiles[$profile_name]['module'];
+          $profile['storage'] = CRMF_CORE_PROFILE_STORAGE_OVERRIDE;
+        }
+        $profiles[$profile_name] = $profile;
+      }
+
+      drupal_alter('cmrf_core_profiles', $profiles);
+      cache_set('cmrf_core_profiles', $profiles, 'cache');
+    }
+  }
+
+  return $profiles;
+}
+
+function cmrf_core_cmrf_core_connectors() {
+  $connectors['curl'] = array(
+    'label' => t('Remote connection'),
+    'callback' => 'cmrf_core_curl_connector',
+  );
+  if (module_exists('civicrm')) {
+    $connectors['local'] = [
+      'label' => t('Local connection'),
+      'callback' => 'cmrf_core_local_connector',
+    ];
+  }
+  return $connectors;
+}
+
+function cmrf_core_curl_connector(\CMRF\Core\Core $core, $connector_id) {
+  return new \CMRF\Connection\Curl($core, $connector_id);
+}
+
+function cmrf_core_local_connector(\CMRF\Core\Core $core, $connector_id) {
+  civicrm_initialize();
+  return new \CMRF\Connection\Local($core, $connector_id);
+}
 
 
 /**
@@ -42,15 +165,47 @@ function cmrf_core_menu() {
     'file path' => drupal_get_path('module', 'system'),
   );
   $items['admin/config/civimrf/profiles'] = array(
-    'title' => 'CiviMRF Default profile',
-    'description' => 'Edit the default connection profile settings for CiviMRF.',
-    'page callback' => 'drupal_get_form',
-    'page arguments' => array('cmrf_core_admin_form'),
+    'title' => 'CiviMRF Connection profiles',
+    'description' => 'Edit the connection profiles settings for CiviMRF.',
+    'page callback' => 'cmrf_core_admin_list_profiles',
     'access arguments' => array('administer cmrf'),
     'file' => 'cmrf_core.admin.inc',
     'weight' => -10,
   );
-
+  $items['admin/config/civimrf/profiles/add'] = array(
+    'title' => 'Add profile',
+    'description' => 'Add a new connection profile.',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('cmrf_core_profile_form'),
+    'access arguments' => array('administer cmrf'),
+    'type' => MENU_LOCAL_ACTION,
+    'weight' => 2,
+    'file' => 'cmrf_core.admin.inc',
+  );
+  $items['admin/config/civimrf/profiles/edit/%cmrf_core_profile'] = array(
+    'title' => 'Edit profile',
+    'description' => 'Edit a CiviMRF connection profile.',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('cmrf_core_profile_form', 5),
+    'access arguments' => array('administer cmrf'),
+    'file' => 'cmrf_core.admin.inc',
+  );
+  $items['admin/config/civimrf/profiles/delete/%cmrf_core_profile'] = array(
+    'title' => 'Delete profile',
+    'description' => 'Delete a CiviMRF connection profile.',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('cmrf_core_profile_delete_form', 5),
+    'access arguments' => array('administer cmrf'),
+    'file' => 'cmrf_core.admin.inc',
+  );
+  $items['admin/config/civimrf/profiles/revert/%cmrf_core_profile'] = array(
+    'title' => 'Revert profile',
+    'description' => 'Revert a CiviMRF connection profile.',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('cmrf_core_profile_revert_form', 5),
+    'access arguments' => array('administer cmrf'),
+    'file' => 'cmrf_core.admin.inc',
+  );
   return $items;
 }
 
@@ -64,3 +219,116 @@ function cmrf_core_permission() {
     ),
   );
 }
+
+/**
+ * Implements hook_theme().
+ */
+function cmrf_core_theme() {
+  return array(
+    // Theme functions in cmrf_core.admin.inc.
+    'cmrf_profile_list' => array(
+      'variables' => array('profiles' => NULL),
+    ),
+  );
+}
+
+/**
+ * Saves a CiviMRF connection profile.
+ *
+ * @param array $profile
+ *   A profile containing:
+ *   - name: A unique name for the profile (required).
+ *   - label: A label (required).
+ *   - connector: the identifier for the connector to use (required)
+ *   - url: the rest end point (required for curl connector)
+ *   - site_key: the site key (required for curl connector)
+ *   - api_key: the api key (required for curl connector)
+ *
+ * @return array
+ *   A profile array containing:
+ *   - name: A unique name for the profile.
+ *   - old_name: The original name for the profile.
+ *   - label: A label.
+ *   - connector - the identifier for the connector
+ *   - url: the rest end point for the curl connector.
+ *   - site_key: the site key for the curl connector.
+ *   - api_key: the api key for the curl connector
+ *   - is_new: TRUE if this is a new profile, and FALSE if it is an existing
+ *     profile.
+ */
+function cmrf_core_profile_save($profile) {
+  if (isset($profile['pid']) && is_numeric($profile['pid'])) {
+    // Load the existing style to make sure we account for renamed styles.
+    $old_profile = image_style_load(NULL, $profile['pid']);
+    drupal_write_record('cmrf_core_profiles', $profile, 'pid');
+    if ($old_profile['name'] != $profile['name']) {
+      $profile['old_name'] = $old_profile['name'];
+    }
+    $profile['is_new'] = FALSE;
+  }
+  else {
+    // Add a default label when not given.
+    if (empty($profile['label'])) {
+      $profile['label'] = $profile['name'];
+    }
+    drupal_write_record('cmrf_core_profiles', $profile);
+    $profile['is_new'] = TRUE;
+  }
+
+  cache_clear_all('cmrf_core_profiles', 'cache');
+  drupal_static_reset('cmrf_core_list_profiles');
+
+  // Let other modules update as necessary on save.
+  module_invoke_all('cmrf_core_profile_save', $profile);
+
+  return $profile;
+}
+
+/**
+ * Deletes a CiviMRF connection profile
+ *
+ * @param $profile
+ *   The profile. *
+ * @return
+ *   TRUE on success.
+ */
+function cmrf_core_profile_delete($profile) {
+  if (isset($profile['pid']) && !empty($profile['pid'])) {
+    db_delete('cmrf_core_profiles')
+      ->condition('pid', $profile['pid'])
+      ->execute();
+  }
+
+  cache_clear_all('cmrf_core_profiles', 'cache');
+  drupal_static_reset('cmrf_core_list_profiles');
+
+  module_invoke_all('cmrf_core_profile_delete', $profile);
+
+  return TRUE;
+}
+
+/**
+ * Loads a connection profile by name.
+ *
+ * @param $pid int|string
+ *   The id or the name of the profile.
+ * @return array|FALSE
+ *   A profile array.
+ *   If the profile name is not valid, an FALSE is returned.
+ * @see cmrf_core_list_profiles()
+ */
+function cmrf_core_profile_load($pid) {
+  $profiles = cmrf_core_list_profiles();
+  foreach($profiles as $profile) {
+    if (is_numeric($pid) && isset($profile['pid']) && $profile['pid'] == $pid) {
+      return $profile;
+    }
+    if (is_string($pid) && isset($profile['name']) && $profile['name'] == $pid) {
+      return $profile;
+    }
+  }
+
+  // Otherwise the style was not found.
+  return FALSE;
+}
+

@@ -12,7 +12,7 @@ include_once('Call.php');
 
 use CMRF\Core\Core         as AbstractCore;
 use CMRF\Core\AbstractCall as AbstractCall;
-use CMRF\Connection\Curl   as CurlConnection;
+use CMRF\Core\Connection;
 use CMRF\Drupal\Call       as DrupalCall;
 
 
@@ -27,16 +27,27 @@ class Core extends AbstractCore {
     return 'default';
   }
 
+  /**
+   * Retrieve the connection from the connection profile
+   * Get instance of the connector through a drupal callback function.
+   *
+   * @param $connector_id
+   * @return Connection
+   */
   protected function getConnection($connector_id) {
     if (!isset($this->connections[$connector_id])) {
-      $this->connections[$connector_id] = new CurlConnection($this, $connector_id);
+      $connectors = cmrf_core_list_connectors();
+      $profile = $this->getConnectionProfile($connector_id);
+      if (!isset($connectors[$profile['connector']])) {
+        watchdog('cmrf_core', t('No connector available for %connector_name', array('connector_name' => $profile['connector'])), array(), WATCHDOG_ERROR);
+      }
+      if (!isset($connectors[$profile['connector']]['callback']) || !function_exists($connectors[$profile['connector']]['callback'] )) {
+        watchdog('cmrf_core', t('No connector available for %connector_name', array('connector_name' => $profile['connector'])), array(), WATCHDOG_ERROR);
+      }
+      $this->connections[$connector_id] = call_user_func($connectors[$profile['connector']]['callback'], $this, $connector_id);
     }
 
     return $this->connections[$connector_id];
-  }
-
-  public function isReady() {
-    return $this->getConnection('test')->isReady();
   }
 
 
@@ -83,16 +94,8 @@ class Core extends AbstractCore {
    *********************************************************/
 
   public function getConnectionProfiles() {
-    $cmrf_core_connection_profiles['default']['url'] = variable_get('cmrf_core_default_url', '');
-    $cmrf_core_connection_profiles['default']['site_key'] = variable_get('cmrf_core_default_site_key', '');
-    $cmrf_core_connection_profiles['default']['api_key'] = variable_get('cmrf_core_default_api_key', '');
-
-    return $cmrf_core_connection_profiles;
+    return cmrf_core_list_profiles();
   }
-
-  /*protected function storeConnectionProfiles($profiles) {
-    variable_set('cmrf_core_connection_profiles', $profiles);
-  }*/
 
   public function getRegisteredConnectors() {
     return variable_get('cmrf_core_connectors');
