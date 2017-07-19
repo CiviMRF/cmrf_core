@@ -8,10 +8,11 @@
 
 namespace Drupal\cmrf_core;
 
-use CMRF\Connection\Curl;
+use CMRF\Connection\Curl as CurlConnection;
 use CMRF\Core\Core as AbstractCore;
 use CMRF\PersistenceLayer\CallFactory;
 use CMRF\PersistenceLayer\SQLPersistingCallFactory;
+use Drupal\cmrf_core\Entity\CMRFConnector;
 use Drupal\cmrf_core\Entity\CMRFProfile;
 
 
@@ -30,8 +31,17 @@ class Core extends AbstractCore {
 
   protected function getConnection($connector_id) {
     //TODO: store open connections for reuse.
-    return new Curl($this,$connector_id);
+    return new CurlConnection($this,$connector_id);
   }
+
+  public function getConnectionProfile($connector_id) {
+    $entity= CMRFConnector::load($connector_id);
+    if($entity == null) {
+      throw new \Exception("Unregistered connector '$connector_id'.", 1);
+    }
+    return $this->getConnectionProfiles()[$entity->profile];
+  }
+
 
   public function getConnectionProfiles() {
 
@@ -73,18 +83,34 @@ class Core extends AbstractCore {
     }
 
     // find a new ID for the connector
+    $connectors = array();
     $connector_id = $this->generateURN("connector:$connector_name", $connectors);
     $connector = array(
       'type'    => $connector_name,
       'profile' => $profile,
       'id'      => $connector_id
     );
-    //TODO: implement config entity to store connector. and check if it's already present.
-    return $connector_id;
+
+    $id = $connector_name;
+    $count = 1;
+    while(CMRFConnector::load($id) !== NULL) {
+      $count = $count + 1;
+      $id = $connector_name.'_'.$count;
+    }
+
+    $entity = CMRFConnector::create();
+    $entity->set('id',$id);
+    $entity->set('label',$connector_id);
+
+    $entity->type=$connector_name;
+    $entity->profile=$profile;
+    $entity->save();
+    return $entity->id();
   }
 
   public function unregisterConnector($connector_identifier) {
-    //TODO: check if entity is present and delete it.
+    $entity = CMRFConnector::load($connector_identifier);
+    $entity->delete();
   }
 
 

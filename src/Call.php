@@ -12,9 +12,9 @@ use CMRF\Core\AbstractCall;
 use CMRF\Core\Call as CallInterface;
 
 class Call extends AbstractCall{
-  protected $record   = NULL;
-  protected $request  = NULL;
-  protected $reply    = NULL;
+  public $record   = NULL;
+  public $request  = NULL;
+  public $reply    = NULL;
   public static function createNew($connector_id, $core, $entity, $action, $parameters, $options, $callback,$factory) {
     $call = new Call($core, $connector_id,$factory);
     // compile request

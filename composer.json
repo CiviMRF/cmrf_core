@@ -19,7 +19,7 @@
         "source": {
           "url": "https://github.com/CiviMRF/CMRF_Abstract_Core.git",
           "type": "git",
-          "reference": "feature/persistence_abstraction"
+          "reference": "master"
         },
         "autoload": {
           "psr-0" : {
