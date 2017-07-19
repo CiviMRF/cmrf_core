@@ -15,7 +15,7 @@ class CMRFProfileListBuilder extends ConfigEntityListBuilder {
    * {@inheritdoc}
    */
   public function buildHeader() {
-    $header['label'] = $this->t('CMRF profiles');
+    $header['label'] = $this->t('CMRF profile');
     $header['id'] = $this->t('Machine name');
     $header['url'] = $this->t('URL');
     return $header + parent::buildHeader();
