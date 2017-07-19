@@ -1,9 +1,8 @@
-# CMRF profile menu items definition
 entity.cmrf_profile.collection:
   title: 'CMRF profiles'
+  parent: system.admin_config_system
   route_name: entity.cmrf_profile.collection
-  description: 'List CMRF profiles (bundles)'
-  parent: system.admin_structure
+  description: 'List and edit CMRF profiles'
   weight: 99
 
 
