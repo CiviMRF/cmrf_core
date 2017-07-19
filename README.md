@@ -14,4 +14,6 @@ If you need to, you can create multiple profiles there.
 
 # Usage
 
-TBD
+Have a look at the cmrf_example module. The API Calls itself are wrapped
+in a class CiviClient to do the heavy lifting. A Unit Test demonstrates how
+to use the class.
