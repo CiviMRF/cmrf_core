@@ -54,4 +54,35 @@ class CMRFConnector extends ConfigEntityBase implements CMRFConnectorInterface {
    */
   protected $label;
 
+  /**
+   * The referenced CMRF profile.
+   *
+   * @var string
+   */
+  public $profile;
+
+  /**
+   * The type describing which module is using this connector.
+   *
+   * @var string
+   */
+  public $type;
+
+
+  public function getAvailableProfiles() {
+    $return = array();
+    $query = \Drupal::entityQuery('cmrf_profile');
+    $results = $query->execute();
+    $entity_ids = array_keys($results);
+
+    /** @var CMRFProfile[] $loaded */
+    $loaded = CMRFProfile::loadMultiple($entity_ids);
+
+    foreach($loaded as $entity) {
+      $return[$entity->id()] = $entity->label();
+    }
+
+    return $return;
+  }
+
 }

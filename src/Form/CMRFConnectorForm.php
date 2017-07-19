@@ -2,6 +2,7 @@
 
 namespace Drupal\cmrf_core\Form;
 
+use Drupal\cmrf_core\Entity\CMRFConnector;
 use Drupal\Core\Entity\EntityForm;
 use Drupal\Core\Form\FormStateInterface;
 
@@ -16,7 +17,9 @@ class CMRFConnectorForm extends EntityForm {
   public function form(array $form, FormStateInterface $form_state) {
     $form = parent::form($form, $form_state);
 
+    /** @var CMRFConnector $cmrf_connector */
     $cmrf_connector = $this->entity;
+
     $form['label'] = [
       '#type' => 'textfield',
       '#title' => $this->t('Label'),
@@ -35,7 +38,23 @@ class CMRFConnectorForm extends EntityForm {
       '#disabled' => !$cmrf_connector->isNew(),
     ];
 
-    /* You will need additional form elements for your custom properties. */
+    $form['type'] = [
+      '#type' => 'textfield',
+      '#title' => $this->t('Connecting module'),
+      '#maxlength' => 255,
+      '#default_value' => $cmrf_connector->type,
+      '#description' => $this->t('Module initiating and using the connection.'),
+      '#required' => TRUE,
+    ];
+
+    $form['profile'] = [
+      '#type' => 'select',
+      '#options' => $cmrf_connector->getAvailableProfiles(),
+      '#title' => $this->t('Profile'),
+      '#default_value' => $cmrf_connector->profile,
+      '#description' => $this->t('Name of the refrenced CMRF profile.'),
+      '#required' => TRUE,
+    ];
 
     return $form;
   }

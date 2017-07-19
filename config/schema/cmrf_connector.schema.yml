@@ -10,3 +10,9 @@ cmrf_core.cmrf_connector.*:
       label: 'Label'
     uuid:
       type: string
+    type:
+      type: string
+      label: 'Type'
+    profile:
+      type: string
+      label: 'Profile'
