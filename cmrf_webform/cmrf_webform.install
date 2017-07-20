@@ -1,0 +1,59 @@
+<?php
+
+/**
+ * Implements hook_uninstall().
+ */
+function cmrf_webform_disable() {
+  if (function_exists('cmrf_core_list_profiles')) {
+    $profiles = cmrf_core_list_profiles();
+    foreach ($profiles as $profile_name => $profile) {
+      variable_del(cmrf_example_get_connector_name($profile_name));
+    }
+  }
+}
+
+/**
+ * Implements hook_schema().
+ */
+function cmrf_webform_schema() {
+  return array(
+    'cmrf_webforms' => array(
+      'description' => 'CiviMRF settings for webforms.',
+      'fields' => array(
+        'nid' => array(
+          'type' => 'int',
+          'unsigned' => TRUE,
+          'not null' => TRUE,
+          'default' => 0,
+          'description' => 'Webform Node ID',
+        ),
+        'cmrf_enable' => array(
+          'type' => 'int',
+          'size' => 'tiny',
+          'not null' => TRUE,
+          'default' => 0,
+          'description' => 'Enabled CiviMRF for this webform',
+        ),
+        'cmrf_profile' => array(
+          'description' => 'The profile',
+          'type' => 'varchar',
+          'length' => 255,
+          'not null' => TRUE,
+        ),
+        'cmrf_entity' => array(
+          'description' => 'The profile',
+          'type' => 'varchar',
+          'length' => 255,
+          'not null' => TRUE,
+        ),
+        'cmrf_action' => array(
+          'description' => 'The action',
+          'type' => 'varchar',
+          'length' => 255,
+          'not null' => TRUE,
+        ),
+      ),
+      'primary key' => array('nid'),
+    ),
+  );
+}

@@ -1,0 +1,10 @@
+name = CiviMRF Webform integration
+description = CiviMRF webform integration module. Allows to submit a webform to the CiviCRM api.
+core = 7.x
+
+package = "CiviMRF"
+project = "cmrf_webform"
+version = "7.x-0.1"
+
+dependencies[] = cmrf_core
+dependencies[] = webform

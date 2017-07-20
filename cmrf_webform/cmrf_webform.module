@@ -1,0 +1,237 @@
+<?php
+
+function cmrf_webform_sendCall($entity, $action, $parameters, $options, $profile=null) {
+  $connector_name = 'cmrf_webform_connector';
+  if (!empty($profile)) {
+    $connector_name .= ':'.$profile;
+  }
+
+  $core = cmrf_core_get_core();
+  $connector_id = variable_get($connector_name);
+  if (empty($connector_id)) {
+    $connector_id = $core->registerConnector($connector_name, $profile);
+    variable_set($connector_name, $connector_id);
+  }
+  $call = $core->createCall($connector_id, $entity, $action, $parameters, $options);
+  $core->executeCall($call);
+  return $call;
+}
+
+function cmrf_webform_webform_submission_insert($node, $submission) {
+  // Do not pass draft webforms.
+  if ($submission->is_draft) {
+    return;
+  }
+
+  // Only submit webforms when civimrf is enabled.
+  if (!$node->cmrf_enable) {
+    return;
+  }
+
+  $profile = !empty($node->cmrf_profile) ? $node->cmrf_profile : null;
+
+  // Build the parameters for the call
+  $params = array();
+  $data = $submission->data;
+  $webform = $node->webform;
+  foreach($webform['components'] as $index => $component) {
+    if (isset($data[$index])) {
+      $value = $data[$index];
+      if (is_array($value)) {
+        $value = reset($value);
+      }
+      $params[$component['form_key']] = $value;
+    }
+  }
+
+  cmrf_webform_sendCall('Contact', 'create', $params, array(), $profile);
+}
+
+function cmrf_webform_menu() {
+  $items['node/%webform_menu/webform/civimrf'] = array(
+    'title' => 'CiviMRF',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('cmrf_webform_settings', 1),
+    'access callback' => 'webform_node_update_access',
+    'access arguments' => array(1),
+    'weight' => 2,
+    'type' => MENU_LOCAL_TASK,
+  );
+  return $items;
+}
+
+/**
+ * Adds a checkbox to submit this webform through CiviMRF
+ *
+ * @param array $form
+ *   The form.
+ * @param array $form_state
+ *   The form state.
+ * @param node
+ *   The node.
+ * @return array
+ *   The form.
+ */
+function cmrf_webform_settings($form, &$form_state, $node) {
+  $profiles = cmrf_core_list_profiles();
+  $profiles_options = array('' => t(' - Default profile -'));
+  foreach($profiles as $profile_name => $profile) {
+    $profiles_options[$profile_name] = $profile['label'];
+  }
+
+  $enabled = isset($node->cmrf_enable) && $node->cmrf_enable ? TRUE : FALSE;
+  $entity = isset($node->cmrf_entity) ? $node->cmrf_entity : '';
+  $action = isset($node->cmrf_action) ? $node->cmrf_action : '';
+  $profile = isset($node->cmrf_profile) ? $node->cmrf_profile : '';
+
+  $form['#node'] = $node;
+
+  $form['cmrf_webform']['cmrf_enable'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Submit with CiviMRF'),
+    '#description' => t('Submit this webform with CiviMRF'),
+    '#default_value' => $enabled,
+  );
+  $form['cmrf_webform']['cmrf_profile'] = array(
+    '#type' => 'select',
+    '#title' => t('CiviMRF Connection profile'),
+    '#options' => $profiles_options,
+    '#default_value' => $profile,
+    '#states' => array(
+      'visible' => array(
+        ':input[name="cmrf_enable"]' => array('checked' => true),
+      ),
+    ),
+  );
+  $form['cmrf_webform']['cmrf_entity'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Entity'),
+    '#description' => t('CiviMRF works with submitting data to the CiviCRM API. This field specifies which entity to use.'),
+    '#default_value' => $entity,
+    '#states' => array(
+      'visible' => array(
+        ':input[name="cmrf_enable"]' => array('checked' => true),
+      ),
+      'required' => array(
+        ':input[name="cmrf_enable"]' => array('checked' => true),
+      ),
+    ),
+  );
+  $form['cmrf_webform']['cmrf_action'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Action'),
+    '#description' => t('CiviMRF works with submitting data to the CiviCRM API. This field specifies which entity to use.'),
+    '#default_value' => $action,
+    '#states' => array(
+      'visible' => array(
+        ':input[name="cmrf_enable"]' => array('checked' => true),
+      ),
+      'required' => array(
+        ':input[name="cmrf_enable"]' => array('checked' => true),
+      ),
+    ),
+  );
+
+  $form['actions']['#type'] = 'actions';
+  $form['actions']['submit']['#type'] = 'submit';
+  $form['actions']['submit']['#value'] = t('Save');
+
+  $form['#validate'][] = 'cmrf_webform_form_webform_configure_form_validate';
+  $form['#submit'][] = 'cmrf_webform_form_webform_configure_form_submit';
+  return $form;
+}
+
+/**
+ * Validate the webform settings form.
+ *
+ * @param array $form
+ *    The form.
+ * @param array $form_state
+ *    The form state.
+ */
+function cmrf_webform_form_webform_configure_form_validate(array &$form, array &$form_state) {
+  if ($form_state['values']['cmrf_enable']) {
+    if (empty($form_state['values']['cmrf_entity'])) {
+      form_set_error('cmrf_entity', t('Entity is required.'));
+    }
+    if (empty($form_state['values']['cmrf_action'])) {
+      form_set_error('cmrf_action', t('Action is required.'));
+    }
+  }
+}
+
+
+/**
+ * Submit the webform settings form and store the civimrf settings.
+ *
+ * @param array $form
+ *    The form.
+ * @param array $form_state
+ *    The form state.
+ */
+function cmrf_webform_form_webform_configure_form_submit(array &$form, array &$form_state) {
+  $node = &$form['#node'];
+  $node->cmrf_enable = $form_state['values']['cmrf_enable'] ? TRUE : FALSE;
+  $node->cmrf_profile = $form_state['values']['cmrf_profile'] ? $form_state['values']['cmrf_profile'] : '';
+  $node->cmrf_entity = $form_state['values']['cmrf_entity'] ? $form_state['values']['cmrf_entity'] : '';
+  $node->cmrf_action = $form_state['values']['cmrf_action'] ? $form_state['values']['cmrf_action'] : '';
+  node_save($node);
+}
+
+/**
+ * Deferred hook_node_load for webforms.
+ *
+ * @param array $nodes
+ *    Array of nodes.
+ * @param array $types
+ *    Array of types.
+ */
+function cmrf_webform_node_load($nodes, $types) {
+  $db = db_query('SELECT * FROM {cmrf_webforms} WHERE nid IN(:nids)', array(':nids' => array_keys($nodes)));
+  foreach ($db as $cmrf_webform) {
+    $node = &$nodes[$cmrf_webform->nid];
+    $node->cmrf_enable = $cmrf_webform->cmrf_enable ? TRUE : FALSE;
+    $node->cmrf_profile = $cmrf_webform->cmrf_profile ? $cmrf_webform->cmrf_profile : '';
+    $node->cmrf_entity = $cmrf_webform->cmrf_entity ? $cmrf_webform->cmrf_entity : '';
+    $node->cmrf_action = $cmrf_webform->cmrf_action ? $cmrf_webform->cmrf_action : '';
+  }
+}
+
+/**
+ * Implements hook_node_insert().
+ */
+function cmrf_webform_node_insert($node) {
+  db_insert('cmrf_webforms')
+    ->fields(array(
+      'nid' => $node->nid,
+      'cmrf_enable' => $node->cmrf_enable ? 1 : 0,
+      'cmrf_profile' => $node->cmrf_profile ? $node->cmrf_profile : '',
+      'cmrf_entity' => $node->cmrf_entity ? $node->cmrf_entity : '',
+      'cmrf_action' => $node->cmrf_action ? $node->cmrf_action : '',
+    ))
+    ->execute();
+}
+/**
+ * Implements hook_node_update().
+ */
+function cmrf_webform_node_update($node) {
+  db_merge('cmrf_webforms')
+    ->key(array(
+      'nid' => $node->nid,
+    ))
+    ->fields(array(
+      'cmrf_enable' => $node->cmrf_enable ? 1 : 0,
+      'cmrf_profile' => $node->cmrf_profile ? $node->cmrf_profile : '',
+      'cmrf_entity' => $node->cmrf_entity ? $node->cmrf_entity : '',
+      'cmrf_action' => $node->cmrf_action ? $node->cmrf_action : '',
+    ))
+    ->execute();
+}
+/**
+ * Implements hook_node_delete().
+ */
+function cmrf_webform_node_delete($node) {
+  db_delete('cmrf_webforms')
+    ->condition('nid', $node->nid)
+    ->execute();
+}
