@@ -7,7 +7,7 @@ function cmrf_example_uninstall() {
   if (function_exists('cmrf_core_list_profiles')) {
     $profiles = cmrf_core_list_profiles();
     foreach ($profiles as $profile_name => $profile) {
-      variable_del(cmrf_example_get_connector_name($profile_name));
+      variable_del('cmrf_example:'.$profile_name.':');
     }
   }
 }
