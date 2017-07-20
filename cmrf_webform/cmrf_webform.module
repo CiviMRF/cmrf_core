@@ -1,6 +1,6 @@
 <?php
 
-function cmrf_webform_sendCall($entity, $action, $parameters, $options, $profile=null) {
+function cmrf_webform_get_connector_id($profile=null) {
   $connector_name = 'cmrf_webform_connector';
   if (!empty($profile)) {
     $connector_name .= ':'.$profile;
@@ -12,8 +12,24 @@ function cmrf_webform_sendCall($entity, $action, $parameters, $options, $profile
     $connector_id = $core->registerConnector($connector_name, $profile);
     variable_set($connector_name, $connector_id);
   }
+  return $connector_id;
+}
+
+function cmrf_webform_send_call($entity, $action, $parameters, $options, $profile=null) {
+  $connector_id = cmrf_webform_get_connector_id($profile);
+  $core = cmrf_core_get_core();
   $call = $core->createCall($connector_id, $entity, $action, $parameters, $options);
   $core->executeCall($call);
+  return $call;
+}
+
+function cmrf_webform_queue_call($entity, $action, $parameters, $options, $profile=null) {
+  $connector_id = cmrf_webform_get_connector_id($profile);
+  $core = cmrf_core_get_core();
+  $call = $core->createCall($connector_id, $entity, $action, $parameters, $options);
+  $call->setScheduledDate(new \DateTime());
+  $core->getFactory()->update($call);
+  $core->queueCall($call);
   return $call;
 }
 
@@ -44,7 +60,13 @@ function cmrf_webform_webform_submission_insert($node, $submission) {
     }
   }
 
-  cmrf_webform_sendCall('Contact', 'create', $params, array(), $profile);
+  $options = array();
+
+  if ($node->cmrf_queue) {
+    cmrf_webform_queue_call('Contact', 'create', $params, $options, $profile);
+  } else {
+    cmrf_webform_send_call('Contact', 'create', $params, $options, $profile);
+  }
 }
 
 function cmrf_webform_menu() {
@@ -65,7 +87,7 @@ function cmrf_webform_menu() {
  */
 function cmrf_webform_form_webform_components_form_alter(&$form, &$form_state) {
   $node = $form['#node'];
-  if ($node->cmrf_enable) {
+  if (isset($node->cmrf_enable) && $node->cmrf_enable) {
     $profiles = cmrf_core_list_profiles();
     $profile = t('Default');
     if (!empty($node->cmrf_profile) && isset($profiles[$node->cmrf_profile])) {
@@ -102,6 +124,7 @@ function cmrf_webform_settings($form, &$form_state, $node) {
   }
 
   $enabled = isset($node->cmrf_enable) && $node->cmrf_enable ? TRUE : FALSE;
+  $queue = isset($node->cmrf_queue) && $node->cmrf_queue ? TRUE : FALSE;
   $entity = isset($node->cmrf_entity) ? $node->cmrf_entity : '';
   $action = isset($node->cmrf_action) ? $node->cmrf_action : '';
   $profile = isset($node->cmrf_profile) ? $node->cmrf_profile : '';
@@ -113,6 +136,17 @@ function cmrf_webform_settings($form, &$form_state, $node) {
     '#title' => t('Submit with CiviMRF'),
     '#description' => t('Submit this webform with CiviMRF'),
     '#default_value' => $enabled,
+  );
+  $form['cmrf_webform']['cmrf_queue'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Handle the submission in the background'),
+    '#description' => t('Submit this webform in the background. This means that the user does not have to wait till the submission is processed. You have to enable the cron to get this working.'),
+    '#default_value' => $queue,
+    '#states' => array(
+      'visible' => array(
+        ':input[name="cmrf_enable"]' => array('checked' => true),
+      ),
+    ),
   );
   $form['cmrf_webform']['cmrf_profile'] = array(
     '#type' => 'select',
@@ -194,6 +228,7 @@ function cmrf_webform_settings_validate(array &$form, array &$form_state) {
 function cmrf_webform_settings_submit(array &$form, array &$form_state) {
   $node = &$form['#node'];
   $node->cmrf_enable = $form_state['values']['cmrf_enable'] ? TRUE : FALSE;
+  $node->cmrf_queue = $form_state['values']['cmrf_queue'] ? TRUE : FALSE;
   $node->cmrf_profile = $form_state['values']['cmrf_profile'] ? $form_state['values']['cmrf_profile'] : '';
   $node->cmrf_entity = $form_state['values']['cmrf_entity'] ? $form_state['values']['cmrf_entity'] : '';
   $node->cmrf_action = $form_state['values']['cmrf_action'] ? $form_state['values']['cmrf_action'] : '';
@@ -220,6 +255,7 @@ function cmrf_webform_node_load($nodes, $types) {
   foreach ($db as $cmrf_webform) {
     $node = &$nodes[$cmrf_webform->nid];
     $node->cmrf_enable = $cmrf_webform->cmrf_enable ? TRUE : FALSE;
+    $node->cmrf_queue = $cmrf_webform->cmrf_queue ? TRUE : FALSE;
     $node->cmrf_profile = $cmrf_webform->cmrf_profile ? $cmrf_webform->cmrf_profile : '';
     $node->cmrf_entity = $cmrf_webform->cmrf_entity ? $cmrf_webform->cmrf_entity : '';
     $node->cmrf_action = $cmrf_webform->cmrf_action ? $cmrf_webform->cmrf_action : '';
@@ -234,6 +270,7 @@ function cmrf_webform_node_insert($node) {
     ->fields(array(
       'nid' => $node->nid,
       'cmrf_enable' => $node->cmrf_enable ? 1 : 0,
+      'cmrf_queue' => $node->cmrf_queue ? 1 : 0,
       'cmrf_profile' => $node->cmrf_profile ? $node->cmrf_profile : '',
       'cmrf_entity' => $node->cmrf_entity ? $node->cmrf_entity : '',
       'cmrf_action' => $node->cmrf_action ? $node->cmrf_action : '',
@@ -250,6 +287,7 @@ function cmrf_webform_node_update($node) {
     ))
     ->fields(array(
       'cmrf_enable' => $node->cmrf_enable ? 1 : 0,
+      'cmrf_queue' => $node->cmrf_queue ? 1 : 0,
       'cmrf_profile' => $node->cmrf_profile ? $node->cmrf_profile : '',
       'cmrf_entity' => $node->cmrf_entity ? $node->cmrf_entity : '',
       'cmrf_action' => $node->cmrf_action ? $node->cmrf_action : '',

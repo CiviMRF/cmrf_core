@@ -34,6 +34,13 @@ function cmrf_webform_schema() {
           'default' => 0,
           'description' => 'Enabled CiviMRF for this webform',
         ),
+        'cmrf_queue' => array(
+          'type' => 'int',
+          'size' => 'tiny',
+          'not null' => TRUE,
+          'default' => 0,
+          'description' => 'Submit in background',
+        ),
         'cmrf_profile' => array(
           'description' => 'The profile',
           'type' => 'varchar',
