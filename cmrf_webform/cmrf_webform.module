@@ -61,6 +61,28 @@ function cmrf_webform_menu() {
 }
 
 /**
+ * Implements hook_form_alter().
+ */
+function cmrf_webform_form_webform_components_form_alter(&$form, &$form_state) {
+  $node = $form['#node'];
+  if ($node->cmrf_enable) {
+    $profiles = cmrf_core_list_profiles();
+    $profile = t('Default');
+    if (!empty($node->cmrf_profile) && isset($profiles[$node->cmrf_profile])) {
+      $profile = $profiles[$node->cmrf_profile]['label'];
+    }
+    $form['warning']['civimrf'] = array(
+      '#markup' => '<p class="civimrf-description"><span class="civimrf-icon enable"></span>' . t('CiviMRF is enabled and this webform will be submitted to CiviCRM with the %profile profile', array('%profile' => $profile)) . '</p>',
+      '#weight' => -1000,
+    );
+    $form['#attached']['css'] = array(
+      drupal_get_path('module', 'cmrf_webform') . '/css/cmrf_webform.css',
+    );
+  }
+  return $form;
+}
+
+/**
  * Adds a checkbox to submit this webform through CiviMRF
  *
  * @param array $form
@@ -136,8 +158,8 @@ function cmrf_webform_settings($form, &$form_state, $node) {
   $form['actions']['submit']['#type'] = 'submit';
   $form['actions']['submit']['#value'] = t('Save');
 
-  $form['#validate'][] = 'cmrf_webform_form_webform_configure_form_validate';
-  $form['#submit'][] = 'cmrf_webform_form_webform_configure_form_submit';
+  $form['#validate'][] = 'cmrf_webform_settings_validate';
+  $form['#submit'][] = 'cmrf_webform_settings_submit';
   return $form;
 }
 
@@ -149,7 +171,7 @@ function cmrf_webform_settings($form, &$form_state, $node) {
  * @param array $form_state
  *    The form state.
  */
-function cmrf_webform_form_webform_configure_form_validate(array &$form, array &$form_state) {
+function cmrf_webform_settings_validate(array &$form, array &$form_state) {
   if ($form_state['values']['cmrf_enable']) {
     if (empty($form_state['values']['cmrf_entity'])) {
       form_set_error('cmrf_entity', t('Entity is required.'));
@@ -169,13 +191,20 @@ function cmrf_webform_form_webform_configure_form_validate(array &$form, array &
  * @param array $form_state
  *    The form state.
  */
-function cmrf_webform_form_webform_configure_form_submit(array &$form, array &$form_state) {
+function cmrf_webform_settings_submit(array &$form, array &$form_state) {
   $node = &$form['#node'];
   $node->cmrf_enable = $form_state['values']['cmrf_enable'] ? TRUE : FALSE;
   $node->cmrf_profile = $form_state['values']['cmrf_profile'] ? $form_state['values']['cmrf_profile'] : '';
   $node->cmrf_entity = $form_state['values']['cmrf_entity'] ? $form_state['values']['cmrf_entity'] : '';
   $node->cmrf_action = $form_state['values']['cmrf_action'] ? $form_state['values']['cmrf_action'] : '';
   node_save($node);
+
+  if ($node->cmrf_enable) {
+    drupal_set_message(t('Webform %name CiviMRF enabled.', array('%name' => $node->title)));
+  } else {
+    drupal_set_message(t('Webform %name CiviMRF disabled.', array('%name' => $node->title)));
+  }
+  $form_state['redirect'] = 'node/'.$node->nid.'/webform';
 }
 
 /**
