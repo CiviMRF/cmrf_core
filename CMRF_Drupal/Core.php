@@ -8,7 +8,8 @@
 
 namespace CMRF\Drupal;
 
-include_once('Call.php');
+require_once(dirname(__FILE__) .'/Call.php');
+require_once(dirname(__FILE__) .'/Connection/Curl.php');
 
 use CMRF\Core\Core         as AbstractCore;
 use CMRF\Core\Connection;
@@ -22,12 +23,12 @@ class Core extends AbstractCore {
   public function __construct() {
     $info = \Database::getConnectionInfo('default');
     $info = $info['default'];
-    if(!isset($info['port'])) {
+    if(!isset($info['port']) || empty($info['port'])) {
       $info['port'] = NULL;
     }
 
     $table_name = \Database::getConnection()->prefixTables("{cmrf_core_call}");
-    $connection = new \mysqli('localhost', 'admin', 'admin1234', 'civimcrestface');
+    $connection = new \mysqli($info['host'],$info['username'],$info['password'],$info['database'],$info['port']);
     $factory = new SQLPersistingCallFactory($connection, $table_name, array('\CMRF\Drupal\Call','createNew'), array('\CMRF\Drupal\Call','createWithRecord'));
     parent::__construct($factory);
   }

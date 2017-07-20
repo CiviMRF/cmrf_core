@@ -52,17 +52,12 @@ class Call extends AbstractCall {
   }
 
   public function setReply($data, $newstatus = CallInterface::STATUS_DONE) {
-    // update the DB
-    $update = array(
-      'cid'        => $this->id,
-      'status'     => $newstatus,
-      'reply_date' => date('YmdHis'),
-      'reply'      => json_encode($data));
-    $this->factory->update($this);
-
     // update the cached data
     $this->reply = $data;
+    $this->reply_date = new \DateTime();
     $this->record['status'] = $newstatus;
+
+    $this->factory->update($this);
   }
 
   public function setID($id) {
@@ -92,6 +87,19 @@ class Call extends AbstractCall {
 
   public function getStats() {
     return $this->record['metadata'];
+  }
+
+  /**
+   * Returns the date and time when the call should be processed.
+   *
+   * @return \DateTime|null
+   */
+  public function getCachedUntil() {
+    if (empty($this->record['cached_until'])) {
+      return null;
+    }
+    $cachedUntil = new \DateTime($this->record['cached_until']);
+    return $cachedUntil;
   }
 
   public function getRequest() {
