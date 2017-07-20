@@ -205,7 +205,21 @@ function cmrf_core_menu() {
     'page callback' => 'cmrf_core_admin_list_profiles',
     'access arguments' => array('administer cmrf'),
     'file' => 'cmrf_core.admin.inc',
-    'weight' => -10,
+    'weight' => 0,
+  );
+  $items['admin/config/civimrf/calls'] = array(
+    'title' => 'CiviMRF Call log',
+    'page callback' => 'cmrf_core_admin_list_calls',
+    'access arguments' => array('view cmrf calls'),
+    'file' => 'cmrf_core.admin.inc',
+    'weight' => 1,
+  );
+  $items['admin/config/civimrf/calls/%'] = array(
+    'title' => 'CiviMRF Call log',
+    'page callback' => 'cmrf_core_admin_view_call',
+    'page arguments' => array(4),
+    'access arguments' => array('view cmrf calls'),
+    'file' => 'cmrf_core.admin.inc',
   );
   $items['admin/config/civimrf/profiles/add'] = array(
     'title' => 'Add profile',
@@ -252,6 +266,9 @@ function cmrf_core_permission() {
     'administer cmrf' => array(
       'title' => t('Administer CiviMRF'),
     ),
+    'view cmrf calls' => array(
+      'title' => t('View CiviMRF Call log')
+    )
   );
 }
 
@@ -263,6 +280,9 @@ function cmrf_core_theme() {
     // Theme functions in cmrf_core.admin.inc.
     'cmrf_profile_list' => array(
       'variables' => array('profiles' => NULL),
+    ),
+    'cmrf_call_list' => array(
+      'variables' => array('calls' => NULL),
     ),
   );
 }

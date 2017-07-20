@@ -11,6 +11,22 @@ function cmrf_core_admin_list_profiles() {
   return $page;
 }
 
+function cmrf_core_admin_list_calls() {
+  $page = array();
+
+  $calls = db_select('cmrf_core_call', NULL, array('fetch' => PDO::FETCH_ASSOC))
+    ->fields('cmrf_core_call')
+    ->orderBy('create_date')
+    ->execute()
+    ->fetchAllAssoc('cid', PDO::FETCH_ASSOC);
+
+  $page['cmrf_call_list'] = array(
+    '#markup' => theme('cmrf_call_list', array('calls' => $calls)),
+  );
+
+  return $page;
+}
+
 /**
  * Form builder; Form for adding a new image style.
  *
@@ -267,4 +283,128 @@ function theme_cmrf_profile_list($variables) {
   }
 
   return theme('table', array('header' => $header, 'rows' => $rows));
+}
+
+function theme_cmrf_call_list($variables) {
+  $core = cmrf_core_get_core();
+  $calls = $variables['calls'];
+
+  $header = array(t('Date'), t('Status'), t('Profile'), t('Request'), t('Reply'), t('Scheduled date'), t('Cached until'), t('Retry count'));
+  $rows = array();
+  foreach ($calls as $cid => $call) {
+    $path = 'admin/config/civimrf/calls/'.$call['cid'];
+    $date = new \DateTime($call['create_date']);
+    $status = $call['status'];
+    $profile = $core->getConnectionProfile($call['connector_id']);
+    $request =truncate_utf8($call['request'], 42, true, true);
+    $reply = truncate_utf8($call['reply'], 42, true, true);
+    $scheduled_date = '';
+    if (!empty($call['scheduled_date'])) {
+      $scheduled_date = new \DateTime($call['scheduled_date']);
+      $scheduled_date = format_date($scheduled_date->getTimestamp());
+    }
+    $caching_until = '';
+    if (!empty($call['caching_until'])) {
+      $caching_until = new \DateTime($call['caching_until']);
+      $caching_until = format_date($caching_until->getTimestamp());
+    }
+    $retry_count = $call['retry_count'];
+
+    $row[] = l(format_date($date->getTimestamp()), $path);
+    $row[] = l($status, $path);
+    $row[] = $profile['label'];
+    $row[] = $request;
+    $row[] = $reply;
+    $row[] = $scheduled_date;
+    $row[] = $caching_until;
+    $row[] = $retry_count;
+    $rows[] = $row;
+  }
+
+  if (empty($rows)) {
+    $rows[] = array(array(
+      'colspan' => 8,
+      'data' => t('There are currently no calls persisted.'),
+    ));
+  }
+
+  return theme('table', array('header' => $header, 'rows' => $rows));
+}
+
+function cmrf_core_admin_view_call($cid) {
+  $core = cmrf_core_get_core();
+  $call = db_query('SELECT * FROM {cmrf_core_call} WHERE cid = :id', array(':id' => $cid))->fetchObject();
+  if ($call) {
+    $date = new \DateTime($call->create_date);
+    $date = format_date($date->getTimestamp());
+    $status = $call->status;
+    $profile = $core->getConnectionProfile($call->connector_id);
+    $request = nl2br(json_encode(json_decode($call->request, true), JSON_PRETTY_PRINT));
+    $reply = nl2br(json_encode(json_decode($call->reply,true), JSON_PRETTY_PRINT));
+    $metadata = nl2br(json_encode(json_decode($call->metadata,true), JSON_PRETTY_PRINT));
+    $scheduled_date = '';
+    if (!empty($call->scheduled_date)) {
+      $scheduled_date = new \DateTime($call->scheduled_date);
+      $scheduled_date = format_date($scheduled_date->getTimestamp());
+    }
+    $caching_until = '';
+    if (!empty($call->caching_until)) {
+      $caching_until = new \DateTime($call->caching_until);
+      $caching_until = format_date($caching_until->getTimestamp());
+    }
+    $retry_count = $call->retry_count;
+
+    $rows = array(
+      array(
+        array('data' => t('Call ID'), 'header' => TRUE),
+        array('data' => $call->cid)
+      ),
+      array(
+        array('data' => t('Date'), 'header' => TRUE),
+        array('data' => $date)
+      ),
+      array(
+        array('data' => t('Status'), 'header' => TRUE),
+        array('data' => $status)
+      ),
+      array(
+        array('data' => t('Profile'), 'header' => TRUE),
+        array('data' => $profile['label'])
+      ),
+      array(
+        array('data' => t('Request'), 'header' => TRUE),
+        array('data' => $request)
+      ),
+      array(
+        array('data' => t('Reply'), 'header' => TRUE),
+        array('data' => $reply)
+      ),
+      array(
+        array('data' => t('Scheduled date'), 'header' => TRUE),
+        array('data' => $scheduled_date)
+      ),
+      array(
+        array('data' => t('Cached until'), 'header' => TRUE),
+        array('data' => $caching_until)
+      ),
+      array(
+        array('data' => t('Retry count'), 'header' => TRUE),
+        array('data' => $retry_count)
+      ),
+      array(
+        array('data' => t('Metedata'), 'header' => TRUE),
+        array('data' => $metadata)
+      ),
+    );
+    $build['#attached']['css'] = array(
+      drupal_get_path('module', 'cmrf_core') . '/css/cmrf_core.css',
+    );
+    $build['call_log'] = array(
+      '#theme' => 'table',
+      '#rows' => $rows,
+      '#attributes' => array('class' => 'cmrf_call_log_view_table'),
+    );
+    return $build;
+  }
+  return '';
 }
