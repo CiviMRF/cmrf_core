@@ -310,6 +310,7 @@ function theme_cmrf_call_list($variables) {
     }
     $retry_count = $call['retry_count'];
 
+    $row = array();
     $row[] = l(format_date($date->getTimestamp()), $path);
     $row[] = l($status, $path);
     $row[] = $profile['label'];

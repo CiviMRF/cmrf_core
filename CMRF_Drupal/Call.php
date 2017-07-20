@@ -67,6 +67,7 @@ class Call extends AbstractCall {
     $this->checkForRetry();
 
     $this->factory->update($this);
+    $this->checkAndTriggerFailure();
   }
 
   public function setID($id) {
@@ -131,6 +132,7 @@ class Call extends AbstractCall {
     $this->checkForRetry();
 
     $this->factory->update($this);
+    $this->checkAndTriggerFailure();
   }
 
   protected function checkForRetry() {
@@ -151,6 +153,12 @@ class Call extends AbstractCall {
 
     $now->modify('+ '.$default_retry_interval);
     return $now;
+  }
+
+  protected function checkAndTriggerFailure() {
+    if ($this->status = \CMRF\Core\Call::STATUS_FAILED) {
+      _trigger_cmrf_core_failed_call($this);
+    }
   }
 }
 

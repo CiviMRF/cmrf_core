@@ -387,3 +387,31 @@ function cmrf_core_profile_load($pid) {
   return FALSE;
 }
 
+/**
+ * Implements hook_trigger_info().
+ */
+function cmrf_core_trigger_info() {
+  return array(
+    'system' => array(
+      'failed_call' => array(
+        'label' => t('A failed CiviMRF call'),
+      )
+    )
+  );
+}
+
+function _trigger_cmrf_core_failed_call(\CMRF\Drupal\Call $call) {
+  $aids = trigger_get_assigned_actions('failed_call');
+  if (!$aids) {
+    return;
+  }
+
+  $context = array(
+    'group' => 'cmrf',
+    'hook' => 'failed_call',
+  );
+
+  foreach ($aids as $aid => $info) {
+    actions_do($aid, $call, $context);
+  }
+}

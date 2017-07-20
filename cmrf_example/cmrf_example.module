@@ -9,8 +9,8 @@ function cmrf_example_sendCall($entity, $action, $parameters, $options, $profile
     variable_set($connector_name, $connector_id);
   }
 
-  $options['retry_count'] = 5;
-  $options['retry_interval'] = '1 second';
+  //$options['retry_count'] = 5;
+  //$options['retry_interval'] = '1 second';
 
   $call = $core->createCall($connector_id, $entity, $action, $parameters, $options);
   $core->executeCall($call);
