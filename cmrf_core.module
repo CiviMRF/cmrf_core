@@ -7,7 +7,7 @@
  * Long description here.
  */
 
-require_once('vendor/autoload.php');
+require_once(dirname(__FILE__) . '/vendor/autoload.php');
 
 /**
  * CiviMRF Connection profile constant for user presets in the database.
@@ -162,7 +162,7 @@ function cmrf_core_cmrf_core_connectors() {
 }
 
 function cmrf_core_curl_connector(\CMRF\Core\Core $core, $connector_id) {
-  return new \CMRF\Connection\Curl($core, $connector_id);
+  return new \CMRF\Drupal\Connection\Curl($core, $connector_id);
 }
 
 function cmrf_core_local_connector(\CMRF\Core\Core $core, $connector_id) {
@@ -174,6 +174,14 @@ function cmrf_core_cron() {
   $core = cmrf_core_get_core();
   $factory = $core->getFactory();
   $factory->purgeCachedCalls();
+
+  $end = time() + (isset($info['time']) ? $info['time'] : 45);
+  $queued_call_ids = $factory->getQueuedCallIds();
+  for($i=0; $i <count($queued_call_ids) && time() < $end; $i++) {
+    $call = $factory->loadCall($queued_call_ids[$i], $core);
+    $core->executeCall($call);
+    $factory->update($call);
+  }
 }
 
 
