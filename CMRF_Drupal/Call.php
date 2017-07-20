@@ -13,9 +13,11 @@ use CMRF\Core\Call         as CallInterface;
 
 class Call extends AbstractCall {
 
-  protected $record   = NULL;
   protected $request  = NULL;
   protected $reply    = NULL;
+  protected $status   = CallInterface::STATUS_INIT;
+  protected $metadata = '{}';
+  protected $cached_until = NULL;
 
   public static function createNew($connector_id, $core, $entity, $action, $parameters, $options, $callback, $factory) {
     $call = new Call($core, $connector_id, $factory);
@@ -24,20 +26,13 @@ class Call extends AbstractCall {
     $call->request = $call->compileRequest($parameters, $options);
     $call->request['entity'] = $entity;
     $call->request['action'] = $action;
-
-    // create DB entry
-    $call->record = array(
-      'status'       => CallInterface::STATUS_INIT,
-      'connector_id' => $call->getConnectorID(),
-      'request'      => json_encode($call->request),
-      'metadata'     => '{}',
-      'request_hash' => $call->getHash(),
-      'create_date'  => date('YmdHis'),
-      );
+    $call->status = CallInterface::STATUS_INIT;
+    $call->metadata = '{}';
 
     // set the caching flag
     if (!empty($options['cache'])) {
-      $call->record['cached_until'] = date('YmdHis', strtotime("now +" . $options['cache']));
+      $call->cached_until = new \DateTime();
+      $call->cached_until->modify('+'.$options['cache']);
     }
 
     return $call;
@@ -45,9 +40,13 @@ class Call extends AbstractCall {
 
   public static function createWithRecord($connector_id, $core, $record, $factory) {
     $call = new Call($core, $connector_id, $factory, $record->cid);
-    $call->record  = json_decode(json_encode($record), TRUE);
-    $call->request = json_decode($call->record['request'], TRUE);
-    $call->reply   = json_decode($call->record['reply'], TRUE);
+    $call->status = $record->status;
+    $call->metadata = $record->metadata;
+    if (!empty($record->cached_until)) {
+      $call->cached_until = $record->cached_until;
+    }
+    $call->request = json_decode($record->request, TRUE);
+    $call->reply   = json_decode($record->reply, TRUE);
     return $call;
   }
 
@@ -55,14 +54,13 @@ class Call extends AbstractCall {
     // update the cached data
     $this->reply = $data;
     $this->reply_date = new \DateTime();
-    $this->record['status'] = $newstatus;
+    $this->status = $newstatus;
 
     $this->factory->update($this);
   }
 
   public function setID($id) {
     parent::setID($id);
-    $this->record['cid'] = $id;
   }
 
   public function getEntity() {
@@ -82,11 +80,11 @@ class Call extends AbstractCall {
   }
 
   public function getStatus() {
-    return $this->record['status'];
+    return $this->status;
   }
 
   public function getStats() {
-    return $this->record['metadata'];
+    return $this->metadata;
   }
 
   /**
@@ -95,11 +93,7 @@ class Call extends AbstractCall {
    * @return \DateTime|null
    */
   public function getCachedUntil() {
-    if (empty($this->record['cached_until'])) {
-      return null;
-    }
-    $cachedUntil = new \DateTime($this->record['cached_until']);
-    return $cachedUntil;
+    return $this->cached_until;
   }
 
   public function getRequest() {
@@ -121,13 +115,9 @@ class Call extends AbstractCall {
       'error_message' => $error_message,
       'error_code'    => $error_code);
 
-    // update the DB
-    $update = array(
-      'cid'        => $this->id,
-      'status'     => $status,
-      'reply_date' => date('YmdHis'),
-      'reply'      => json_encode($error));
-
+    $this->status = $status;
+    $this->reply = $error;
+    $this->reply_date = new \DateTime();
     $this->factory->update($this);
   }
 }
