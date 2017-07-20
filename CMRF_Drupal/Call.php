@@ -52,10 +52,17 @@ class Call extends AbstractCall {
     $call->metadata = json_decode($record->metadata, true);
     $call->retry_count = $record->retry_count;
     if (!empty($record->cached_until)) {
-      $call->cached_until = $record->cached_until;
+      $call->cached_until = new \DateTime($record->cached_until);
     }
     $call->request = json_decode($record->request, TRUE);
     $call->reply   = json_decode($record->reply, TRUE);
+    $call->date = new \DateTime($record->create_date);
+    if (!empty($record->reply_date)) {
+      $call->reply_date = new \DateTime($record->reply_date);
+    }
+    if (!empty($record->scheduled_date)) {
+      $call->scheduled_date = new \DateTime($record->scheduled_date);
+    }
     return $call;
   }
 
@@ -68,6 +75,7 @@ class Call extends AbstractCall {
 
     $this->factory->update($this);
     $this->checkAndTriggerFailure();
+    $this->checkAndTriggerDone();
   }
 
   public function setID($id) {
@@ -133,6 +141,7 @@ class Call extends AbstractCall {
 
     $this->factory->update($this);
     $this->checkAndTriggerFailure();
+    $this->checkAndTriggerDone();
   }
 
   protected function checkForRetry() {
@@ -157,7 +166,13 @@ class Call extends AbstractCall {
 
   protected function checkAndTriggerFailure() {
     if ($this->status = \CMRF\Core\Call::STATUS_FAILED) {
-      _trigger_cmrf_core_failed_call($this);
+      module_invoke_all('cmrf_core_call_failed', $this);
+    }
+  }
+
+  protected function checkAndTriggerDone() {
+    if ($this->status = \CMRF\Core\Call::STATUS_DONE) {
+      module_invoke_all('cmrf_core_call_done', $this);
     }
   }
 }

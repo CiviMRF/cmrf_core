@@ -1,0 +1,10 @@
+name = CiviMRF Rules integration
+description = Provide an event to the rules module for failed calls.
+core = 7.x
+
+package = "CiviMRF"
+project = "cmrf_rules"
+version = "7.x-0.1"
+
+dependencies[] = cmrf_core
+dependencies[] = rules

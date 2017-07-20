@@ -106,3 +106,47 @@ function hook_cmrf_core_profiles() {
 
   return $profiles;
 }
+
+/**
+ * This hook gets fired after a call failed.
+ *
+ * @param \CMRF\Core\Call $call
+ */
+function hook_cmrf_core_call_failed(\CMRF\Core\Call $call) {
+  // Fire the trigger and get the related actions and execute them.
+  $aids = trigger_get_assigned_actions('failed_call');
+  if (!$aids) {
+    return;
+  }
+
+  $context = array(
+    'group' => 'cmrf',
+    'hook' => 'failed_call',
+  );
+
+  foreach ($aids as $aid => $info) {
+    actions_do($aid, $call, $context);
+  }
+}
+
+/**
+ * This hook gets fired after a call succeeded.
+ *
+ * @param \CMRF\Core\Call $call
+ */
+function hook_cmrf_core_call_done(\CMRF\Core\Call $call) {
+  // Fire the trigger and get the related actions and execute them.
+  $aids = trigger_get_assigned_actions('success_call');
+  if (!$aids) {
+    return;
+  }
+
+  $context = array(
+    'group' => 'cmrf',
+    'hook' => 'failed_call',
+  );
+
+  foreach ($aids as $aid => $info) {
+    actions_do($aid, $call, $context);
+  }
+}

@@ -1,0 +1,169 @@
+<?php
+
+function cmrf_rules_rules_category_info() {
+  return array(
+    'civimrf' => array(
+      'label' => t('CiviMRF'),
+      'weight' => 0,
+    ),
+  );
+}
+
+function cmrf_rules_rules_data_info() {
+  return array(
+    'civimrf_call' => array(
+      'label' => t('CiviMRF Call')
+    )
+  );
+}
+
+function cmrf_rules_rules_event_info() {
+  $items = array(
+    'cmrf_call_failed' => array(
+      'label' => t('Call failed'),
+      'group' => t('CiviMRF'),
+      'variables' => array(
+        'call' => array(
+          'type' => 'civimrf_call',
+          'label' => t('CiviMRF Call')
+        )
+      ),
+    ),
+    'cmrf_call_done' => array(
+      'label' => t('Call succeeded'),
+      'group' => t('CiviMRF'),
+      'variables' => array(
+        'call' => array(
+          'type' => 'civimrf_call',
+          'label' => t('CiviMRF Call')
+        )
+      ),
+    ),
+  );
+  return $items;
+}
+
+/**
+ * Implements hook_token_info().
+ */
+function cmrf_rules_token_info() {
+  $info['types']['civimrf_call'] = array(
+    'name' => t('CiviMRF Call'),
+    'description' => t('The CiviMRF call'),
+  );
+  $info['tokens']['civimrf_call']['cid'] = array(
+    'name' => t("Call ID"),
+    'description' => t('The ID of the call record.'),
+  );
+  $info['tokens']['civimrf_call']['status'] = array(
+    'name' => t("Status"),
+    'description' => t('The status of the call.'),
+  );
+  $info['tokens']['civimrf_call']['profile'] = array(
+    'name' => t("Profile"),
+    'description' => t('The profile used to make the call.'),
+  );
+  $info['tokens']['civimrf_call']['request'] = array(
+    'name' => t("Request"),
+    'description' => t('The request data of the call.'),
+  );
+  $info['tokens']['civimrf_call']['reply'] = array(
+    'name' => t("Reply"),
+    'description' => t('The reply data of the call.'),
+  );
+  $info['tokens']['civimrf_call']['date'] = array(
+    'name' => t("Date"),
+    'description' => t('The date of the call.'),
+  );
+  $info['tokens']['civimrf_call']['reply_date'] = array(
+    'name' => t("Reply date"),
+    'description' => t('The date of the reply of the call.'),
+  );
+  $info['tokens']['civimrf_call']['scheduled_date'] = array(
+    'name' => t("Scheduled date"),
+    'description' => t('The scheduled date of of the call.'),
+  );
+  $info['tokens']['civimrf_call']['cached_until'] = array(
+    'name' => t("Cached until"),
+    'description' => t('Till when is the reply of the call cached.'),
+  );
+  $info['tokens']['civimrf_call']['retry_count'] = array(
+    'name' => t("Retry count"),
+    'description' => t('Number of retries left of the call when it fails.'),
+  );
+  $info['tokens']['civimrf_call']['metadata'] = array(
+    'name' => t("Metadata"),
+    'description' => t('The metadata of the call.'),
+  );
+  return $info;
+}
+
+/**
+ * Implements hook_tokens().
+ */
+function cmrf_rules_tokens($type, $tokens, array $data = [], array $options = []) {
+  $replacements = array();
+  if ($type == 'civimrf_call' && isset($data['civimrf_call'])) {
+    $core = cmrf_core_get_core();
+    $call = $data['civimrf_call'];
+    foreach($tokens as $name => $original) {
+      switch ($name) {
+        case 'cid':
+          $replacements[$original] = $call->getID();
+          break;
+        case 'date':
+          $replacements[$original] = format_date($call->getDate()->getTimestamp());
+          break;
+        case 'scheduled_date':
+          if (!empty($call->getScheduledDate())) {
+            $replacements[$original] = format_date($call->getScheduledDate()->getTimestamp());
+          } else {
+            $replacements[$original] = '';
+          }
+          break;
+        case 'reply_date':
+          if (!empty($call->getReplyDate())) {
+            $replacements[$original] = format_date($call->getReplyDate()->getTimestamp());
+          } else {
+            $replacements[$original] = '';
+          }
+          break;
+        case 'cached_until':
+          if (!empty($call->getCachedUntil())) {
+            $replacements[$original] = format_date($call->getCachedUntil()->getTimestamp());
+          } else {
+            $replacements[$original] = '';
+          }
+          break;
+        case 'status':
+          $replacements[$original] = $call->getStatus();
+          break;
+        case 'profile':
+          $profile = $core->getConnectionProfile($call->getConnectorID());
+          $replacements[$original] = $profile['label'];
+          break;
+        case 'request':
+          $replacements[$original] = nl2br(json_encode($call->getRequest(), JSON_PRETTY_PRINT));
+          break;
+        case 'reply':
+          $replacements[$original] = nl2br(json_encode($call->getReply(), JSON_PRETTY_PRINT));
+          break;
+        case 'metadata':
+          $replacements[$original] = nl2br(json_encode($call->getMetadata(), JSON_PRETTY_PRINT));
+          break;
+        case 'retry_count':
+          $replacements[$original] = $call->getRetryCount();
+          break;
+      }
+    }
+  }
+  return $replacements;
+}
+
+function cmrf_rules_cmrf_core_call_failed(\CMRF\Core\Call $call) {
+  rules_invoke_event('cmrf_call_failed', $call);
+}
+
+function cmrf_rules_cmrf_core_call_done(\CMRF\Core\Call $call) {
+  rules_invoke_event('cmrf_call_done', $call);
+}
