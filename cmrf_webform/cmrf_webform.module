@@ -28,7 +28,6 @@ function cmrf_webform_queue_call($entity, $action, $parameters, $options, $profi
   $core = cmrf_core_get_core();
   $call = $core->createCall($connector_id, $entity, $action, $parameters, $options);
   $call->setScheduledDate(new \DateTime());
-  $core->getFactory()->update($call);
   $core->queueCall($call);
   return $call;
 }

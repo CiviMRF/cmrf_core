@@ -8,10 +8,9 @@ use \CMRF\Core\Call;
 class Curl extends AbstractCurl {
 
   public function queueCall(Call $call) {
-
-    // TODO: override if async calls are possible
-    //$this->executeCall();
-    //$call->triggerCallback();
+    // We don't have to do anything here.
+    // Except for saving the call.
+    $this->core->getFactory()->update($call);
   }
 
 }
