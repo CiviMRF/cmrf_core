@@ -1,0 +1,28 @@
+<?php
+
+/**
+ * Implements hook_views_api().
+ */
+function cmrf_views_views_api() {
+  return array(
+    'api' => 3,
+    'path' => drupal_get_path('module', 'cmrf_views'),
+  );
+}
+
+function cmrf_views_sendCall($entity, $action, $parameters, $options, $profile='') {
+  $connector_name = cmrf_views_get_connector_name($profile);
+  $core = cmrf_core_get_core();
+  $connector_id = variable_get($connector_name);
+  if (empty($connector_id)) {
+    $connector_id = $core->registerConnector($connector_name, $profile);
+    variable_set($connector_name, $connector_id);
+  }
+  $call = $core->createCall($connector_id, $entity, $action, $parameters, $options);
+  $core->executeCall($call);
+  return $call;
+}
+
+function cmrf_views_get_connector_name($profile) {
+  return 'cmrf_views:'.$profile.':';
+}

@@ -1,0 +1,13 @@
+name = CiviMRF Views integration for CiviCRM
+core = 7.x
+
+package = "CiviMRF"
+project = "cmrf_views"
+version = "7.x-0.1"
+
+dependencies[] = cmrf_core
+dependencies[] = views
+
+files[] = cmrf_views_plugin_query_civimrf.inc
+files[] = handlers/cmrf_views_handler_field_date.inc
+files[] = handlers/cmrf_views_handler_filter_in_operator.inc
