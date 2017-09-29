@@ -10,4 +10,5 @@ dependencies[] = views
 
 files[] = cmrf_views_plugin_query_civimrf.inc
 files[] = handlers/cmrf_views_handler_field_date.inc
+files[] = handlers/cmrf_views_handler_field_markup.inc
 files[] = handlers/cmrf_views_handler_filter_in_operator.inc

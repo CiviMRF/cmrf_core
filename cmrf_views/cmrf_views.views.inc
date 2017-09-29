@@ -93,70 +93,84 @@ function _cmrf_views_civicrm_fields($entity) {
 		return;
 	}
   $fields = $call->getReply();
-	foreach($fields['values'] as $field_name => $field) {
-		$fieldOtions = false;	
-		
-		// Check whether this field is a select field (such as event_type_id)
-		if (isset($field["pseudoconstant"])) {
-			$optionsParameter = array('field' => $field_name);
-			$optionsOptions['limit'] = 0;
-			$call = cmrf_views_sendCall($entity, 'getoptions', $optionsParameter, $options);
-			if ($call->getStatus() == \CMRF\Core\Call::STATUS_DONE) {
-  			$options = $call->getReply();	
-				if ($options && is_array($options['values'])) {
-					$fieldOtions = $options['values'];
-				}
-			}	
-		}
-		
-		if (!isset($field['type'])) {
-			$field['type'] = 0; // Set to 0 so we assign a default handler
-		}
-		$return[$field_name]['title'] = $field['title'];
-		if (isset($field['description'])) {
-			$return[$field_name]['help'] = $field['description'];
-		}
-		$return[$field_name]['field']['click sortable'] = true;
-		switch ($field['type']) {
-			case 1: // Integer
-				$return[$field_name]['field']['handler'] = 'views_handler_field_numeric';
-				$return[$field_name]['sort']['handler'] = 'views_handler_sort';
-				if (!empty($fieldOtions)) {
-					$return[$field_name]['filter']['handler'] = 'cmrf_views_handler_filter_in_operator';
-					$return[$field_name]['filter']['options'] = $fieldOtions;
-				} else {
-					$return[$field_name]['filter']['handler'] = 'views_handler_filter_numeric';
-				}
-				$return[$field_name]['argument']['handler'] = 'views_handler_numeric';
-				break;
-			case 12: // Date and time field
-				$return[$field_name]['field']['handler'] = 'cmrf_views_handler_field_date';
-				$return[$field_name]['sort']['handler'] = 'views_handler_sort';
-				if (!empty($fieldOtions)) {
-					$return[$field_name]['filter']['handler'] = 'cmrf_views_handler_filter_in_operator';
-					$return[$field_name]['filter']['options'] = $fieldOtions;
-				} else {
-					$return[$field_name]['filter']['handler'] = 'views_handler_filter_date';
-				}
-				$return[$field_name]['argument']['handler'] = 'views_handler_argument_date';
-				break;
-			case 16: // Boolean
-				$return[$field_name]['field']['handler'] = 'views_handler_field_boolean';
-				$return[$field_name]['sort']['handler'] = 'views_handler_sort';
-				$return[$field_name]['filter']['handler'] = 'views_handler_filter_boolean_operator';
-				$return[$field_name]['argument']['handler'] = 'views_handler_argument';
-				break;	
-			default:
-				$return[$field_name]['field']['handler'] = 'views_handler_field';
-				$return[$field_name]['sort']['handler'] = 'views_handler_sort';
-				if (!empty($fieldOtions)) {
-					$return[$field_name]['filter']['handler'] = 'cmrf_views_handler_filter_in_operator';
-					$return[$field_name]['filter']['options'] = $fieldOtions;
-				} else {
-					$return[$field_name]['filter']['handler'] = 'views_handler_filter';
-				}
-				$return[$field_name]['argument']['handler'] = 'views_handler_argument';
-				break;		
+	if (isset($fields['values']) && is_array($fields['values'])) {
+		foreach($fields['values'] as $field_name => $field) {
+			$fieldOtions = false;	
+			
+			// Check whether this field is a select field (such as event_type_id)
+			if (isset($field["pseudoconstant"])) {
+				$optionsParameter = array('field' => $field_name);
+				$optionsOptions['limit'] = 0;
+				$call = cmrf_views_sendCall($entity, 'getoptions', $optionsParameter, $options);
+				if ($call->getStatus() == \CMRF\Core\Call::STATUS_DONE) {
+	  			$options = $call->getReply();	
+					if ($options && is_array($options['values'])) {
+						$fieldOtions = $options['values'];
+					}
+				}	
+			}
+			
+			if (!isset($field['type'])) {
+				$field['type'] = 0; // Set to 0 so we assign a default handler
+			}
+			$return[$field_name]['title'] = $field['title'];
+			if (isset($field['description'])) {
+				$return[$field_name]['help'] = $field['description'];
+			}
+			$return[$field_name]['field']['click sortable'] = true;
+			switch ($field['type']) {
+				case 1: // Integer
+					$return[$field_name]['field']['handler'] = 'views_handler_field_numeric';
+					$return[$field_name]['sort']['handler'] = 'views_handler_sort';
+					if (!empty($fieldOtions)) {
+						$return[$field_name]['filter']['handler'] = 'cmrf_views_handler_filter_in_operator';
+						$return[$field_name]['filter']['options'] = $fieldOtions;
+					} else {
+						$return[$field_name]['filter']['handler'] = 'views_handler_filter_numeric';
+					}
+					$return[$field_name]['argument']['handler'] = 'views_handler_numeric';
+					break;
+				case 12: // Date and time field
+					$return[$field_name]['field']['handler'] = 'cmrf_views_handler_field_date';
+					$return[$field_name]['sort']['handler'] = 'views_handler_sort';
+					if (!empty($fieldOtions)) {
+						$return[$field_name]['filter']['handler'] = 'cmrf_views_handler_filter_in_operator';
+						$return[$field_name]['filter']['options'] = $fieldOtions;
+					} else {
+						$return[$field_name]['filter']['handler'] = 'views_handler_filter_date';
+					}
+					$return[$field_name]['argument']['handler'] = 'views_handler_argument_date';
+					break;
+				case 16: // Boolean
+					$return[$field_name]['field']['handler'] = 'views_handler_field_boolean';
+					$return[$field_name]['sort']['handler'] = 'views_handler_sort';
+					$return[$field_name]['filter']['handler'] = 'views_handler_filter_boolean_operator';
+					$return[$field_name]['filter']['use equal'] = TRUE;
+					$return[$field_name]['argument']['handler'] = 'views_handler_argument';
+					break;	
+				case 32: // Text and Long Text
+					$return[$field_name]['field']['handler'] = 'cmrf_views_handler_field_markup';
+					$return[$field_name]['sort']['handler'] = 'views_handler_sort';
+					if (!empty($fieldOtions)) {
+						$return[$field_name]['filter']['handler'] = 'cmrf_views_handler_filter_in_operator';
+						$return[$field_name]['filter']['options'] = $fieldOtions;
+					} else {
+						$return[$field_name]['filter']['handler'] = 'views_handler_filter';
+					}
+					$return[$field_name]['argument']['handler'] = 'views_handler_argument';
+					break; 
+				default:
+					$return[$field_name]['field']['handler'] = 'views_handler_field';
+					$return[$field_name]['sort']['handler'] = 'views_handler_sort';
+					if (!empty($fieldOtions)) {
+						$return[$field_name]['filter']['handler'] = 'cmrf_views_handler_filter_in_operator';
+						$return[$field_name]['filter']['options'] = $fieldOtions;
+					} else {
+						$return[$field_name]['filter']['handler'] = 'views_handler_filter';
+					}
+					$return[$field_name]['argument']['handler'] = 'views_handler_argument';
+					break;		
+			}
 		}
 	}
 	return $return;

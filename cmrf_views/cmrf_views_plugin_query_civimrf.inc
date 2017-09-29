@@ -3,18 +3,20 @@
 class cmrf_views_plugin_query_civimrf extends views_plugin_query {
 
   function build(&$view) {
-    parent::build($view);
+  	/*$view->init_pager();
+		$view->total_rows = $this->pager->total_items;
+    $this->pager->query();*/
+		
+		$view->init_pager();
+    // Let the pager modify the query to add limits.
+    $this->pager->query();
   }
 
   function execute(&$view) {
-    parent::execute($view);
-
     $start = microtime(TRUE);
 
     // Create a new pager object.
-    $view->init_pager();
-    $view->total_rows = $this->pager->total_items;
-    $this->pager->query();
+    
 
     $profile = $view->query->options['profile'];
     $options['cache'] = $view->query->options['cache'];
@@ -79,6 +81,7 @@ class cmrf_views_plugin_query_civimrf extends views_plugin_query {
 		$call = cmrf_views_sendCall($entity, 'getcount', $parameters, $countOptions, $profile);
     $result = $call->getReply();
 		$this->pager->total_items = $result['result'];
+		$view->total_rows = $result['result'];
 
     // Tell pager and views total item count.
     // Create a new pager object.
