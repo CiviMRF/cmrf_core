@@ -314,7 +314,7 @@ function cmrf_core_theme() {
 function cmrf_core_profile_save($profile) {
   if (isset($profile['pid']) && is_numeric($profile['pid'])) {
     // Load the existing style to make sure we account for renamed styles.
-    $old_profile = image_style_load(NULL, $profile['pid']);
+    $old_profile = cmrf_core_profile_load($profile['pid']);
     drupal_write_record('cmrf_core_profiles', $profile, 'pid');
     if ($old_profile['name'] != $profile['name']) {
       $profile['old_name'] = $old_profile['name'];
