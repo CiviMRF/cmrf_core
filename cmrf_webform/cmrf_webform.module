@@ -1,5 +1,9 @@
 <?php
 
+function cmrf_webform_get_connector_name($profile) {
+  return 'cmrf_webform_connector:'.$profile;
+}
+
 function cmrf_webform_get_connector_id($profile=null) {
   $connector_name = 'cmrf_webform_connector';
   if (!empty($profile)) {
