@@ -165,13 +165,13 @@ class Call extends AbstractCall {
   }
 
   protected function checkAndTriggerFailure() {
-    if ($this->status = \CMRF\Core\Call::STATUS_FAILED) {
+    if ($this->status == \CMRF\Core\Call::STATUS_FAILED) {
       module_invoke_all('cmrf_core_call_failed', $this);
     }
   }
 
   protected function checkAndTriggerDone() {
-    if ($this->status = \CMRF\Core\Call::STATUS_DONE) {
+    if ($this->status == \CMRF\Core\Call::STATUS_DONE) {
       module_invoke_all('cmrf_core_call_done', $this);
     }
   }
