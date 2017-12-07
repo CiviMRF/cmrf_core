@@ -62,5 +62,151 @@ function cmrf_webform_schema() {
       ),
       'primary key' => array('nid'),
     ),
+    'cmrf_webform_select_option_sets' => array(
+      'description' => 'Select option sets for CiviMRF webforms.',
+      'fields' => array(
+        'name' => array(
+          'type' => 'varchar',
+          'length' => 32,
+          'not null' => TRUE,
+          'description' => 'The machine name of the select options set.',
+        ),
+        'title' => array(
+          'type' => 'varchar',
+          'length' => 255,
+          'not null' => TRUE,
+          'description' => 'The human-readable title of the select options set.',
+        ),
+        'pid' => array(
+          'type' => 'int',
+          'unsigned' => TRUE,
+          'not null' => TRUE,
+          'default' => 0,
+          'description' => 'The CiviMRF profile this select options set is assigned to.',
+        ),
+        'entity' => array(
+          'type' => 'varchar',
+          'length' => 64, // TODO: Is this sufficient?
+          'not null ' => TRUE,
+          'description' => 'The CiviCRM API entity to query.',
+        ),
+        'action' => array(
+          'type' => 'varchar',
+          'length' => 64, // TODO: Is this sufficient?
+          'not null' => TRUE,
+          'description' => 'The CiviCRM API action to query.',
+        ),
+        'parameters' => array(
+          'type' => 'text',
+          'size' => 'normal', // TODO: Is this sufficient (16 KB in MySQL)?
+          'not null' => TRUE,
+          'description' => 'CiviCRM API parameters to add to the query.',
+        ),
+        'option_value' => array(
+          'type' => 'varchar',
+          'length' => 255,
+          'not null' => TRUE,
+          'description' => 'The field of the CiviCRM entity to use as the value for the options in the select options set.',
+        ),
+        'option_label' => array(
+          'type' => 'varchar',
+          'length' => 255,
+          'not null' => TRUE,
+          'description' => 'The field of the CiviCRM entity to use as the label for the options in the select options set.',
+        ),
+        'cache' => array(
+          'type' => 'varchar',
+          'length' => 255,
+          'not null' => TRUE,
+          'description' => 'The cache TTL for the result of the API call for the select options set.',
+        ),
+      ),
+      'primary key' => array('name', 'pid'),
+      'indexes' => array(
+        'pid' => array('pid'),
+      ),
+      'foreign keys' => array(
+        'select_options_set_profile' => array(
+          'table' => 'cmrf_core_profiles',
+          'columns' => array('pid' => 'pid'),
+        ),
+      ),
+    ),
   );
+}
+
+/**
+ * Add database table for select options sets.
+ */
+function cmrf_webform_update_7001() {
+  db_create_table('cmrf_webform_select_option_sets', array(
+    'description' => 'Select option sets for CiviMRF webforms.',
+    'fields' => array(
+      'name' => array(
+        'type' => 'varchar',
+        'length' => 32,
+        'not null' => TRUE,
+        'description' => 'The machine name of the select options set.',
+      ),
+      'title' => array(
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'description' => 'The human-readable title of the select options set.',
+      ),
+      'pid' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => 'The CiviMRF profile this select options set is assigned to.',
+      ),
+      'entity' => array(
+        'type' => 'varchar',
+        'length' => 64, // TODO: Is this sufficient?
+        'not null ' => TRUE,
+        'description' => 'The CiviCRM API entity to query.',
+      ),
+      'action' => array(
+        'type' => 'varchar',
+        'length' => 64, // TODO: Is this sufficient?
+        'not null' => TRUE,
+        'description' => 'The CiviCRM API action to query.',
+      ),
+      'parameters' => array(
+        'type' => 'text',
+        'size' => 'normal', // TODO: Is this sufficient (16 KB in MySQL)?
+        'not null' => TRUE,
+        'description' => 'CiviCRM API parameters to add to the query.',
+      ),
+      'option_value' => array(
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'description' => 'The field of the CiviCRM entity to use as the value for the options in the select options set.',
+      ),
+      'option_label' => array(
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'description' => 'The field of the CiviCRM entity to use as the label for the options in the select options set.',
+      ),
+      'cache' => array(
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'description' => 'The cache TTL for the result of the API call for the select options set.',
+      ),
+    ),
+    'primary key' => array('name', 'pid'),
+    'indexes' => array(
+      'pid' => array('pid'),
+    ),
+    'foreign keys' => array(
+      'select_options_set_profile' => array(
+        'table' => 'cmrf_core_profiles',
+        'columns' => array('pid' => 'pid'),
+      ),
+    ),
+  ));
 }
