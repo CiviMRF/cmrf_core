@@ -288,6 +288,7 @@ function cmrf_webform_select_options_list() {
     '#header' => array(t('Title'), array('data' => t('Operations'), 'colspan' => 2)),
     '#rows' => $rows,
     '#empty' => t('There are no select option sets defined.'),
+    '#prefix' => '<p>' . t('Select option sets may be overwritten per CiviMRF core profile within the respective profile\'s configuration form.') . '</p>',
   );
 }
 
@@ -628,6 +629,15 @@ function cmrf_webform_form_cmrf_core_profile_form_alter(&$form, &$form_state, $f
 
     $form['#submit'][] = '_cmrf_webform_cmrf_core_profile_form_submit';
   }
+}
+
+/**
+ * Implements hook_cmrf_core_profile_delete().
+ */
+function cmrf_webform_cmrf_core_profile_delete($profile) {
+  db_delete('cmrf_webform_select_option_sets')
+    ->condition('pid', $profile['pid'])
+    ->execute();
 }
 
 /**
