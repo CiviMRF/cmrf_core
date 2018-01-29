@@ -66,9 +66,9 @@ function cmrf_webform_webform_submission_insert($node, $submission) {
   $options = array();
 
   if ($node->cmrf_queue) {
-    cmrf_webform_queue_call('Contact', 'create', $params, $options, $profile);
+    cmrf_webform_queue_call($node->cmrf_entity, $node->cmrf_action, $params, $options, $profile);
   } else {
-    cmrf_webform_send_call('Contact', 'create', $params, $options, $profile);
+    cmrf_webform_send_call($node->cmrf_entity, $node->cmrf_action, $params, $options, $profile);
   }
 }
 
