@@ -366,14 +366,14 @@ function _cmrf_webform_select_options_form_elements($form, &$form_state, $select
     '#title' => t('Key property'),
     '#description' => t('A property of the queried entity to use as the key for the dedicated select option.'),
     '#required' => TRUE,
-    '#default_value' =>(isset($select_options['value_property']) ? $select_options['value_property'] : 'value'),
+    '#default_value' =>(isset($select_options['option_value']) ? $select_options['option_value'] : 'value'),
   );
   $form['option_label'] = array(
     '#type' => 'textfield',
     '#title' => t('Value property'),
     '#description' => t('A property of the queried entity to use as the content (i.e. the label/value) for the dedicated select option.'),
     '#required' => TRUE,
-    '#default_value' =>(isset($select_options['label_property']) ? $select_options['label_property'] : 'label'),
+    '#default_value' =>(isset($select_options['option_label']) ? $select_options['option_label'] : 'label'),
   );
   $form['cache'] = array(
     '#type' => 'textfield',
