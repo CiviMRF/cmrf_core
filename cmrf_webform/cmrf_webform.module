@@ -225,7 +225,7 @@ function _cmrf_webform_select_options_callback($component, $flat, $arguments) {
       $arguments = $override;
     }
   }
-  $arguments['parameters'] = (array) json_decode($arguments['parameters']);
+  $arguments['parameters'] = (array) json_decode($arguments['parameters'], TRUE);
 
   // Add current language to API parameters.
   global $language;
@@ -427,7 +427,7 @@ function cmrf_webform_select_options_form($form, &$form_state, $select_options_n
  */
 function cmrf_webform_select_options_form_validate($form, &$form_state) {
   // Validate JSON for "parameters".
-  if (!empty($form_state['values']['parameters']) && json_decode($form_state['values']['parameters']) === NULL) {
+  if (!empty($form_state['values']['parameters']) && json_decode($form_state['values']['parameters'], TRUE) === NULL) {
     form_error(
       $form['parameters'],
       t('The input for <em>parameters</em> is no valid JSON.')
