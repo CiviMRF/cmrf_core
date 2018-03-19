@@ -72,13 +72,23 @@ function cmrf_webform_webform_submission_insert($node, $submission) {
   }
 }
 
+/**
+ * Implements hook_permission().
+ */
+function cmrf_webform_permission() {
+  return array(
+    'administer webform cmrf' => array(
+      'title' => t('Administer CiviMRF in Webforms'),
+    )
+  );
+}
+
 function cmrf_webform_menu() {
   $items['node/%webform_menu/webform/civimrf'] = array(
     'title' => 'CiviMRF',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('cmrf_webform_settings', 1),
-    'access callback' => 'webform_node_update_access',
-    'access arguments' => array(1),
+    'access arguments' => array('administer webform cmrf'),
     'weight' => 2,
     'type' => MENU_LOCAL_TASK,
   );
