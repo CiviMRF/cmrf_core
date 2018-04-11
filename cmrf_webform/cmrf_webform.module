@@ -56,7 +56,7 @@ function cmrf_webform_webform_submission_insert($node, $submission) {
   foreach($webform['components'] as $index => $component) {
     if (isset($data[$index])) {
       $value = $data[$index];
-      if (is_array($value)) {
+      if (is_array($value) && empty($component['extra']['multiple'])) {
         $value = reset($value);
       }
       $params[$component['form_key']] = $value;
