@@ -282,11 +282,11 @@ function cmrf_webform_node_insert($node) {
   db_insert('cmrf_webforms')
     ->fields(array(
       'nid' => $node->nid,
-      'cmrf_enable' => $node->cmrf_enable ? 1 : 0,
-      'cmrf_queue' => $node->cmrf_queue ? 1 : 0,
-      'cmrf_profile' => $node->cmrf_profile ? $node->cmrf_profile : '',
-      'cmrf_entity' => $node->cmrf_entity ? $node->cmrf_entity : '',
-      'cmrf_action' => $node->cmrf_action ? $node->cmrf_action : '',
+      'cmrf_enable' => !empty($node->cmrf_enable) ? 1 : 0,
+      'cmrf_queue' => !empty($node->cmrf_queue) ? 1 : 0,
+      'cmrf_profile' => !empty($node->cmrf_profile) ? $node->cmrf_profile : '',
+      'cmrf_entity' => !empty($node->cmrf_entity) ? $node->cmrf_entity : '',
+      'cmrf_action' => !empty($node->cmrf_action) ? $node->cmrf_action : '',
     ))
     ->execute();
 }
@@ -299,11 +299,11 @@ function cmrf_webform_node_update($node) {
       'nid' => $node->nid,
     ))
     ->fields(array(
-      'cmrf_enable' => $node->cmrf_enable ? 1 : 0,
-      'cmrf_queue' => $node->cmrf_queue ? 1 : 0,
-      'cmrf_profile' => $node->cmrf_profile ? $node->cmrf_profile : '',
-      'cmrf_entity' => $node->cmrf_entity ? $node->cmrf_entity : '',
-      'cmrf_action' => $node->cmrf_action ? $node->cmrf_action : '',
+      'cmrf_enable' => !empty($node->cmrf_enable) ? 1 : 0,
+      'cmrf_queue' => !empty($node->cmrf_queue) ? 1 : 0,
+      'cmrf_profile' => !empty($node->cmrf_profile) ? $node->cmrf_profile : '',
+      'cmrf_entity' => !empty($node->cmrf_entity) ? $node->cmrf_entity : '',
+      'cmrf_action' => !empty($node->cmrf_action) ? $node->cmrf_action : '',
     ))
     ->execute();
 }
