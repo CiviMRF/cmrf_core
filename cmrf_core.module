@@ -184,6 +184,19 @@ function cmrf_core_cron() {
   }
 }
 
+/**
+ * Implements hook_flush_caches().
+ */
+function cmrf_core_flush_caches() {
+  $core = cmrf_core_get_core();
+  $factory = $core->getFactory();
+  $factory->purgeCachedCalls();
+  // Also clear the cached calls.
+  if ($factory instanceof \CMRF\Drupal\SQLPersistingCallFactory) {
+    $factory->clearCachedCalls();
+  }
+}
+
 
 /**
  * Implements hook_menu().

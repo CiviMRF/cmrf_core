@@ -10,10 +10,11 @@ namespace CMRF\Drupal;
 
 require_once(dirname(__FILE__) .'/Call.php');
 require_once(dirname(__FILE__) .'/Connection/Curl.php');
+require_once(dirname(__FILE__) .'/SQLPersistingCallFactory.php');
 
 use CMRF\Core\Core         as AbstractCore;
 use CMRF\Core\Connection;
-use CMRF\PersistenceLayer\SQLPersistingCallFactory;
+use CMRF\Drupal\SQLPersistingCallFactory;
 
 
 class Core extends AbstractCore {
