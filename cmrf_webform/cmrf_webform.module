@@ -729,10 +729,14 @@ function cmrf_webform_settings($form, &$form_state, $node) {
   $form['#node'] = $node;
 
   $form['cmrf_webform']['cmrf_enable'] = array(
-    '#type' => 'checkbox',
+    '#type' => 'select',
     '#title' => t('Submit with CiviMRF'),
+    '#options' => array(
+      '' => t('- do not submit -'),
+      'cmrf_webform' => t('Submit to the CiviCRM API'),
+    ),
     '#description' => t('Submit this webform with CiviMRF'),
-    '#default_value' => $enabled,
+    '#default_value' => $enabled ? 'cmrf_webform' : '',
   );
   $form['cmrf_webform']['cmrf_queue'] = array(
     '#type' => 'checkbox',
@@ -741,7 +745,7 @@ function cmrf_webform_settings($form, &$form_state, $node) {
     '#default_value' => $queue,
     '#states' => array(
       'visible' => array(
-        ':input[name="cmrf_enable"]' => array('checked' => true),
+        'select[name="cmrf_enable"]' => array('value' => 'cmrf_webform'),
       ),
     ),
   );
@@ -752,7 +756,7 @@ function cmrf_webform_settings($form, &$form_state, $node) {
     '#default_value' => $profile,
     '#states' => array(
       'visible' => array(
-        ':input[name="cmrf_enable"]' => array('checked' => true),
+        'select[name="cmrf_enable"]' => array('value' => 'cmrf_webform'),
       ),
     ),
   );
@@ -763,10 +767,10 @@ function cmrf_webform_settings($form, &$form_state, $node) {
     '#default_value' => $entity,
     '#states' => array(
       'visible' => array(
-        ':input[name="cmrf_enable"]' => array('checked' => true),
+        'select[name="cmrf_enable"]' => array('value' => 'cmrf_webform'),
       ),
       'required' => array(
-        ':input[name="cmrf_enable"]' => array('checked' => true),
+        'select[name="cmrf_enable"]' => array('value' => 'cmrf_webform'),
       ),
     ),
   );
@@ -777,10 +781,10 @@ function cmrf_webform_settings($form, &$form_state, $node) {
     '#default_value' => $action,
     '#states' => array(
       'visible' => array(
-        ':input[name="cmrf_enable"]' => array('checked' => true),
+        'select[name="cmrf_enable"]' => array('value' => 'cmrf_webform'),
       ),
       'required' => array(
-        ':input[name="cmrf_enable"]' => array('checked' => true),
+        'select[name="cmrf_enable"]' => array('value' => 'cmrf_webform'),
       ),
     ),
   );
@@ -803,7 +807,7 @@ function cmrf_webform_settings($form, &$form_state, $node) {
  *    The form state.
  */
 function cmrf_webform_settings_validate(array &$form, array &$form_state) {
-  if ($form_state['values']['cmrf_enable']) {
+  if ($form_state['values']['cmrf_enable'] == 'cmrf_webform') {
     if (empty($form_state['values']['cmrf_entity'])) {
       form_set_error('cmrf_entity', t('Entity is required.'));
     }
@@ -823,16 +827,16 @@ function cmrf_webform_settings_validate(array &$form, array &$form_state) {
  */
 function cmrf_webform_settings_submit(array &$form, array &$form_state) {
   $node = &$form['#node'];
-  $node->cmrf_enable = $form_state['values']['cmrf_enable'] ? TRUE : FALSE;
+  $node->cmrf_enable = $form_state['values']['cmrf_enable'] == 'cmrf_webform' ? TRUE : FALSE;
   $node->cmrf_queue = $form_state['values']['cmrf_queue'] ? TRUE : FALSE;
   $node->cmrf_profile = $form_state['values']['cmrf_profile'] ? $form_state['values']['cmrf_profile'] : '';
   $node->cmrf_entity = $form_state['values']['cmrf_entity'] ? $form_state['values']['cmrf_entity'] : '';
   $node->cmrf_action = $form_state['values']['cmrf_action'] ? $form_state['values']['cmrf_action'] : '';
   node_save($node);
 
-  if ($node->cmrf_enable) {
+  if ($form_state['values']['cmrf_enable'] == 'cmrf_webform') {
     drupal_set_message(t('Webform %name CiviMRF enabled.', array('%name' => $node->title)));
-  } else {
+  } elseif ($form_state['values']['cmrf_enable'] == '') {
     drupal_set_message(t('Webform %name CiviMRF disabled.', array('%name' => $node->title)));
   }
   $form_state['redirect'] = 'node/'.$node->nid.'/webform';

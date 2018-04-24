@@ -48,13 +48,13 @@ function cmrf_webform_schema() {
           'not null' => TRUE,
         ),
         'cmrf_entity' => array(
-          'description' => 'The profile',
+          'description' => 'The api entity',
           'type' => 'varchar',
           'length' => 255,
           'not null' => TRUE,
         ),
         'cmrf_action' => array(
-          'description' => 'The action',
+          'description' => 'The api action',
           'type' => 'varchar',
           'length' => 255,
           'not null' => TRUE,
