@@ -48,7 +48,7 @@ function cmrf_webform_schema() {
           'not null' => TRUE,
         ),
         'cmrf_entity' => array(
-          'description' => 'The profile',
+          'description' => 'The entity',
           'type' => 'varchar',
           'length' => 255,
           'not null' => TRUE,

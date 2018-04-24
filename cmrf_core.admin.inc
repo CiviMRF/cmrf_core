@@ -304,8 +304,8 @@ function theme_cmrf_call_list($variables) {
       $scheduled_date = format_date($scheduled_date->getTimestamp());
     }
     $caching_until = '';
-    if (!empty($call['caching_until'])) {
-      $caching_until = new \DateTime($call['caching_until']);
+    if (!empty($call['cached_until'])) {
+      $caching_until = new \DateTime($call['cached_until']);
       $caching_until = format_date($caching_until->getTimestamp());
     }
     $retry_count = $call['retry_count'];
@@ -349,8 +349,8 @@ function cmrf_core_admin_view_call($cid) {
       $scheduled_date = format_date($scheduled_date->getTimestamp());
     }
     $caching_until = '';
-    if (!empty($call->caching_until)) {
-      $caching_until = new \DateTime($call->caching_until);
+    if (!empty($call->cached_until)) {
+      $caching_until = new \DateTime($call->cached_until);
       $caching_until = format_date($caching_until->getTimestamp());
     }
     $retry_count = $call->retry_count;
