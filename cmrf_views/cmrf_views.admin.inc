@@ -16,6 +16,7 @@ function crmf_views_update_entity_list_form($form, &$form_state) {
 
 function crmf_views_update_entity_list_form_submit($form, &$form_state) {
   cmrf_views_entity_list(TRUE);
+  views_invalidate_cache();
   $form_state['redirect'] = 'admin/config';
 }
 
