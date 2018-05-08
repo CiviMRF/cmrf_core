@@ -2,23 +2,21 @@
 
 class cmrf_views_plugin_query_civimrf extends views_plugin_query {
 
-  function build(&$view) {
-  	/*$view->init_pager();
-		$view->total_rows = $this->pager->total_items;
-    $this->pager->query();*/
-		
+  function build(&$view) {		
 		$view->init_pager();
     // Let the pager modify the query to add limits.
     $this->pager->query();
   }
 
   function execute(&$view) {
-    $start = microtime(TRUE);
-
-    // Create a new pager object.
+    $table_data = views_fetch_data($this->base_table);
+    $entity = $table_data['table']['base']['entity'];
+    $get_api_action = $table_data['table']['base']['action'];
+    $count_api_action = $table_data['table']['base']['count'];
+    $profile = $table_data['table']['base']['profile'];
     
-
-    $profile = $view->query->options['profile'];
+    $start = microtime(TRUE);
+    
     $options['cache'] = $view->query->options['cache'];
     $options['limit'] = $this->limit;
     $options['offset'] = $this->offset;
@@ -67,9 +65,7 @@ class cmrf_views_plugin_query_civimrf extends views_plugin_query {
 			$options['sort'] .= $orderby['field'].' '.$orderby['direction']; 
 		}
 		
-		$entity = str_replace('cmrf_', '', $this->base_table);
-		
-    $call = cmrf_views_sendCall($entity, 'get', $parameters, $options, $profile);
+    $call = cmrf_views_sendCall($entity, $get_api_action, $parameters, $options, $profile);
     $result = $call->getReply();
     $view->result = array();
     foreach($result['values'] as $value) {
@@ -78,7 +74,7 @@ class cmrf_views_plugin_query_civimrf extends views_plugin_query {
     }
 		
 		$countOptions['cache'] = $view->query->options['cache'];
-		$call = cmrf_views_sendCall($entity, 'getcount', $parameters, $countOptions, $profile);
+		$call = cmrf_views_sendCall($entity, $count_api_action, $parameters, $countOptions, $profile);
     $result = $call->getReply();
 		$this->pager->total_items = $result['result'];
 		$view->total_rows = $result['result'];
@@ -151,27 +147,11 @@ class cmrf_views_plugin_query_civimrf extends views_plugin_query {
 
   function option_definition() {
     $options = parent::option_definition();
-    $options['profile'] = array('default' => '');
 		$options['cache'] = array('default' => '30 min');
     return $options;
   }
 
-  function options_form(&$form, &$form_state) {
-    $profiles = cmrf_core_list_profiles();
-    $profiles_options = array();
-    foreach($profiles as $profile_name => $profile) {
-      $profiles_options[$profile_name] = $profile['label'];
-    }
-
-    $form['profile'] = array(
-      '#type' => 'select',
-      '#title' => t('CiviMRF Profile'),
-      '#multiple' => FALSE,
-      '#options' => $profiles_options,
-      '#default_value' => isset($this->options['profile']) ? $this->options['profile'] : -1,
-      '#required' => TRUE,
-    );
-		
+  function options_form(&$form, &$form_state) {		
 		$form['cache'] = array(
       '#type' => 'textfield',
       '#title' => t('CiviMRF cachtime'),
