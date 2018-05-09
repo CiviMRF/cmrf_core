@@ -178,15 +178,7 @@ function _cmrf_views_civicrm_fields($api_entity, $api_action) {
       
       // Check whether this field is a select field (such as event_type_id)
       if (isset($field["pseudoconstant"])) {
-        $optionsParameter = array('field' => $field_name);
-        $optionsOptions['limit'] = 0;
-        $call = cmrf_views_sendCall($api_entity, 'getoptions', $optionsParameter, $options);
-        if ($call->getStatus() == \CMRF\Core\Call::STATUS_DONE) {
-          $options = $call->getReply(); 
-          if ($options && is_array($options['values'])) {
-            $fieldOtions = $options['values'];
-          }
-        } 
+        $fieldOtions = cmrf_views_fetch_options($api_entity, $field_name); 
       }
       
       if (!isset($field['type'])) {
@@ -255,4 +247,18 @@ function _cmrf_views_civicrm_fields($api_entity, $api_action) {
     }
   }
   return $return;
+}
+
+function cmrf_views_fetch_options($api_entity, $field_name) {
+  $params = array('field' => $field_name);
+  $options['limit'] = 0;
+  $options['cache'] = '5 minutes';
+  $call = cmrf_views_sendCall($api_entity, 'getoptions', $params, $options);
+  if ($call->getStatus() == \CMRF\Core\Call::STATUS_DONE) {
+    $optionResult = $call->getReply(); 
+    if ($optionResult && is_array($optionResult['values'])) {
+      return $optionResult['values'];
+    }
+  }
+  return array();
 }
