@@ -18,8 +18,12 @@ class cmrf_views_plugin_query_civimrf extends views_plugin_query {
     $start = microtime(TRUE);
     
     $options['cache'] = $view->query->options['cache'];
-    $options['limit'] = $this->limit;
-    $options['offset'] = $this->offset;
+    if (isset($this->limit)) {
+      $options['limit'] = $this->limit;
+    }
+    if (isset($this->offset)) {
+      $options['offset'] = $this->offset;
+    }
     $parameters = array();
 		
 		// Set the return fields
@@ -56,14 +60,15 @@ class cmrf_views_plugin_query_civimrf extends views_plugin_query {
 		}
 		
 		// Do sorting
-		foreach($this->orderby as $orderby) {
-			if (strlen($options['sort'])) {
-				$options['sort'] .= ', ';
-			} else {
-				$options['sort'] .= '';
-			}
-			$options['sort'] .= $orderby['field'].' '.$orderby['direction']; 
-		}
+		if (isset($this->orderby) && count($this->orderby) > 0) {
+		  $options['sort'] = '';
+  		foreach($this->orderby as $orderby) {
+        if (strlen($options['sort'])) {
+  				$options['sort'] .= ', ';
+  			}
+  			$options['sort'] .= $orderby['field'].' '.$orderby['direction']; 
+  		}
+    }
 		
     $call = cmrf_views_sendCall($entity, $get_api_action, $parameters, $options, $profile);
     $result = $call->getReply();
