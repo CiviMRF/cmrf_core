@@ -191,8 +191,11 @@ function _cmrf_views_civicrm_fields($api_entity, $api_action) {
       $return[$field_name]['field']['click sortable'] = true;
       switch ($field['type']) {
         case 1: // Integer
-          $return[$field_name]['field']['handler'] = 'views_handler_field_numeric';
+          $return[$field_name]['field']['handler'] = 'cmrf_views_handler_field_numeric';
           $return[$field_name]['sort']['handler'] = 'views_handler_sort';
+          if (!empty($fieldOtions)) {
+            $return[$field_name]['field']['options'] = $fieldOtions;  
+          }
           if (!empty($fieldOtions) && $filterField) {
             $return[$field_name]['filter']['handler'] = 'cmrf_views_handler_filter_in_operator';
             $return[$field_name]['filter']['options'] = $fieldOtions;
@@ -224,6 +227,9 @@ function _cmrf_views_civicrm_fields($api_entity, $api_action) {
         case 32: // Text and Long Text
           $return[$field_name]['field']['handler'] = 'cmrf_views_handler_field_markup';
           $return[$field_name]['sort']['handler'] = 'views_handler_sort';
+          if (!empty($fieldOtions)) {
+            $return[$field_name]['field']['options'] = $fieldOtions;
+          }
           if (!empty($fieldOtions) && $filterField) {
             $return[$field_name]['filter']['handler'] = 'cmrf_views_handler_filter_in_operator';
             $return[$field_name]['filter']['options'] = $fieldOtions;
@@ -233,8 +239,11 @@ function _cmrf_views_civicrm_fields($api_entity, $api_action) {
           $return[$field_name]['argument']['handler'] = 'views_handler_argument';
           break; 
         default:
-          $return[$field_name]['field']['handler'] = 'views_handler_field';
+          $return[$field_name]['field']['handler'] = 'cmrf_views_handler_field';
           $return[$field_name]['sort']['handler'] = 'views_handler_sort';
+          if (!empty($fieldOtions)) {
+            $return[$field_name]['field']['options'] = $fieldOtions;  
+          }
           if (!empty($fieldOtions) && $filterField) {
             $return[$field_name]['filter']['handler'] = 'cmrf_views_handler_filter_in_operator';
             $return[$field_name]['filter']['options'] = $fieldOtions;
@@ -256,7 +265,7 @@ function cmrf_views_fetch_options($api_entity, $field_name) {
   $call = cmrf_views_sendCall($api_entity, 'getoptions', $params, $options);
   if ($call->getStatus() == \CMRF\Core\Call::STATUS_DONE) {
     $optionResult = $call->getReply(); 
-    if ($optionResult && is_array($optionResult['values'])) {
+    if (isset($optionResult['values']) && is_array($optionResult['values'])) {
       return $optionResult['values'];
     }
   }
