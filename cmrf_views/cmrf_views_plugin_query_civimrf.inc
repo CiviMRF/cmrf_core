@@ -73,9 +73,11 @@ class cmrf_views_plugin_query_civimrf extends views_plugin_query {
     $call = cmrf_views_sendCall($entity, $get_api_action, $parameters, $options, $profile);
     $result = $call->getReply();
     $view->result = array();
-    foreach($result['values'] as $value) {
-      $object = json_decode(json_encode($value));
-      $view->result[] = $object;
+    if (isset($result['values']) && is_array($result['values'])) {
+      foreach($result['values'] as $value) {
+        $object = json_decode(json_encode($value));
+        $view->result[] = $object;
+      }
     }
 		
 		$countOptions['cache'] = $view->query->options['cache'];
