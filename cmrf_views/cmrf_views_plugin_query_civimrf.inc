@@ -14,9 +14,13 @@ class cmrf_views_plugin_query_civimrf extends views_plugin_query {
     $get_api_action = $table_data['table']['base']['action'];
     $count_api_action = $table_data['table']['base']['count'];
     $profile = $table_data['table']['base']['profile'];
+    $dataset_params = json_decode($table_data['table']['base']['params'], true);
+    if (!is_array($dataset_params)) {
+      $dataset_params = array();
+    }
     
     $start = microtime(TRUE);
-    
+
     $options['cache'] = $view->query->options['cache'];
     if (isset($this->limit)) {
       $options['limit'] = $this->limit;
@@ -68,6 +72,11 @@ class cmrf_views_plugin_query_civimrf extends views_plugin_query {
   			}
   			$options['sort'] .= $orderby['field'].' '.$orderby['direction']; 
   		}
+    }
+
+    // Set the parameters from the dataset params options.
+    foreach($dataset_params as $key => $value) {
+		  $parameters[$key] = $value;
     }
 		
     $call = cmrf_views_sendCall($entity, $get_api_action, $parameters, $options, $profile);

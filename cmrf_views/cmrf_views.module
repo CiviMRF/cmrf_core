@@ -29,16 +29,63 @@ function cmrf_views_get_connector_name($profile) {
 
 function cmrf_views_menu() {
   $items = array();
-  $items['admin/config/civimrf/views_update_entity_list'] = array(
+  $items['admin/config/civimrf/views'] = array(
+    'title' => 'CiviMRF Datasets for Views',
+    'description' => 'Edit the datasets available in views.',
+    'page callback' => 'cmrf_views_admin_list_datasets',
+    'access arguments' => array('administer cmrf'),
+    'file' => 'cmrf_views.admin.inc',
+    'weight' => 0,
+  );
+  $items['admin/config/civimrf/views/add-dataset'] = array(
+    'title' => 'Add dataset',
+    'description' => 'Add a new dataset for Views.',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('cmrf_views_dataset_form'),
+    'access arguments' => array('administer cmrf'),
+    'type' => MENU_LOCAL_ACTION,
+    'weight' => 2,
+    'file' => 'cmrf_views.admin.inc',
+  );
+  $items['admin/config/civimrf/views/edit-dataset/%cmrf_views_dataset'] = array(
+    'title' => 'Edit dataset',
+    'description' => 'Edit a CiviMRF dataset for Views.',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('cmrf_views_dataset_form', 5),
+    'access arguments' => array('administer cmrf'),
+    'file' => 'cmrf_views.admin.inc',
+  );
+  $items['admin/config/civimrf/views/delete-dataset/%cmrf_views_dataset'] = array(
+    'title' => 'Delete dataset',
+    'description' => 'Delete a CiviMRF dataset for Views.',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('cmrf_views_dataset_delete_form', 5),
+    'access arguments' => array('administer cmrf'),
+    'file' => 'cmrf_views.admin.inc',
+  );
+  $items['admin/config/civimrf/views/update_entity_list'] = array(
     'title' => 'CiviMRF Views Update Entity List',
     'description' => 'Update the list with enabled entities in views.',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('crmf_views_update_entity_list_form'),
     'access arguments' => array('administer cmrf'),
     'file' => 'cmrf_views.admin.inc',
-    'weight' => 0,
+    'type' => MENU_LOCAL_TASK,
+    'weight' => 1,
   );
   return $items;
+}
+
+/**
+ * Implements hook_theme().
+ */
+function cmrf_views_theme() {
+  return array(
+    // Theme functions in cmrf_views.admin.inc.
+    'cmrf_views_list_datasets' => array(
+      'variables' => array('datasets' => NULL),
+    ),
+  );
 }
 
 /**
@@ -76,10 +123,10 @@ function cmrf_views_entity_list($reset=FALSE) {
     foreach($profiles as $profile) {
       $entities = cmrf_views_default_entity_list($profile);
       drupal_alter('cmrf_views_entity_list', $entities, $profile);
-      
       foreach($entities as $entity_name => $entity_definition) {
         $fields = _cmrf_views_civicrm_fields($entity_definition['entity'], $entity_definition['action']);
         if (count($fields)) {
+          $entity_definition['params'] = isset($entity_definition['params']) ? $entity_definition['params'] : '';
           $data['cmrf:'.$profile['name'].'_'.$entity_name] = $fields;
           $data['cmrf:'.$profile['name'].'_'.$entity_name]['table']['group'] = $entity_definition['label']; 
           $data['cmrf:'.$profile['name'].'_'.$entity_name]['table']['base'] = array(
@@ -90,6 +137,7 @@ function cmrf_views_entity_list($reset=FALSE) {
             'action' => $entity_definition['action'],
             'count' => $entity_definition['count'],
             'profile' => $profile['name'],
+            'params' => json_encode($entity_definition['params']),
           );
         }
       }
@@ -103,48 +151,25 @@ function cmrf_views_entity_list($reset=FALSE) {
  * Default list of CiviCRM entities which should be exposed to drupal views.
  */
 function cmrf_views_default_entity_list($profile) {
-  $entities = array(
-    'Activity',
-    'ActivityContact',
-    'ActivityType',
-    'Address',
-    'Campaign',
-    'Case',
-    'CaseContact',
-    'CaseType',
-    'Contact',
-    'Contribution',
-    'Email',
-    'Event',
-    'Grant',
-    'Group',
-    'GroupContact',
-    'Im',
-    'Membership',
-    'MembershipPayment',
-    'MembershipStatus',
-    'MembershipType',
-    'Note',
-    'OpenID',
-    'Participant',
-    'ParticipantPayment',
-    'ParticipantStatusType',
-    'Phone',
-    'Pledge',
-    'PledgePayment',
-    'Relationship',
-    'RelationshipType',
-    'Website',    
-  );
-  
+  $datasets = db_select('cmrf_views_dataset', NULL, array('fetch' => PDO::FETCH_ASSOC))
+    ->fields('cmrf_views_dataset')
+    ->condition('profile', $profile)
+    ->orderBy('name')
+    ->execute()
+    ->fetchAllAssoc('id', PDO::FETCH_ASSOC);
+
   $entity_list = array();
-  foreach($entities as $entity) {
-    $label = $profile['label'].': '.$entity;
-    $entity_list[$entity] = array(
-      'label' => $label,
-      'entity' => $entity,
-      'action' => 'get',
-      'count' => 'getcount',
+  foreach($datasets as $dataset) {
+    $params = json_decode($dataset['params'], true);
+    if (!is_array($params)) {
+      $params = array();
+    }
+    $entity_list[$dataset['name']] = array(
+      'label' => $dataset['title'],
+      'entity' => $dataset['entity'],
+      'action' => $dataset['action'],
+      'count' => $dataset['getcount'],
+      'params' => $params,
     );
   }
   return $entity_list;
@@ -270,4 +295,104 @@ function cmrf_views_fetch_options($api_entity, $field_name) {
     }
   }
   return array();
+}
+
+/**
+ * Saves a CiviMRF views dataset.
+ *
+ * @param array $dataset
+ *   A dataset containing:
+ *   - id: of the dataset
+ *   - title: 'A title for the dataset'
+ *   - name: A unique name for the dataset (required).
+ *   - profile: the cmrf profile to use
+ *   - entity: the api entity
+ *   - action: the api action
+ *   - params: the api params; String in json format.
+ *
+ * @return array
+ *   A profile array containing:
+ *   - id: the id of the dataset
+ *   - name: A unique name for the dataset.
+ *   - title: A title.
+ *   - profile: the CMRF profile to use
+ *   - entity: the api entity
+ *   - action: the api action
+ *   - params: the api parameters
+ *   - is_new: TRUE if this is a new dataset, and FALSE if it is an existing
+ *     dataset.
+ */
+function cmrf_views_dataset_save($dataset) {
+  if (isset($dataset['id']) && is_numeric($dataset['id'])) {
+    // Load the existing style to make sure we account for renamed styles.
+    drupal_write_record('cmrf_views_dataset', $dataset, 'id');
+    $dataset['is_new'] = FALSE;
+  }
+  else {
+    // Add a default label when not given.
+    if (empty($dataset['title'])) {
+      $dataset['title'] = $dataset['name'];
+    }
+    drupal_write_record('cmrf_views_dataset', $dataset);
+    $dataset['is_new'] = TRUE;
+  }
+
+  // Let other modules update as necessary on save.
+  module_invoke_all('cmrf_views_dataset_save', $dataset);
+
+  return $dataset;
+}
+
+/**
+ * Deletes a CiviMRF views dataset
+ *
+ * @param $dataset
+ *   The dataset.
+ * @return
+ *   TRUE on success.
+ */
+function cmrf_views_dataset_delete($dataset) {
+  if (isset($dataset['id']) && !empty($dataset['id'])) {
+    db_delete('cmrf_views_dataset')
+      ->condition('id', $dataset['id'])
+      ->execute();
+  }
+
+  module_invoke_all('cmrf_views_dataset_delete', $dataset);
+
+  return TRUE;
+}
+
+/**
+ * Loads a views dataset
+ *
+ * @param $id int|string
+ *   The id or the name of the dataset.
+ * @return array|FALSE
+ *   A dataset array.
+ *   If the dataset name is not valid, an FALSE is returned.
+ */
+function cmrf_views_dataset_load($id) {
+  if (is_numeric($id)) {
+    $dataset = db_select('cmrf_views_dataset', NULL, ['fetch' => PDO::FETCH_ASSOC])
+      ->fields('cmrf_views_dataset')
+      ->condition('id', $id)
+      ->execute()
+      ->fetchAssoc();
+    if ($dataset) {
+      return $dataset;
+    }
+  } else {
+    $dataset = db_select('cmrf_views_dataset', NULL, ['fetch' => PDO::FETCH_ASSOC])
+      ->fields('cmrf_views_dataset')
+      ->condition('name', $id)
+      ->execute()
+      ->fetchAssoc();
+    if ($dataset) {
+      return $dataset;
+    }
+  }
+
+  // Otherwise the style was not found.
+  return FALSE;
 }

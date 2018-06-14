@@ -12,3 +12,67 @@ function cmrf_views_uninstall() {
     }
   }
 }
+
+/**
+ * Implements hook_schema().
+ */
+function cmrf_views_schema() {
+  return array(
+    'cmrf_views_dataset' => array(
+      'description' => 'CiviMRF Views data sets.',
+      'fields' => array(
+        'id' => array(
+          'type' => 'serial',
+          'unsigned' => TRUE,
+          'not null' => TRUE,
+        ),
+        'profile' => array(
+          'description' => 'cmrf_profile',
+          'type' => 'varchar',
+          'length' => 255,
+          'not null' => TRUE,
+        ),
+        'name' => array(
+          'description' => 'System name',
+          'type' => 'varchar',
+          'length' => 255,
+          'not null' => TRUE,
+        ),
+        'title' => array(
+          'description' => 'Title',
+          'type' => 'varchar',
+          'length' => 255,
+          'not null' => TRUE,
+        ),
+        'entity' => array(
+          'description' => 'The api entity',
+          'type' => 'varchar',
+          'length' => 255,
+          'not null' => TRUE,
+        ),
+        'action' => array(
+          'description' => 'The api action',
+          'type' => 'varchar',
+          'length' => 255,
+          'not null' => TRUE,
+        ),
+        'getcount' => array(
+          'description' => 'The getcount api action',
+          'type' => 'varchar',
+          'length' => 255,
+          'not null' => TRUE,
+        ),
+        'params' => array(
+          'description' => 'Parameters',
+          'type' => 'text',
+          'not null' => FALSE,
+        ),
+      ),
+      'primary key' => array('id'),
+    ),
+  );
+}
+
+function cmrf_views_update_1001() {
+  drupal_install_schema('cmrf_views');
+}
