@@ -78,7 +78,7 @@ class cmrf_views_plugin_query_civimrf extends views_plugin_query {
     foreach($dataset_params as $key => $value) {
 		  $parameters[$key] = $value;
     }
-		
+
     $call = cmrf_views_sendCall($entity, $get_api_action, $parameters, $options, $profile);
     $result = $call->getReply();
     $view->result = array();

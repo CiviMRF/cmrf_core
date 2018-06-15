@@ -71,7 +71,7 @@ function cmrf_core_list_connectors() {
   return $connectors;
 }
 
-  /**
+/**
  * Gets an array of all profiles
  *
  * @return array
@@ -109,6 +109,7 @@ function cmrf_core_list_profiles() {
 
       // Allow the user styles to override the module styles.
       foreach ($user_profiles as $profile_name => $profile) {
+        $profile['name'] = $profile_name;
         $profile['module'] = NULL;
         $profile['storage'] = CRMF_CORE_PROFILE_STORAGE_NORMAL;
         $profile['readonly'] = false;

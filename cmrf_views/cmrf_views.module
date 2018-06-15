@@ -119,27 +119,24 @@ function cmrf_views_entity_list($reset=FALSE) {
   
   if ($reset) {
     $data = array();
-    $profiles = cmrf_core_list_profiles();
-    foreach($profiles as $profile) {
-      $entities = cmrf_views_default_entity_list($profile);
-      drupal_alter('cmrf_views_entity_list', $entities, $profile);
-      foreach($entities as $entity_name => $entity_definition) {
-        $fields = _cmrf_views_civicrm_fields($entity_definition['entity'], $entity_definition['action']);
-        if (count($fields)) {
-          $entity_definition['params'] = isset($entity_definition['params']) ? $entity_definition['params'] : '';
-          $data['cmrf:'.$profile['name'].'_'.$entity_name] = $fields;
-          $data['cmrf:'.$profile['name'].'_'.$entity_name]['table']['group'] = $entity_definition['label']; 
-          $data['cmrf:'.$profile['name'].'_'.$entity_name]['table']['base'] = array(
-            'field' => 'id',
-            'title' => $entity_definition['label'],
-            'query class' => 'cmrf_views',
-            'entity' => $entity_definition['entity'],
-            'action' => $entity_definition['action'],
-            'count' => $entity_definition['count'],
-            'profile' => $profile['name'],
-            'params' => json_encode($entity_definition['params']),
-          );
-        }
+    $entities = cmrf_views_default_entity_list();
+    drupal_alter('cmrf_views_entity_list', $entities);
+    foreach($entities as $entity_name => $entity_definition) {
+      $fields = _cmrf_views_civicrm_fields($entity_definition['entity'], $entity_definition['action']);
+      if (count($fields)) {
+        $entity_definition['params'] = isset($entity_definition['params']) ? $entity_definition['params'] : '';
+        $data['cmrf:'.$entity_definition['profile'].'_'.$entity_name] = $fields;
+        $data['cmrf:'.$entity_definition['profile'].'_'.$entity_name]['table']['group'] = $entity_definition['label'];
+        $data['cmrf:'.$entity_definition['profile'].'_'.$entity_name]['table']['base'] = array(
+          'field' => 'id',
+          'title' => $entity_definition['label'],
+          'query class' => 'cmrf_views',
+          'entity' => $entity_definition['entity'],
+          'action' => $entity_definition['action'],
+          'count' => $entity_definition['count'],
+          'profile' => $entity_definition['profile'],
+          'params' => json_encode($entity_definition['params']),
+        );
       }
     }
     variable_set('cmrf_views_entities', json_encode($data));
@@ -150,10 +147,9 @@ function cmrf_views_entity_list($reset=FALSE) {
 /**
  * Default list of CiviCRM entities which should be exposed to drupal views.
  */
-function cmrf_views_default_entity_list($profile) {
+function cmrf_views_default_entity_list() {
   $datasets = db_select('cmrf_views_dataset', NULL, array('fetch' => PDO::FETCH_ASSOC))
     ->fields('cmrf_views_dataset')
-    ->condition('profile', $profile)
     ->orderBy('name')
     ->execute()
     ->fetchAllAssoc('id', PDO::FETCH_ASSOC);
@@ -170,6 +166,7 @@ function cmrf_views_default_entity_list($profile) {
       'action' => $dataset['action'],
       'count' => $dataset['getcount'],
       'params' => $params,
+      'profile' => $dataset['profile'],
     );
   }
   return $entity_list;

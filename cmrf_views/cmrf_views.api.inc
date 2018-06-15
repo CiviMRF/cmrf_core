@@ -16,6 +16,8 @@
  *   'entity' => The api entity,
  *   'action' => The action used for retrieval of the data,
  *   'count' => the action used for the getcount api call,
+ *   'params' => array of api params
+ *   'profile' => name of the cmrf profile to use
  * 
  *   
  */
