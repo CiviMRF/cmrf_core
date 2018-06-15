@@ -41,7 +41,7 @@ function cmrf_views_dataset_form($form, &$form_state, $dataset=null) {
     '#machine_name' => array(
       'exists' => 'cmrf_views_dataset_name_exists',
       'source' => array('label'),
-      'replace_pattern' => '[^0-9a-z_\-]',
+      'replace_pattern' => '[^0-9a-zA-Z_\-]',
       'error' => t('Please only use lowercase alphanumeric characters, underscores (_), and hyphens (-) for style names.'),
     ),
   );
