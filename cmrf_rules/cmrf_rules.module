@@ -1,5 +1,8 @@
 <?php
 
+/**
+ * Implements hook_rules_category_info().
+ */
 function cmrf_rules_rules_category_info() {
   return array(
     'civimrf' => array(
@@ -9,14 +12,123 @@ function cmrf_rules_rules_category_info() {
   );
 }
 
+/**
+ * Implements hook_rules_data_info().
+ */
 function cmrf_rules_rules_data_info() {
   return array(
     'civimrf_call' => array(
-      'label' => t('CiviMRF Call')
-    )
+      'label' => t('CiviMRF Call'),
+    ),
   );
 }
 
+/**
+ * Implements hook_rules_action_info().
+ */
+function cmrf_rules_rules_action_info() {
+  $items = array();
+
+  // Action for sending an API call with configurable CiviMRF profile, API
+  // entity, action, parameters and options, and the CiviMRF call being provided
+  // as a variable.
+  $items['cmrf_send_call'] = array(
+    'label' => t('Send CiviMRF call'),
+    'group' => t('CiviMRF'),
+    'parameter' => array(
+      'cmrf_profile' => array(
+        'type' => 'text',
+        'label' => t('CiviMRF connection profile'),
+        'options list' => 'cmrf_core_list_profile_labels',
+        'restriction' => 'input',
+      ),
+      'cmrf_entity' => array(
+        'type' => 'text',
+        'label' => t('CiviCRM API entity'),
+      ),
+      'cmrf_action' => array(
+        'type' => 'text',
+        'label' => t('CiviCRM API action'),
+      ),
+      'cmrf_parameters' => array(
+        'type' => 'text',
+        'label' => t('CiviCRM API parameters'),
+        'description' => t('JSON-formatted parameter list for the CiviCRM API call.'),
+      ),
+      'cmrf_options' => array(
+        'type' => 'text',
+        'label' => t('CiviCRM API options'),
+        'description' => t('JSON-formatted options list for the CiviCRM API call.'),
+      ),
+    ),
+    'provides' => array(
+      'call' => array(
+        'label' => t('CiviCRM API call'),
+        'type' => 'civimrf_call',
+        'save' => TRUE,
+      ),
+    ),
+    'base' => 'cmrf_rules_send_call',
+  );
+
+  return $items;
+}
+
+/**
+ * Register a connector for the given profile.
+ *
+ * @param array | NULL $profile
+ *   A CiviMRF profile array structure, or NULL to use the default profile.
+ *
+ * @return string
+ *   The ID of the connector for the given profile.
+ */
+function cmrf_rules_get_connector_id($profile = NULL) {
+  $connector_name = 'cmrf_rules_connector';
+  if (!empty($profile)) {
+    $connector_name .= ':'.$profile;
+  }
+
+  $core = cmrf_core_get_core();
+  $connector_id = variable_get($connector_name);
+  if (empty($connector_id)) {
+    $connector_id = $core->registerConnector($connector_name, $profile);
+    variable_set($connector_name, $connector_id);
+  }
+  return $connector_id;
+}
+
+/**
+ * Send a CiviCRM API call.
+ *
+ * @param string $profile
+ *   The system name of the CiviMRF profile.
+ * @param string $entity
+ *   The CiviCRM API entity.
+ * @param string $action
+ *   The CiviCRM API action.
+ * @param string $parameters
+ *   A JSON-formatted representation of the CiviCRM API parameters.
+ * @param string $options
+ *   A JSON-formatted representation of the CiviCRM API options.
+ *
+ * @return array
+ */
+function cmrf_rules_send_call($profile, $entity, $action, $parameters, $options) {
+  $parameters = json_decode($parameters, TRUE);
+  $options = json_decode($options, TRUE);
+  $connector_id = cmrf_rules_get_connector_id($profile);
+  $core = cmrf_core_get_core();
+  $call = $core->createCall($connector_id, $entity, $action, $parameters, $options);
+  $core->executeCall($call);
+  return array(
+    'call' => $call,
+  );
+}
+
+/**
+ * Implements hook_rules_event_info().
+ */
 function cmrf_rules_rules_event_info() {
   $items = array(
     'cmrf_call_failed' => array(
@@ -143,13 +255,13 @@ function cmrf_rules_tokens($type, $tokens, array $data = [], array $options = []
           $replacements[$original] = $profile['label'];
           break;
         case 'request':
-          $replacements[$original] = nl2br(json_encode($call->getRequest(), JSON_PRETTY_PRINT));
+          $replacements[$original] = json_encode($call->getRequest(), JSON_PRETTY_PRINT);
           break;
         case 'reply':
-          $replacements[$original] = nl2br(json_encode($call->getReply(), JSON_PRETTY_PRINT));
+          $replacements[$original] = json_encode($call->getReply(), JSON_PRETTY_PRINT);
           break;
         case 'metadata':
-          $replacements[$original] = nl2br(json_encode($call->getMetadata(), JSON_PRETTY_PRINT));
+          $replacements[$original] = json_encode($call->getMetadata(), JSON_PRETTY_PRINT);
           break;
         case 'retry_count':
           $replacements[$original] = $call->getRetryCount();

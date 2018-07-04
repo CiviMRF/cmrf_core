@@ -138,6 +138,21 @@ function cmrf_core_list_profiles() {
   return $profiles;
 }
 
+/**
+ * Retrieves an array of all profiles with profile names as keys and profile
+ * labels as values, as returned by implementations of hook_options_list().
+ *
+ * @return array
+ *   An array of profile labels keyed by the profile system name.
+ */
+function cmrf_core_list_profile_labels() {
+  $profiles = array_map(function($profile) {
+    return $profile['label'];
+  }, cmrf_core_list_profiles());
+
+  return $profiles;
+}
+
 function cmrf_core_default_profile() {
   $profiles = cmrf_core_list_profiles();
   foreach($profiles as $profile) {
