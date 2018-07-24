@@ -226,6 +226,7 @@ function _cmrf_views_civicrm_fields($api_entity, $api_action) {
           }
           $return[$field_name]['argument']['handler'] = 'views_handler_numeric';
           break;
+        case 4: // Date field
         case 12: // Date and time field
           $return[$field_name]['field']['handler'] = 'cmrf_views_handler_field_date';
           $return[$field_name]['sort']['handler'] = 'views_handler_sort';
