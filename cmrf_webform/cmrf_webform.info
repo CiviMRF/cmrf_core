@@ -3,7 +3,7 @@ description = CiviMRF webform integration module. Allows to submit a webform to 
 core = 7.x
 
 package = "CiviMRF"
-project = "cmrf_webform"
+project = "cmrf_core"
 version = "7.x-0.6-dev"
 
 dependencies[] = cmrf_core

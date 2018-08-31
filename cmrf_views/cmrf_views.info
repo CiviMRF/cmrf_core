@@ -2,7 +2,7 @@ name = CiviMRF Views integration for CiviCRM
 core = 7.x
 
 package = "CiviMRF"
-project = "cmrf_views"
+project = "cmrf_core"
 version = "7.x-0.6-dev"
 
 dependencies[] = cmrf_core
