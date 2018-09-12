@@ -24,6 +24,8 @@ class cmrf_views_plugin_query_civimrf extends views_plugin_query {
     $options['cache'] = $view->query->options['cache'];
     if (isset($this->limit)) {
       $options['limit'] = $this->limit;
+    } else {
+      $options['limit'] = 0;
     }
     if (isset($this->offset)) {
       $options['offset'] = $this->offset;
