@@ -19,6 +19,65 @@ function cmrf_rules_rules_data_info() {
   return array(
     'civimrf_call' => array(
       'label' => t('CiviMRF Call'),
+      'wrap' => TRUE,
+      'wrapper class' => 'CiviMRFRulesCallWrapper',
+      'property info' => array(
+        'cid' => array(
+          'label' => t("Call ID"),
+          'description' => t('The ID of the call record.'),
+          'type' => 'text',
+        ),
+        'status' => array(
+          'label' => t("Status"),
+          'description' => t('The status of the call.'),
+          'type' => 'text',
+        ),
+        'profile' => array(
+          'label' => t("Profile"),
+          'description' => t('The profile used to make the call.'),
+          'type' => 'text',
+        ),
+        'request' => array(
+          'label' => t("Request"),
+          'description' => t('The request data of the call.'),
+          'type' => 'text',
+        ),
+        'reply' => array(
+          'label' => t("Reply"),
+          'description' => t('The reply data of the call.'),
+          'type' => 'text',
+        ),
+        'date' => array(
+          'label' => t("Date"),
+          'description' => t('The date of the call.'),
+          'type' => 'text',
+        ),
+        'reply_date' => array(
+          'label' => t("Reply date"),
+          'description' => t('The date of the reply of the call.'),
+          'type' => 'text',
+        ),
+        'scheduled_date' => array(
+          'label' => t("Scheduled date"),
+          'description' => t('The scheduled date of of the call.'),
+          'type' => 'text',
+        ),
+        'cached_until' => array(
+          'label' => t("Cached until"),
+          'description' => t('Till when is the reply of the call cached.'),
+          'type' => 'text',
+        ),
+        'retry_count' => array(
+          'label' => t("Retry count"),
+          'description' => t('Number of retries left of the call when it fails.'),
+          'type' => 'text',
+        ),
+        'metadata' => array(
+          'label' => t("Metadata"),
+          'description' => t('The metadata of the call.'),
+          'type' => 'text',
+        ),
+      ),
     ),
   );
 }
