@@ -8,3 +8,5 @@ version = "7.x-0.7-dev"
 
 dependencies[] = cmrf_core
 dependencies[] = rules
+
+files[] = CiviMRFRulesCallWrapper.php
