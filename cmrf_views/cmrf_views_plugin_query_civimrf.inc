@@ -40,7 +40,7 @@ class cmrf_views_plugin_query_civimrf extends views_plugin_query {
     }
 
     //Set the query parameters.
-    if (!$this->where || !is_array($this->where)) {
+    if (!isset($this->where) || !is_array($this->where)) {
       $this->where = [];
     }
     foreach ($this->where as $where) {
