@@ -2,8 +2,8 @@
 
 class cmrf_views_plugin_query_civimrf extends views_plugin_query {
 
-  function build(&$view) {		
-		$view->init_pager();
+  function build(&$view) {
+    $view->init_pager();
     // Let the pager modify the query to add limits.
     $this->pager->query();
   }
@@ -14,88 +14,92 @@ class cmrf_views_plugin_query_civimrf extends views_plugin_query {
     $get_api_action = $table_data['table']['base']['action'];
     $count_api_action = $table_data['table']['base']['count'];
     $profile = $table_data['table']['base']['profile'];
-    $dataset_params = json_decode($table_data['table']['base']['params'], true);
+    $dataset_params = json_decode($table_data['table']['base']['params'], TRUE);
     if (!is_array($dataset_params)) {
-      $dataset_params = array();
+      $dataset_params = [];
     }
-    
+
     $start = microtime(TRUE);
 
     $options['cache'] = $view->query->options['cache'];
     if (isset($this->limit)) {
       $options['limit'] = $this->limit;
-    } else {
+    }
+    else {
       $options['limit'] = 0;
     }
     if (isset($this->offset)) {
       $options['offset'] = $this->offset;
     }
-    $parameters = array();
-		
-		// Set the return fields
-		$parameters['return'] = array();
-		foreach($this->fields as $field) {
-			$parameters['return'][] = $field['field'];	
-		}
-		
-		//Set the query parameters.
-		foreach($this->where as $where) {
-			if (empty($where['field'])) {
-				continue;
-			}
-			switch ($where['operator']) {
-				case '>':
-				case '>=':
-				case '<=':
-				case '<':
-				case '!=':
-				case 'BETWEEN':
-				case 'NOT BETWEEN':
-					$parameters[$where['field']] = array($where['operator'] => $where['value']);
-					break;
-				case 'in':
-					$parameters[$where['field']] = array('IN' => $where['value']);
-					break;
-				case 'not in':
-					$parameters[$where['field']] = array('NOT IN' => $where['value']);
-					break;
-				default:
-					$parameters[$where['field']] = $where['value'];
-					break;
-			}
-		}
-		
-		// Do sorting
-		if (isset($this->orderby) && count($this->orderby) > 0) {
-		  $options['sort'] = '';
-  		foreach($this->orderby as $orderby) {
+    $parameters = [];
+
+    // Set the return fields
+    $parameters['return'] = [];
+    foreach ($this->fields as $field) {
+      $parameters['return'][] = $field['field'];
+    }
+
+    //Set the query parameters.
+    if (!$this->where || !is_array($this->where)) {
+      $this->where = [];
+    }
+    foreach ($this->where as $where) {
+      if (empty($where['field'])) {
+        continue;
+      }
+      switch ($where['operator']) {
+        case '>':
+        case '>=':
+        case '<=':
+        case '<':
+        case '!=':
+        case 'BETWEEN':
+        case 'NOT BETWEEN':
+          $parameters[$where['field']] = [$where['operator'] => $where['value']];
+          break;
+        case 'in':
+          $parameters[$where['field']] = ['IN' => $where['value']];
+          break;
+        case 'not in':
+          $parameters[$where['field']] = ['NOT IN' => $where['value']];
+          break;
+        default:
+          $parameters[$where['field']] = $where['value'];
+          break;
+      }
+    }
+
+    // Do sorting
+    if (isset($this->orderby) && count($this->orderby) > 0) {
+      $options['sort'] = '';
+      foreach ($this->orderby as $orderby) {
         if (strlen($options['sort'])) {
-  				$options['sort'] .= ', ';
-  			}
-  			$options['sort'] .= $orderby['field'].' '.$orderby['direction']; 
-  		}
+          $options['sort'] .= ', ';
+        }
+        $options['sort'] .= $orderby['field'] . ' ' . $orderby['direction'];
+      }
     }
 
     // Set the parameters from the dataset params options.
-    foreach($dataset_params as $key => $value) {
-		  $parameters[$key] = $value;
+    foreach ($dataset_params as $key => $value) {
+      $parameters[$key] = $value;
     }
 
     $call = cmrf_views_sendCall($entity, $get_api_action, $parameters, $options, $profile);
     $result = $call->getReply();
-    $view->result = array();
+    $view->result = [];
     if (isset($result['values']) && is_array($result['values'])) {
-      foreach($result['values'] as $value) {
+      foreach ($result['values'] as $value) {
         $object = json_decode(json_encode($value));
         $view->result[] = $object;
       }
     }
-		
-		$countOptions['cache'] = $view->query->options['cache'];
-		$call = cmrf_views_sendCall($entity, $count_api_action, $parameters, $countOptions, $profile);
+
+    $countOptions['cache'] = $view->query->options['cache'];
+    $call = cmrf_views_sendCall($entity, $count_api_action, $parameters, $countOptions, $profile);
     $result = $call->getReply();
-		$this->pager->total_items = $result['result'];
-		$view->total_rows = $result['result'];
+    $this->pager->total_items = $result['result'];
+    $view->total_rows = $result['result'];
 
     // Tell pager and views total item count.
     // Create a new pager object.
@@ -103,22 +107,22 @@ class cmrf_views_plugin_query_civimrf extends views_plugin_query {
     $view->execute_time = microtime(TRUE) - $start;
   }
 
-  function add_field($table, $field, $alias = '', $params = array()) {
+  function add_field($table, $field, $alias = '', $params = []) {
     $alias = $field;
 
     // Add field info array.
     if (empty($this->fields[$field])) {
-      $this->fields[$field] = array(
+      $this->fields[$field] = [
           'field' => $field,
           'table' => $table,
           'alias' => $alias,
-        ) + $params;
+        ] + $params;
     }
 
     return $field;
   }
-	
-	/**
+
+  /**
    * Add a simple WHERE clause to the query. The caller is responsible for
    * ensuring that all fields are fully qualified (TABLE.FIELD) and that
    * the table already exists in the query.
@@ -130,16 +134,18 @@ class cmrf_views_plugin_query_civimrf extends views_plugin_query {
    * @param $field
    *   The name of the field to check.
    * @param $value
-   *   The value to test the field against. In most cases, this is a scalar. For more
-   *   complex options, it is an array. The meaning of each element in the array is
-   *   dependent on the $operator.
+   *   The value to test the field against. In most cases, this is a scalar.
+   *   For more complex options, it is an array. The meaning of each element in
+   *   the array is dependent on the $operator.
    * @param $operator
-   *   The comparison operator, such as =, <, or >=. It also accepts more complex
-   *   options such as IN, LIKE, or BETWEEN. Defaults to IN if $value is an array
+   *   The comparison operator, such as =, <, or >=. It also accepts more
+   *   complex options such as IN, LIKE, or BETWEEN. Defaults to IN if $value
+   *   is an array
    *   = otherwise. If $field is a string you have to use 'formula' here.
    *
    * The $field, $value and $operator arguments can also be passed in with a
    * single DatabaseCondition object, like this:
+   *
    * @code
    *   $this->query->add_where(
    *     $this->options['group'],
@@ -153,33 +159,33 @@ class cmrf_views_plugin_query_civimrf extends views_plugin_query {
    * @see DatabaseCondition
    */
   function add_where($group, $field, $value = NULL, $operator = NULL) {
-  	if (strpos($field, '.', 0) === 0) {
-  		$field = substr($field, 1);
-  	}
-    $this->where[] = array(
+    if (strpos($field, '.', 0) === 0) {
+      $field = substr($field, 1);
+    }
+    $this->where[] = [
       'field' => $field,
       'value' => $value,
       'operator' => $operator,
-    );
+    ];
   }
 
   function option_definition() {
     $options = parent::option_definition();
-		$options['cache'] = array('default' => '30 min');
+    $options['cache'] = ['default' => '30 min'];
     return $options;
   }
 
-  function options_form(&$form, &$form_state) {		
-		$form['cache'] = array(
+  function options_form(&$form, &$form_state) {
+    $form['cache'] = [
       '#type' => 'textfield',
       '#title' => t('CiviMRF cachtime'),
       '#multiple' => FALSE,
       '#default_value' => isset($this->options['cache']) ? $this->options['cache'] : '',
       '#required' => TRUE,
-    );
+    ];
   }
-	
-	/**
+
+  /**
    * Add an ORDER BY clause to the query.
    *
    * @param $table
@@ -198,7 +204,7 @@ class cmrf_views_plugin_query_civimrf extends views_plugin_query {
    * @param $params
    *   Any params that should be passed through to the add_field.
    */
-  function add_orderby($table, $field = NULL, $order = 'ASC', $alias = '', $params = array()) {
+  function add_orderby($table, $field = NULL, $order = 'ASC', $alias = '', $params = []) {
     // Only ensure the table if it's not the special random key.
     // @todo: Maybe it would make sense to just add a add_orderby_rand or something similar.
     if ($table && $table != 'rand') {
@@ -218,10 +224,10 @@ class cmrf_views_plugin_query_civimrf extends views_plugin_query {
       $as = $this->add_field($table, $field, $as, $params);
     }
 
-    $this->orderby[] = array(
+    $this->orderby[] = [
       'field' => $as,
-      'direction' => strtoupper($order)
-    );
+      'direction' => strtoupper($order),
+    ];
   }
 
 }
