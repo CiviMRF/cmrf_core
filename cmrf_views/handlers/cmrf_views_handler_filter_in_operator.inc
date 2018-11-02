@@ -35,7 +35,8 @@ class cmrf_views_handler_filter_in_operator extends views_handler_filter_in_oper
       // Refetch the options for the field
       $table_data = views_fetch_data($this->table);
       $entity = $table_data['table']['base']['entity'];
-      $options = cmrf_views_fetch_options($entity, $this->field);
+      $api_action = $table_data['table']['base']['action'];
+      $options = cmrf_views_fetch_options($entity,$api_action,  $this->field);
       $this->value_options = $options;
     }
     else {
