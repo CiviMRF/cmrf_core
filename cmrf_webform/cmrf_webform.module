@@ -1042,44 +1042,48 @@ function cmrf_webform_node_load($nodes, $types) {
  * Implements hook_node_insert().
  */
 function cmrf_webform_node_insert($node) {
-  db_insert('cmrf_webforms')
-    ->fields(array(
-      'nid' => $node->nid,
-      'cmrf_enable' => !empty($node->cmrf_enable) ? 1 : 0,
-      'cmrf_queue' => !empty($node->cmrf_queue) ? 1 : 0,
-      'cmrf_profile' => !empty($node->cmrf_profile) ? $node->cmrf_profile : '',
-      'cmrf_entity' => !empty($node->cmrf_entity) ? $node->cmrf_entity : '',
-      'cmrf_action' => !empty($node->cmrf_action) ? $node->cmrf_action : '',
-      'cmrf_retrieve_default_values_enable' => !empty($node->cmrf_retrieve_default_values['enable']) ? 1 : 0,
-      'cmrf_retrieve_default_values_entity' => !empty($node->cmrf_retrieve_default_values['entity']) ? $node->cmrf_retrieve_default_values['entity'] : NULL,
-      'cmrf_retrieve_default_values_action' => !empty($node->cmrf_retrieve_default_values['action']) ? $node->cmrf_retrieve_default_values['action'] : NULL,
-      'cmrf_retrieve_default_values_parameters' => !empty($node->cmrf_retrieve_default_values['parameters']) ? $node->cmrf_retrieve_default_values['parameters'] : NULL,
-      'cmrf_retrieve_default_values_options' => !empty($node->cmrf_retrieve_default_values['options']) ? $node->cmrf_retrieve_default_values['options'] : NULL,
-    ))
-    ->execute();
+  if (in_array($node->type, webform_node_types())) {
+    db_insert('cmrf_webforms')
+      ->fields(array(
+        'nid' => $node->nid,
+        'cmrf_enable' => !empty($node->cmrf_enable) ? 1 : 0,
+        'cmrf_queue' => !empty($node->cmrf_queue) ? 1 : 0,
+        'cmrf_profile' => !empty($node->cmrf_profile) ? $node->cmrf_profile : '',
+        'cmrf_entity' => !empty($node->cmrf_entity) ? $node->cmrf_entity : '',
+        'cmrf_action' => !empty($node->cmrf_action) ? $node->cmrf_action : '',
+        'cmrf_retrieve_default_values_enable' => !empty($node->cmrf_retrieve_default_values['enable']) ? 1 : 0,
+        'cmrf_retrieve_default_values_entity' => !empty($node->cmrf_retrieve_default_values['entity']) ? $node->cmrf_retrieve_default_values['entity'] : NULL,
+        'cmrf_retrieve_default_values_action' => !empty($node->cmrf_retrieve_default_values['action']) ? $node->cmrf_retrieve_default_values['action'] : NULL,
+        'cmrf_retrieve_default_values_parameters' => !empty($node->cmrf_retrieve_default_values['parameters']) ? $node->cmrf_retrieve_default_values['parameters'] : NULL,
+        'cmrf_retrieve_default_values_options' => !empty($node->cmrf_retrieve_default_values['options']) ? $node->cmrf_retrieve_default_values['options'] : NULL,
+      ))
+      ->execute();
+  }
 }
 
 /**
  * Implements hook_node_update().
  */
 function cmrf_webform_node_update($node) {
-  db_merge('cmrf_webforms')
-    ->key(array(
-      'nid' => $node->nid,
-    ))
-    ->fields(array(
-      'cmrf_enable' => !empty($node->cmrf_enable) ? 1 : 0,
-      'cmrf_queue' => !empty($node->cmrf_queue) ? 1 : 0,
-      'cmrf_profile' => !empty($node->cmrf_profile) ? $node->cmrf_profile : '',
-      'cmrf_entity' => !empty($node->cmrf_entity) ? $node->cmrf_entity : '',
-      'cmrf_action' => !empty($node->cmrf_action) ? $node->cmrf_action : '',
-      'cmrf_retrieve_default_values_enable' => !empty($node->cmrf_retrieve_default_values['enable']) ? 1 : 0,
-      'cmrf_retrieve_default_values_entity' => !empty($node->cmrf_retrieve_default_values['entity']) ? $node->cmrf_retrieve_default_values['entity'] : NULL,
-      'cmrf_retrieve_default_values_action' => !empty($node->cmrf_retrieve_default_values['action']) ? $node->cmrf_retrieve_default_values['action'] : NULL,
-      'cmrf_retrieve_default_values_parameters' => !empty($node->cmrf_retrieve_default_values['parameters']) ? $node->cmrf_retrieve_default_values['parameters'] : NULL,
-      'cmrf_retrieve_default_values_options' => !empty($node->cmrf_retrieve_default_values['options']) ? $node->cmrf_retrieve_default_values['options'] : NULL,
-    ))
-    ->execute();
+  if (in_array($node->type, webform_node_types())) {
+    db_merge('cmrf_webforms')
+      ->key(array(
+        'nid' => $node->nid,
+      ))
+      ->fields(array(
+        'cmrf_enable' => !empty($node->cmrf_enable) ? 1 : 0,
+        'cmrf_queue' => !empty($node->cmrf_queue) ? 1 : 0,
+        'cmrf_profile' => !empty($node->cmrf_profile) ? $node->cmrf_profile : '',
+        'cmrf_entity' => !empty($node->cmrf_entity) ? $node->cmrf_entity : '',
+        'cmrf_action' => !empty($node->cmrf_action) ? $node->cmrf_action : '',
+        'cmrf_retrieve_default_values_enable' => !empty($node->cmrf_retrieve_default_values['enable']) ? 1 : 0,
+        'cmrf_retrieve_default_values_entity' => !empty($node->cmrf_retrieve_default_values['entity']) ? $node->cmrf_retrieve_default_values['entity'] : NULL,
+        'cmrf_retrieve_default_values_action' => !empty($node->cmrf_retrieve_default_values['action']) ? $node->cmrf_retrieve_default_values['action'] : NULL,
+        'cmrf_retrieve_default_values_parameters' => !empty($node->cmrf_retrieve_default_values['parameters']) ? $node->cmrf_retrieve_default_values['parameters'] : NULL,
+        'cmrf_retrieve_default_values_options' => !empty($node->cmrf_retrieve_default_values['options']) ? $node->cmrf_retrieve_default_values['options'] : NULL,
+      ))
+      ->execute();
+  }
 }
 
 /**

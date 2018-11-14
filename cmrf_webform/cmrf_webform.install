@@ -290,3 +290,20 @@ function cmrf_webform_update_7002() {
     )
   );
 }
+
+/**
+ * Clean up "cmrf_webforms" table for non-Webform node types.
+ */
+function cmrf_webform_update_7003() {
+  $query = db_select('cmrf_webforms');
+  $query->leftJoin('node', 'node', 'node.nid = cmrf_webforms.nid');
+  $query->addField('cmrf_webforms', 'nid');
+  $query->addField('node', 'type');
+  $cmrf_webform_nodes = $query->execute()->fetchAllKeyed();
+  $cmrf_webform_nodes = array_filter($cmrf_webform_nodes, function($node_type) {
+    return variable_get('webform_node_' . $node_type, FALSE);
+  });
+  db_delete('cmrf_webforms')
+    ->condition('nid', array_keys($cmrf_webform_nodes), 'NOT IN')
+    ->execute();
+}
