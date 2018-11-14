@@ -14,8 +14,15 @@ require_once(dirname(__FILE__) . '/vendor/autoload.php');
  * Implements hook_install().
  */
 function cmrf_core_install() {
-
-  // Do some things on install, like setting the module weight.
+  // Create default profile.
+  module_load_all_includes('module', 'cmrf_core');
+  $default_profile = array(
+    'name' => 'default',
+    'label' => t('Default'),
+    'connector' => 'local',
+    'is_new' => TRUE,
+  );
+  cmrf_core_profile_save($default_profile);
 }
 
 /**
