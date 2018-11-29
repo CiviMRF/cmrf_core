@@ -4,6 +4,6 @@ core = 7.x
 
 package = "CiviMRF"
 project = "cmrf_core"
-version = "7.x-0.7-alpha2"
+version = "7.x-0.7-dev"
 
 configure = admin/config/civimrf/profiles
