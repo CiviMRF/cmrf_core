@@ -612,7 +612,12 @@ function cmrf_webform_webform_component_render_alter(array &$element, array &$co
 
     // Set the component's default value, if there is a match.
     if (isset($default_values[$component['form_key']])) {
-      $element['#default_value'] = $default_values[$component['form_key']];
+      if ($component['type'] == 'hidden') {
+        $element['#value'] = $default_values[$component['form_key']];
+      }
+      else {
+        $element['#default_value'] = $default_values[$component['form_key']];
+      }
     }
   }
 }
