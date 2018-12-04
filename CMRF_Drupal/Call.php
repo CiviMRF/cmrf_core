@@ -19,7 +19,7 @@ class Call extends AbstractCall {
   protected $metadata = '{}';
   protected $cached_until = NULL;
 
-  public static function createNew($connector_id, $core, $entity, $action, $parameters, $options, $callback, $factory) {
+  public static function createNew($connector_id, $core, $entity, $action, $parameters, $options, $callbacks, $factory) {
     $call = new Call($core, $connector_id, $factory);
 
     // compile request
@@ -28,6 +28,10 @@ class Call extends AbstractCall {
     $call->request['action'] = $action;
     $call->status = CallInterface::STATUS_INIT;
     $call->metadata = array();
+    $call->metadata['callbacks'] = $callbacks;
+    if (is_array($callbacks)) {
+      $call->callbacks = $callbacks;
+    }
 
     // Set the retry options
     if (isset($options['retry_count'])) {
@@ -35,6 +39,9 @@ class Call extends AbstractCall {
     }
     if (isset($options['retry_interval'])) {
       $call->metadata['retry_interval'] = $options['retry_interval'];
+    }
+    foreach($options as $key => $val) {
+      $call->metadata[$key] = $val;
     }
 
     // set the caching flag
@@ -62,6 +69,9 @@ class Call extends AbstractCall {
     }
     if (!empty($record->scheduled_date)) {
       $call->scheduled_date = new \DateTime($record->scheduled_date);
+    }
+    if (isset($call->metadata['callbacks']) && is_array($call->metadata['callbacks'])) {
+      $call->callbacks = $call->metadata['callbacks'];
     }
     return $call;
   }

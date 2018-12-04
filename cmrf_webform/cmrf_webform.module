@@ -1,5 +1,7 @@
 <?php
 
+$cmrf_webform_submissions_updated = array();
+
 function cmrf_webform_get_connector_name($profile) {
   return 'cmrf_webform_connector:'.$profile;
 }
@@ -19,24 +21,85 @@ function cmrf_webform_get_connector_id($profile=null) {
   return $connector_id;
 }
 
-function cmrf_webform_send_call($entity, $action, $parameters, $options, $profile=null) {
+function cmrf_webform_send_call($entity, $action, $parameters, $options, $profile=null, $callbacks=array()) {
   $connector_id = cmrf_webform_get_connector_id($profile);
   $core = cmrf_core_get_core();
-  $call = $core->createCall($connector_id, $entity, $action, $parameters, $options);
+  $call = $core->createCall($connector_id, $entity, $action, $parameters, $options, $callbacks);
   $core->executeCall($call);
   return $call;
 }
 
-function cmrf_webform_queue_call($entity, $action, $parameters, $options, $profile=null) {
+function cmrf_webform_queue_call($entity, $action, $parameters, $options, $profile=null, $callbacks=array()) {
   $connector_id = cmrf_webform_get_connector_id($profile);
   $core = cmrf_core_get_core();
-  $call = $core->createCall($connector_id, $entity, $action, $parameters, $options);
+  $call = $core->createCall($connector_id, $entity, $action, $parameters, $options, $callbacks);
   $call->setScheduledDate(new \DateTime());
   $core->queueCall($call);
   return $call;
 }
 
+/**
+ * Implements hook_webform_submission_presave().
+ */
+function cmrf_webform_webform_submission_presave($node, &$submission) {
+  global $cmrf_webform_submissions_updated;
+  if ($submission->is_draft) {
+    return;
+  }
+  // Only submit webforms when civimrf is enabled.
+  if (!$node->cmrf_enable) {
+    return;
+  }
+  $original_submissions = webform_get_submissions(array('nid' => $submission->nid, 'sid' => $submission->sid));
+  if (isset($original_submissions[$submission->sid])) {
+    $cmrf_webform_submissions_updated[$submission->sid] = $original_submissions[$submission->sid];
+  }
+
+}
+
+/**
+ * Implements hook_webform_submission_update().
+ */
+function cmrf_webform_webform_submission_update($node, $submission) {
+  global $cmrf_webform_submissions_updated;
+  if ($submission->is_draft) {
+    return;
+  }
+  // Only submit webforms when civimrf is enabled.
+  if (!$node->cmrf_enable) {
+    return;
+  }
+  $sid = $submission->sid;
+  if (!isset($cmrf_webform_submissions_updated[$sid])) {
+    return;
+  }
+  if ($cmrf_webform_submissions_updated[$sid]->is_draft && !$submission->is_draft) {
+    cmrf_webform_submit($node, $submission);
+  }
+}
+
 function cmrf_webform_webform_submission_insert($node, $submission) {
+  cmrf_webform_submit($node, $submission);
+}
+
+function cmrf_webform_clear_submission(\CMRF\Drupal\Call $call) {
+  $metadata = $call->getMetadata();
+  if (isset($metadata['sid']) && isset($metadata['nid'])) {
+    $sid = $metadata['sid'];
+    $nid = $metadata['nid'];
+    $node = node_load($nid);
+    $submission = webform_get_submission($nid, $sid);
+    webform_submission_delete($node, $submission);
+  }
+}
+
+/**
+ * Helper function to submit a submission
+ *
+ * @param $node
+ * @param $submission
+ */
+function cmrf_webform_submit($node, $submission) {
   // Do not pass draft webforms.
   if ($submission->is_draft) {
     return;
@@ -62,13 +125,21 @@ function cmrf_webform_webform_submission_insert($node, $submission) {
       $params[$component['form_key']] = $value;
     }
   }
+  drupal_alter('cmrf_webform_submit_params', $params, $node, $submission);
 
-  $options = array();
+  $options = array(
+    'nid' => $submission->nid,
+    'sid' => $submission->sid,
+  );
+  $callbacks = array();
+  if ($node->cmrf_clear_submission) {
+    $callbacks[] = 'cmrf_webform_clear_submission';
+  }
 
   if ($node->cmrf_queue) {
-    cmrf_webform_queue_call($node->cmrf_entity, $node->cmrf_action, $params, $options, $profile);
+    cmrf_webform_queue_call($node->cmrf_entity, $node->cmrf_action, $params, $options, $profile, $callbacks);
   } else {
-    cmrf_webform_send_call($node->cmrf_entity, $node->cmrf_action, $params, $options, $profile);
+    cmrf_webform_send_call($node->cmrf_entity, $node->cmrf_action, $params, $options, $profile, $callbacks);
   }
 }
 
@@ -766,6 +837,7 @@ function cmrf_webform_settings($form, &$form_state, $node) {
   $entity = isset($node->cmrf_entity) ? $node->cmrf_entity : '';
   $action = isset($node->cmrf_action) ? $node->cmrf_action : '';
   $profile = isset($node->cmrf_profile) ? $node->cmrf_profile : '';
+  $clear_submission = isset($node->cmrf_clear_submission) ? $node->cmrf_clear_submission : TRUE;
   $retrieve_default_values = isset($node->cmrf_retrieve_default_values) ? $node->cmrf_retrieve_default_values : array(
     'enable' => FALSE,
     'entity' => '',
@@ -785,6 +857,17 @@ function cmrf_webform_settings($form, &$form_state, $node) {
     ),
     '#description' => t('Submit this webform with CiviMRF'),
     '#default_value' => $enabled ? 'cmrf_webform' : '',
+  );
+  $form['cmrf_webform']['cmrf_clear_submission'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Delete the submission after processing.'),
+    '#description' => t('Deletes the submission form the webform results after the data has been submitted to CiviCRM.'),
+    '#default_value' => $clear_submission,
+    '#states' => array(
+      'visible' => array(
+        'select[name="cmrf_enable"]' => array('value' => 'cmrf_webform'),
+      ),
+    ),
   );
   $form['cmrf_webform']['cmrf_queue'] = array(
     '#type' => 'checkbox',
@@ -999,6 +1082,7 @@ function cmrf_webform_settings_submit(array &$form, array &$form_state) {
   $node = &$form['#node'];
   $node->cmrf_enable = $form_state['values']['cmrf_enable'] == 'cmrf_webform' ? TRUE : FALSE;
   $node->cmrf_queue = $form_state['values']['cmrf_queue'] ? TRUE : FALSE;
+  $node->cmrf_clear_submission = $form_state['values']['cmrf_clear_submission'] ? TRUE : FALSE;
   $node->cmrf_profile = $form_state['values']['cmrf_profile'] ? $form_state['values']['cmrf_profile'] : '';
   $node->cmrf_entity = $form_state['values']['cmrf_entity'] ? $form_state['values']['cmrf_entity'] : '';
   $node->cmrf_action = $form_state['values']['cmrf_action'] ? $form_state['values']['cmrf_action'] : '';
@@ -1027,6 +1111,7 @@ function cmrf_webform_node_load($nodes, $types) {
     $node = &$nodes[$cmrf_webform->nid];
     $node->cmrf_enable = $cmrf_webform->cmrf_enable ? TRUE : FALSE;
     $node->cmrf_queue = $cmrf_webform->cmrf_queue ? TRUE : FALSE;
+    $node->cmrf_clear_submission = $cmrf_webform->cmrf_clear_submission ? TRUE : FALSE;
     $node->cmrf_profile = $cmrf_webform->cmrf_profile ? $cmrf_webform->cmrf_profile : '';
     $node->cmrf_entity = $cmrf_webform->cmrf_entity ? $cmrf_webform->cmrf_entity : '';
     $node->cmrf_action = $cmrf_webform->cmrf_action ? $cmrf_webform->cmrf_action : '';
@@ -1053,6 +1138,7 @@ function cmrf_webform_node_insert($node) {
         'nid' => $node->nid,
         'cmrf_enable' => !empty($node->cmrf_enable) ? 1 : 0,
         'cmrf_queue' => !empty($node->cmrf_queue) ? 1 : 0,
+        'cmrf_clear_submission' => !empty($node->cmrf_clear_submission) ? 1: 0,
         'cmrf_profile' => !empty($node->cmrf_profile) ? $node->cmrf_profile : '',
         'cmrf_entity' => !empty($node->cmrf_entity) ? $node->cmrf_entity : '',
         'cmrf_action' => !empty($node->cmrf_action) ? $node->cmrf_action : '',
@@ -1078,6 +1164,7 @@ function cmrf_webform_node_update($node) {
       ->fields(array(
         'cmrf_enable' => !empty($node->cmrf_enable) ? 1 : 0,
         'cmrf_queue' => !empty($node->cmrf_queue) ? 1 : 0,
+        'cmrf_clear_submission' => !empty($node->cmrf_clear_submission) ? 1: 0,
         'cmrf_profile' => !empty($node->cmrf_profile) ? $node->cmrf_profile : '',
         'cmrf_entity' => !empty($node->cmrf_entity) ? $node->cmrf_entity : '',
         'cmrf_action' => !empty($node->cmrf_action) ? $node->cmrf_action : '',

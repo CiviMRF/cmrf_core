@@ -41,6 +41,13 @@ function cmrf_webform_schema() {
           'default' => 0,
           'description' => 'Submit in background',
         ),
+        'cmrf_clear_submission' => array(
+          'type' => 'int',
+          'size' => 'tiny',
+          'not null' => TRUE,
+          'default' => 0,
+          'description' => 'Clear submission',
+        ),
         'cmrf_profile' => array(
           'description' => 'The profile',
           'type' => 'varchar',
@@ -306,4 +313,22 @@ function cmrf_webform_update_7003() {
   db_delete('cmrf_webforms')
     ->condition('nid', array_keys($cmrf_webform_nodes), 'NOT IN')
     ->execute();
+}
+
+/**
+ * Add functionality to clear webform submissions.
+ *
+ */
+function cmrf_webform_update_7004() {
+  db_add_field(
+    'cmrf_webforms',
+    'cmrf_clear_submission',
+    array(
+      'description' => 'Clear submissions',
+      'type' => 'int',
+      'size' => 'tiny',
+      'not null' => TRUE,
+      'default' => 0,
+    )
+  );
 }
