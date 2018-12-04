@@ -236,8 +236,9 @@ function cmrf_core_menu() {
     'file' => 'cmrf_core.admin.inc',
     'weight' => 0,
   );
-  $items['admin/config/civimrf/calls'] = array(
-    'title' => 'CiviMRF Call log',
+  $items['admin/reports/civimrf_calls'] = array(
+    'title' => t('CiviMRF Call log'),
+    'description' => t('View all CiviMRF calls'),
     'page callback' => 'cmrf_core_admin_list_calls',
     'access arguments' => array('view cmrf calls'),
     'file' => 'cmrf_core.admin.inc',
