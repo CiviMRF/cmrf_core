@@ -224,7 +224,7 @@ function _cmrf_views_civicrm_fields($api_entity, $api_action) {
           } elseif ($filterField) {
             $return[$field_name]['filter']['handler'] = 'views_handler_filter_numeric';
           }
-          $return[$field_name]['argument']['handler'] = 'views_handler_numeric';
+          $return[$field_name]['argument']['handler'] = 'views_handler_argument';
           break;
         case 4: // Date field
         case 12: // Date and time field
