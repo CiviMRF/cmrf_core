@@ -12,7 +12,9 @@ namespace CMRF\Drupal;
 class SQLPersistingCallFactory extends \CMRF\PersistenceLayer\SQLPersistingCallFactory {
   
   public function clearCachedCalls() {
-    $stmt = $this->connection->query("delete from {$this->table_name} where status = 'DONE'");
+    if (isset($this->connection)) {
+      $this->connection->query("delete from {$this->table_name} where status = 'DONE'");
+    }
   }
   
 }
