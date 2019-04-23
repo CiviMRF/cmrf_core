@@ -55,6 +55,8 @@ class cmrf_views_plugin_query_civimrf extends views_plugin_query {
         case '!=':
         case 'BETWEEN':
         case 'NOT BETWEEN':
+        case 'LIKE':
+        case 'NOT LIKE':
           $parameters[$where['field']] = [$where['operator'] => $where['value']];
           break;
         case 'in':
