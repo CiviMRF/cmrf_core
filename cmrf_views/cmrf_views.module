@@ -258,7 +258,7 @@ function _cmrf_views_civicrm_fields($api_entity, $api_action) {
             $return[$field_name]['filter']['handler'] = 'cmrf_views_handler_filter_in_operator';
             $return[$field_name]['filter']['options'] = $fieldOtions;
           } elseif ($filterField) {
-            $return[$field_name]['filter']['handler'] = 'views_handler_filter';
+            $return[$field_name]['filter']['handler'] = 'views_handler_filter_string';
           }
           $return[$field_name]['argument']['handler'] = 'views_handler_argument';
           break; 
