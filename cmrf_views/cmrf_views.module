@@ -216,6 +216,7 @@ function _cmrf_views_civicrm_fields($api_entity, $api_action) {
           $return[$field_name]['field']['handler'] = 'cmrf_views_handler_field_numeric';
           $return[$field_name]['sort']['handler'] = 'views_handler_sort';
           if (!empty($fieldOtions)) {
+            $return[$field_name]['field']['handler'] = 'cmrf_views_handler_field_prerender_list';
             $return[$field_name]['field']['options'] = $fieldOtions;  
           }
           if (!empty($fieldOtions) && $filterField) {
@@ -243,8 +244,9 @@ function _cmrf_views_civicrm_fields($api_entity, $api_action) {
           $return[$field_name]['field']['handler'] = 'views_handler_field_boolean';
           $return[$field_name]['sort']['handler'] = 'views_handler_sort';
           if ($filterField) {
-            $return[$field_name]['filter']['handler'] = 'views_handler_filter_boolean_operator';
+            $return[$field_name]['filter']['handler'] = 'cmrf_views_handler_filter_boolean_operator';
             $return[$field_name]['filter']['use equal'] = TRUE;
+            $return[$field_name]['filter']['options'] = $fieldOtions;
           }
           $return[$field_name]['argument']['handler'] = 'views_handler_argument';
           break;  
@@ -252,6 +254,7 @@ function _cmrf_views_civicrm_fields($api_entity, $api_action) {
           $return[$field_name]['field']['handler'] = 'cmrf_views_handler_field_markup';
           $return[$field_name]['sort']['handler'] = 'views_handler_sort';
           if (!empty($fieldOtions)) {
+            $return[$field_name]['field']['handler'] = 'cmrf_views_handler_field_prerender_list';
             $return[$field_name]['field']['options'] = $fieldOtions;
           }
           if (!empty($fieldOtions) && $filterField) {
@@ -266,6 +269,7 @@ function _cmrf_views_civicrm_fields($api_entity, $api_action) {
           $return[$field_name]['field']['handler'] = 'cmrf_views_handler_field';
           $return[$field_name]['sort']['handler'] = 'views_handler_sort';
           if (!empty($fieldOtions)) {
+            $return[$field_name]['field']['handler'] = 'cmrf_views_handler_field_prerender_list';
             $return[$field_name]['field']['options'] = $fieldOtions;  
           }
           if (!empty($fieldOtions) && $filterField) {
