@@ -38,13 +38,13 @@ function cmrf_core_uninstall() {
  *
  */
 function cmrf_core_update_7100(&$sandbox) {
-  db_change_field('cmrf_core_call', 'request', array(
+  db_change_field('cmrf_core_call', 'request', 'request', array(
     'description' => 'The request data sent',
     'type' => 'long text',
     'serialize' => FALSE,
     'not null' => TRUE,
   ));
-  db_change_field('cmrf_core_call', 'type', array(
+  db_change_field('cmrf_core_call', 'reply', 'reply', array(
     'description' => 'The reply data received',
     'type' => 'long text',
     'serialize' => FALSE,
