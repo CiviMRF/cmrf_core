@@ -33,6 +33,25 @@ function cmrf_core_uninstall() {
   // Do some things on uninstall, like deleting all variables.
 }
 
+/**
+ * Change request and reply to long text. So it could hold attachment data
+ *
+ */
+function cmrf_core_update_7100(&$sandbox) {
+  db_change_field('cmrf_core_call', 'request', array(
+    'description' => 'The request data sent',
+    'type' => 'long text',
+    'serialize' => FALSE,
+    'not null' => TRUE,
+  ));
+  db_change_field('cmrf_core_call', 'type', array(
+    'description' => 'The reply data received',
+    'type' => 'long text',
+    'serialize' => FALSE,
+    'not null' => TRUE,
+  ));
+}
+
 
 /**
  * Implements hook_schema().

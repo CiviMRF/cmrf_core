@@ -268,7 +268,9 @@ function _cmrf_views_civicrm_fields($api_entity, $api_action) {
         default:
           $return[$field_name]['field']['handler'] = 'cmrf_views_handler_field';
           $return[$field_name]['sort']['handler'] = 'views_handler_sort';
-          if (!empty($fieldOtions)) {
+          if (isset($field['data_type']) && $field['data_type'] == 'File') {
+            $return[$field_name]['field']['handler'] = 'cmrf_views_handler_field_file';
+          } else if (!empty($fieldOtions)) {
             $return[$field_name]['field']['handler'] = 'cmrf_views_handler_field_prerender_list';
             $return[$field_name]['field']['options'] = $fieldOtions;  
           }
