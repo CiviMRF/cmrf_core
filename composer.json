@@ -30,6 +30,6 @@
     }
   ],
   "require": {
-    "CiviMRF/CMRF_Abstract_Core": "0.1"
+    "civimrf/cmrf_abstract_core": "0.1"
   }
 }
