@@ -54,6 +54,9 @@
        }
 
        $link_title = $value->name;
+       if (empty($link_title)) {
+         $link_title = $this->label();
+       }
        $path = request_path();
        $rendered = l($link_title, $path, array(
          'query' => array('cmrf_views_handler_field_file_hash' => $hash),
