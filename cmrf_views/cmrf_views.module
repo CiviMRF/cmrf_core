@@ -267,6 +267,7 @@ function _cmrf_views_civicrm_fields($api_entity, $api_action) {
           break;
         case '1024': // Money field
           $return[$field_name]['field']['handler'] = 'cmrf_views_handler_field_numeric';
+          $return[$field_name]['field']['float'] = true;
           $return[$field_name]['sort']['handler'] = 'views_handler_sort';
           if (isset($field['data_type']) && $field['data_type'] == 'File') {
             $return[$field_name]['field']['handler'] = 'cmrf_views_handler_field_file';
