@@ -1,9 +1,8 @@
-<?php
-
-namespace Drupal\cmrf_core\Form;
+<?php namespace Drupal\cmrf_core\Form;
 
 use Drupal\Core\Entity\EntityConfirmFormBase;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Messenger\Messenger;
 use Drupal\Core\Url;
 
 /**
@@ -38,13 +37,13 @@ class CMRFConnectorDeleteForm extends EntityConfirmFormBase {
   public function submitForm(array &$form, FormStateInterface $form_state) {
     $this->entity->delete();
 
-    drupal_set_message(
+    $this->messenger()->addMessage(
       $this->t('content @type: deleted @label.',
         [
-          '@type' => $this->entity->bundle(),
+          '@type'  => $this->entity->bundle(),
           '@label' => $this->entity->label(),
         ]
-        )
+      )
     );
 
     $form_state->setRedirectUrl($this->getCancelUrl());

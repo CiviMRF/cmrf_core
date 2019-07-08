@@ -1,6 +1,4 @@
-<?php
-
-namespace Drupal\cmrf_core\Entity;
+<?php namespace Drupal\cmrf_core\Entity;
 
 use Drupal\Core\Config\Entity\ConfigEntityInterface;
 

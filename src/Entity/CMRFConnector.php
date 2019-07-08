@@ -1,6 +1,4 @@
-<?php
-
-namespace Drupal\cmrf_core\Entity;
+<?php namespace Drupal\cmrf_core\Entity;
 
 use Drupal\Core\Config\Entity\ConfigEntityBase;
 
@@ -70,15 +68,15 @@ class CMRFConnector extends ConfigEntityBase implements CMRFConnectorInterface {
 
 
   public function getAvailableProfiles() {
-    $return = array();
-    $query = \Drupal::entityQuery('cmrf_profile');
-    $results = $query->execute();
+    $return     = [];
+    $query      = \Drupal::entityQuery('cmrf_profile');
+    $results    = $query->execute();
     $entity_ids = array_keys($results);
 
     /** @var CMRFProfile[] $loaded */
     $loaded = CMRFProfile::loadMultiple($entity_ids);
 
-    foreach($loaded as $entity) {
+    foreach ($loaded as $entity) {
       $return[$entity->id()] = $entity->label();
     }
 

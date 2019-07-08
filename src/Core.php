@@ -1,42 +1,32 @@
-<?php
-/**
- * Created by PhpStorm.
- * User: enno
- * Date: 18.07.17
- * Time: 17:19
- */
-
-namespace Drupal\cmrf_core;
+<?php namespace Drupal\cmrf_core;
 
 use CMRF\Connection\Curl as CurlConnection;
 use CMRF\Core\Core as AbstractCore;
-use CMRF\PersistenceLayer\CallFactory;
 use CMRF\PersistenceLayer\SQLPersistingCallFactory;
 use Drupal\cmrf_core\Entity\CMRFConnector;
 use Drupal\cmrf_core\Entity\CMRFProfile;
 
-
 class Core extends AbstractCore {
 
   public function __construct() {
-    $info=\Drupal::database()->getConnectionOptions();
-    if(!isset($info['port'])) {
-      $info['port']=NULL;
+    $info = \Drupal::database()->getConnectionOptions();
+    if (!isset($info['port'])) {
+      $info['port'] = NULL;
     }
-    $conn=new \mysqli($info['host'],$info['username'],$info['password'],$info['database'],$info['port']);
-    $table_name=\Drupal::database()->prefixTables("{civicrm_api_call}");
-    $factory = new SQLPersistingCallFactory($conn, $table_name, array('\Drupal\cmrf_core\Call','createNew'), array('\Drupal\cmrf_core\Call','createWithRecord'));
+    $conn       = new \mysqli($info['host'], $info['username'], $info['password'], $info['database'], $info['port']);
+    $table_name = \Drupal::database()->prefixTables("{civicrm_api_call}");
+    $factory    = new SQLPersistingCallFactory($conn, $table_name, ['\Drupal\cmrf_core\Call', 'createNew'], ['\Drupal\cmrf_core\Call', 'createWithRecord']);
     parent::__construct($factory);
   }
 
   protected function getConnection($connector_id) {
     //TODO: store open connections for reuse.
-    return new CurlConnection($this,$connector_id);
+    return new CurlConnection($this, $connector_id);
   }
 
   public function getConnectionProfile($connector_id) {
-    $entity= CMRFConnector::load($connector_id);
-    if($entity == null) {
+    $entity = CMRFConnector::load($connector_id);
+    if ($entity == NULL) {
       throw new \Exception("Unregistered connector '$connector_id'.", 1);
     }
     return $this->getConnectionProfiles()[$entity->profile];
@@ -45,29 +35,29 @@ class Core extends AbstractCore {
 
   public function getConnectionProfiles() {
 
-    $return=array();
-    $query = \Drupal::entityQuery('cmrf_profile');
-    $results=$query->execute();
-    $ids=array_keys($results);
+    $return  = [];
+    $query   = \Drupal::entityQuery('cmrf_profile');
+    $results = $query->execute();
+    $ids     = array_keys($results);
     /** @var CMRFProfile[] $loaded */
-    $loaded=CMRFProfile::loadMultiple($ids);
-    foreach($loaded as $entity) {
-      $return[$entity->id()]=array(
-        'url'=>$entity->url,
-        'api_key'=>$entity->api_key,
-        'site_key'=>$entity->site_key
-      );
+    $loaded = CMRFProfile::loadMultiple($ids);
+    foreach ($loaded as $entity) {
+      $return[$entity->id()] = [
+        'url'      => $entity->url,
+        'api_key'  => $entity->api_key,
+        'site_key' => $entity->site_key,
+      ];
     }
     return $return;
   }
 
   public function getDefaultProfile() {
-    $entity=CMRFProfile::load('default');
-    return array(
-      'url'=>$entity->url,
-      'api_key'=>$entity->api_key,
-      'site_key'=>$entity->site_key
-    );
+    $entity = CMRFProfile::load('default');
+    return [
+      'url'      => $entity->url,
+      'api_key'  => $entity->api_key,
+      'site_key' => $entity->site_key,
+    ];
   }
 
   public function registerConnector($connector_name, $profile = NULL) {
@@ -83,27 +73,27 @@ class Core extends AbstractCore {
     }
 
     // find a new ID for the connector
-    $connectors = array();
+    $connectors   = [];
     $connector_id = $this->generateURN("connector:$connector_name", $connectors);
-    $connector = array(
+    $connector    = [
       'type'    => $connector_name,
       'profile' => $profile,
-      'id'      => $connector_id
-    );
+      'id'      => $connector_id,
+    ];
 
-    $id = $connector_name;
+    $id    = $connector_name;
     $count = 1;
-    while(CMRFConnector::load($id) !== NULL) {
+    while (CMRFConnector::load($id) !== NULL) {
       $count = $count + 1;
-      $id = $connector_name.'_'.$count;
+      $id    = $connector_name . '_' . $count;
     }
 
     $entity = CMRFConnector::create();
-    $entity->set('id',$id);
-    $entity->set('label',$connector_id);
+    $entity->set('id', $id);
+    $entity->set('label', $connector_id);
 
-    $entity->type=$connector_name;
-    $entity->profile=$profile;
+    $entity->type    = $connector_name;
+    $entity->profile = $profile;
     $entity->save();
     return $entity->id();
   }
@@ -125,7 +115,7 @@ class Core extends AbstractCore {
   }
 
   protected function getSettings() {
-    return array();
+    return [];
   }
 
   protected function storeSettings($settings) {
