@@ -17,3 +17,4 @@ files[] = handlers/cmrf_views_handler_field_date.inc
 files[] = handlers/cmrf_views_handler_field_markup.inc
 files[] = handlers/cmrf_views_handler_filter_boolean_operator.inc
 files[] = handlers/cmrf_views_handler_filter_in_operator.inc
+files[] = handlers/cmrf_views_handler_filter_date.inc
