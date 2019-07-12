@@ -1,0 +1,31 @@
+entity.cmrf_webform_option_set.collection:
+  path: '/admin/config/cmrf_webform_option_set'
+  defaults:
+    _entity_list: 'cmrf_webform_option_set'
+    _title: 'Option sets configuration'
+  requirements:
+    _permission: 'administer site configuration'
+
+entity.cmrf_webform_option_set.add_form:
+  path: '/admin/config/system/cmrf_webform_option_set/add'
+  defaults:
+    _entity_form: 'cmrf_webform_option_set.add'
+    _title: 'Add option set'
+  requirements:
+    _permission: 'administer site configuration'
+
+entity.cmrf_webform_option_set.edit_form:
+  path: '/admin/config/system/cmrf_webform_option_set/{cmrf_webform_option_set}'
+  defaults:
+    _entity_form: 'cmrf_webform_option_set.edit'
+    _title: 'Edit option set'
+  requirements:
+    _permission: 'administer site configuration'
+
+entity.cmrf_webform_option_set.delete_form:
+  path: '/admin/config/system/cmrf_webform_option_set/{cmrf_webform_option_set}/delete'
+  defaults:
+    _entity_form: 'cmrf_webform_option_set.delete'
+    _title: 'Delete option set'
+  requirements:
+    _permission: 'administer site configuration'

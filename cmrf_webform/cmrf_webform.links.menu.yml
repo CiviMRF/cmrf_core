@@ -1,0 +1,6 @@
+entity.cmrf_webform_option_set.collection:
+  title: 'CiviMRF Webform settings'
+  parent: system.admin_config_system
+  description: 'Administer CiviMRF Webform integration'
+  route_name: entity.cmrf_webform_option_set.collection
+  weight: 100
