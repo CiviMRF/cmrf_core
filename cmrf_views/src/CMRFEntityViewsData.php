@@ -3,7 +3,7 @@
 use Drupal\Core\Entity\EntityTypeInterface;
 use \Drupal\views\EntityViewsDataInterface;
 
-class EntityData implements EntityViewsDataInterface {
+class CMRFEntityViewsData implements EntityViewsDataInterface {
 
   public function getViewsData() {
     // TODO: Implement getViewsData() method.

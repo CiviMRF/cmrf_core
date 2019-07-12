@@ -1,0 +1,5 @@
+entity.cmrf_dataset.add_form:
+  route_name: entity.cmrf_dataset.add_form
+  title: 'Add dataset'
+  appears_on:
+    - entity.cmrf_dataset.collection

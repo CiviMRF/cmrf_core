@@ -1,0 +1,7 @@
+entity.cmrf_dataset.collection:
+  title: 'CMRF Datasets'
+  route_name: entity.cmrf_dataset.collection
+  description: 'List and edit CMRF views datasets'
+  parent: system.admin_config_system
+  weight: 100
+

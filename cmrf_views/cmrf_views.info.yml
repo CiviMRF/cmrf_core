@@ -3,3 +3,5 @@ type: module
 description: CMRF CiviCRM Integration with views
 core: 8.x
 package: CiviCRM
+dependencies:
+  - cmrf_core

@@ -1,0 +1,27 @@
+cmrf_views.cmrf_dataset.*:
+  type: config_entity
+  label: 'CMRF dataset'
+  mapping:
+    id:
+      type: string
+      label: 'Machine Name'
+    label:
+      type: label
+      label: 'Label'
+    uuid:
+      type: string
+    profile:
+      type: string
+      label: 'Profile'
+    entity:
+      type: string
+      label: 'Entity'
+    action:
+      type: string
+      label: 'Action'
+    getcount:
+      type: string
+      label: 'Getcount api action'
+    params:
+      type: string
+      label: 'API Parameters'
