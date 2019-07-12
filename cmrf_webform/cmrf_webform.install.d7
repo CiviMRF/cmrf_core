@@ -1,0 +1,334 @@
+<?php
+
+/**
+ * Implements hook_disable().
+ */
+function cmrf_webform_disable() {
+  if (function_exists('cmrf_core_list_profiles')) {
+    $profiles = cmrf_core_list_profiles();
+    foreach ($profiles as $profile_name => $profile) {
+      variable_del(cmrf_webform_get_connector_name($profile_name));
+    }
+  }
+}
+
+/**
+ * Implements hook_schema().
+ */
+function cmrf_webform_schema() {
+  return array(
+    'cmrf_webforms' => array(
+      'description' => 'CiviMRF settings for webforms.',
+      'fields' => array(
+        'nid' => array(
+          'type' => 'int',
+          'unsigned' => TRUE,
+          'not null' => TRUE,
+          'default' => 0,
+          'description' => 'Webform Node ID',
+        ),
+        'cmrf_enable' => array(
+          'type' => 'int',
+          'size' => 'tiny',
+          'not null' => TRUE,
+          'default' => 0,
+          'description' => 'Enabled CiviMRF for this webform',
+        ),
+        'cmrf_queue' => array(
+          'type' => 'int',
+          'size' => 'tiny',
+          'not null' => TRUE,
+          'default' => 0,
+          'description' => 'Submit in background',
+        ),
+        'cmrf_clear_submission' => array(
+          'type' => 'int',
+          'size' => 'tiny',
+          'not null' => TRUE,
+          'default' => 0,
+          'description' => 'Clear submission',
+        ),
+        'cmrf_profile' => array(
+          'description' => 'The profile',
+          'type' => 'varchar',
+          'length' => 255,
+          'not null' => TRUE,
+        ),
+        'cmrf_entity' => array(
+          'description' => 'The api entity',
+          'type' => 'varchar',
+          'length' => 255,
+          'not null' => TRUE,
+        ),
+        'cmrf_action' => array(
+          'description' => 'The api action',
+          'type' => 'varchar',
+          'length' => 255,
+          'not null' => TRUE,
+        ),
+        'cmrf_retrieve_default_values_enable' => array(
+          'description' => 'Whether to retrieve default values using an API call.',
+          'type' => 'int',
+          'size' => 'tiny',
+          'not null' => TRUE,
+          'default' => 0,
+        ),
+        'cmrf_retrieve_default_values_entity' => array(
+          'description' => 'The API entity to use for retrieving default values.',
+          'type' => 'varchar',
+          'length' => 255,
+        ),
+        'cmrf_retrieve_default_values_action' => array(
+          'description' => 'The API action to use for retrieving default values.',
+          'type' => 'varchar',
+          'length' => 255,
+        ),
+        'cmrf_retrieve_default_values_parameters' => array(
+          'type' => 'text',
+          'size' => 'normal', // TODO: Is this sufficient (16 KB in MySQL)?
+          'description' => 'The API parameters to use for retrieving default values.',
+        ),
+        'cmrf_retrieve_default_values_options' => array(
+          'type' => 'text',
+          'size' => 'normal', // TODO: Is this sufficient (16 KB in MySQL)?
+          'description' => 'The API options to use for retrieving default values.',
+        ),
+      ),
+      'primary key' => array('nid'),
+    ),
+    'cmrf_webform_select_option_sets' => array(
+      'description' => 'Select option sets for CiviMRF webforms.',
+      'fields' => array(
+        'name' => array(
+          'type' => 'varchar',
+          'length' => 32,
+          'not null' => TRUE,
+          'description' => 'The machine name of the select options set.',
+        ),
+        'title' => array(
+          'type' => 'varchar',
+          'length' => 255,
+          'not null' => TRUE,
+          'description' => 'The human-readable title of the select options set.',
+        ),
+        'pid' => array(
+          'type' => 'int',
+          'unsigned' => TRUE,
+          'not null' => TRUE,
+          'default' => 0,
+          'description' => 'The CiviMRF profile this select options set is assigned to.',
+        ),
+        'entity' => array(
+          'type' => 'varchar',
+          'length' => 64, // TODO: Is this sufficient?
+          'not null ' => TRUE,
+          'description' => 'The CiviCRM API entity to query.',
+        ),
+        'action' => array(
+          'type' => 'varchar',
+          'length' => 64, // TODO: Is this sufficient?
+          'not null' => TRUE,
+          'description' => 'The CiviCRM API action to query.',
+        ),
+        'parameters' => array(
+          'type' => 'text',
+          'size' => 'normal', // TODO: Is this sufficient (16 KB in MySQL)?
+          'not null' => TRUE,
+          'description' => 'CiviCRM API parameters to add to the query.',
+        ),
+        'option_value' => array(
+          'type' => 'varchar',
+          'length' => 255,
+          'not null' => TRUE,
+          'description' => 'The field of the CiviCRM entity to use as the value for the options in the select options set.',
+        ),
+        'option_label' => array(
+          'type' => 'varchar',
+          'length' => 255,
+          'not null' => TRUE,
+          'description' => 'The field of the CiviCRM entity to use as the label for the options in the select options set.',
+        ),
+        'cache' => array(
+          'type' => 'varchar',
+          'length' => 255,
+          'not null' => TRUE,
+          'description' => 'The cache TTL for the result of the API call for the select options set.',
+        ),
+      ),
+      'primary key' => array('name', 'pid'),
+      'indexes' => array(
+        'pid' => array('pid'),
+      ),
+      'foreign keys' => array(
+        'select_options_set_profile' => array(
+          'table' => 'cmrf_core_profiles',
+          'columns' => array('pid' => 'pid'),
+        ),
+      ),
+    ),
+  );
+}
+
+/**
+ * Add database table for select options sets.
+ */
+function cmrf_webform_update_7001() {
+  db_create_table('cmrf_webform_select_option_sets', array(
+    'description' => 'Select option sets for CiviMRF webforms.',
+    'fields' => array(
+      'name' => array(
+        'type' => 'varchar',
+        'length' => 32,
+        'not null' => TRUE,
+        'description' => 'The machine name of the select options set.',
+      ),
+      'title' => array(
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'description' => 'The human-readable title of the select options set.',
+      ),
+      'pid' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => 'The CiviMRF profile this select options set is assigned to.',
+      ),
+      'entity' => array(
+        'type' => 'varchar',
+        'length' => 64, // TODO: Is this sufficient?
+        'not null ' => TRUE,
+        'description' => 'The CiviCRM API entity to query.',
+      ),
+      'action' => array(
+        'type' => 'varchar',
+        'length' => 64, // TODO: Is this sufficient?
+        'not null' => TRUE,
+        'description' => 'The CiviCRM API action to query.',
+      ),
+      'parameters' => array(
+        'type' => 'text',
+        'size' => 'normal', // TODO: Is this sufficient (16 KB in MySQL)?
+        'not null' => TRUE,
+        'description' => 'CiviCRM API parameters to add to the query.',
+      ),
+      'option_value' => array(
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'description' => 'The field of the CiviCRM entity to use as the value for the options in the select options set.',
+      ),
+      'option_label' => array(
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'description' => 'The field of the CiviCRM entity to use as the label for the options in the select options set.',
+      ),
+      'cache' => array(
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'description' => 'The cache TTL for the result of the API call for the select options set.',
+      ),
+    ),
+    'primary key' => array('name', 'pid'),
+    'indexes' => array(
+      'pid' => array('pid'),
+    ),
+    'foreign keys' => array(
+      'select_options_set_profile' => array(
+        'table' => 'cmrf_core_profiles',
+        'columns' => array('pid' => 'pid'),
+      ),
+    ),
+  ));
+}
+
+/**
+ * Update database schema for retrieving default values for Webform components.
+ */
+function cmrf_webform_update_7002() {
+  db_add_field(
+    'cmrf_webforms',
+    'cmrf_retrieve_default_values_enable',
+    array(
+      'description' => 'Whether to retrieve default values using an API call.',
+      'type' => 'int',
+      'size' => 'tiny',
+      'not null' => TRUE,
+      'default' => 0,
+    )
+  );
+  db_add_field(
+    'cmrf_webforms',
+    'cmrf_retrieve_default_values_entity',
+    array(
+      'description' => 'The API entity to use for retrieving default values.',
+      'type' => 'varchar',
+      'length' => 255,
+    )
+  );
+  db_add_field(
+    'cmrf_webforms',
+    'cmrf_retrieve_default_values_action',
+    array(
+      'description' => 'The API action to use for retrieving default values.',
+      'type' => 'varchar',
+      'length' => 255,
+    )
+  );
+  db_add_field(
+    'cmrf_webforms',
+    'cmrf_retrieve_default_values_parameters',
+    array(
+      'type' => 'text',
+      'size' => 'normal', // TODO: Is this sufficient (16 KB in MySQL)?
+      'description' => 'The API parameters to use for retrieving default values.',
+    )
+  );
+  db_add_field(
+    'cmrf_webforms',
+    'cmrf_retrieve_default_values_options',
+    array(
+      'type' => 'text',
+      'size' => 'normal', // TODO: Is this sufficient (16 KB in MySQL)?
+      'description' => 'The API options to use for retrieving default values.',
+    )
+  );
+}
+
+/**
+ * Clean up "cmrf_webforms" table for non-Webform node types.
+ */
+function cmrf_webform_update_7003() {
+  $query = db_select('cmrf_webforms');
+  $query->leftJoin('node', 'node', 'node.nid = cmrf_webforms.nid');
+  $query->addField('cmrf_webforms', 'nid');
+  $query->addField('node', 'type');
+  $cmrf_webform_nodes = $query->execute()->fetchAllKeyed();
+  $cmrf_webform_nodes = array_filter($cmrf_webform_nodes, function($node_type) {
+    return variable_get('webform_node_' . $node_type, FALSE);
+  });
+  db_delete('cmrf_webforms')
+    ->condition('nid', array_keys($cmrf_webform_nodes), 'NOT IN')
+    ->execute();
+}
+
+/**
+ * Add functionality to clear webform submissions.
+ *
+ */
+function cmrf_webform_update_7004() {
+  db_add_field(
+    'cmrf_webforms',
+    'cmrf_clear_submission',
+    array(
+      'description' => 'Clear submissions',
+      'type' => 'int',
+      'size' => 'tiny',
+      'not null' => TRUE,
+      'default' => 0,
+    )
+  );
+}
