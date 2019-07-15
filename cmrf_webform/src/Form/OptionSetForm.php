@@ -35,27 +35,74 @@ class OptionSetForm extends EntityForm {
   public function form(array $form, FormStateInterface $form_state) {
     $form = parent::form($form, $form_state);
 
-    $example = $this->entity;
+    $entity = $this->entity;
 
-    $form['label'] = [
+    $form['title'] = [
       '#type' => 'textfield',
-      '#title' => $this->t('Label'),
+      '#title' => $this->t('Title'),
       '#maxlength' => 255,
-      '#default_value' => $example->label(),
-      '#description' => $this->t("Label for the Example."),
+      '#default_value' => $entity->getTitle(),
       '#required' => TRUE,
     ];
 
     $form['id'] = [
       '#type' => 'machine_name',
-      '#default_value' => $example->id(),
+      '#default_value' => $entity->id(),
       '#machine_name' => [
         'exists' => [$this, 'exist'],
       ],
-      '#disabled' => !$example->isNew(),
+      '#disabled' => !$entity->isNew(),
     ];
 
-    // todo
+    $form['entity'] = [
+      '#type' => 'textfield',
+      '#title' => $this->t('Entity'),
+      '#maxlength' => 255,
+      '#default_value' => $entity->getEntity(),
+      '#required' => TRUE,
+    ];
+
+    $form['action'] = [
+      '#type' => 'textfield',
+      '#title' => $this->t('Action'),
+      '#maxlength' => 255,
+      '#default_value' => $entity->getAction(),
+      '#required' => TRUE,
+    ];
+
+    $form['parameters'] = [
+      '#type' => 'textarea',
+      '#title' => $this->t('Parameters'),
+      '#default_value' => $entity->getParameters() ?? '{}',
+      '#description' => $this->t("JSON-formatted object with API parameters for the entity and action entered above."),
+    ];
+
+    $form['key_property'] = [
+      '#type' => 'textfield',
+      '#title' => $this->t('Key property'),
+      '#maxlength' => 255,
+      '#default_value' => $entity->getKeyProperty(),
+      '#description' => $this->t("A property of the queried entity to use as the key for the dedicated select option."),
+      '#required' => TRUE,
+    ];
+
+    $form['value_property'] = [
+      '#type' => 'textfield',
+      '#title' => $this->t('Value property'),
+      '#maxlength' => 255,
+      '#default_value' => $entity->getValueProperty(),
+      '#description' => $this->t("A property of the queried entity to use as the content (i.e. the label/value) for the dedicated select option."),
+      '#required' => TRUE,
+    ];
+
+    $form['cache'] = [
+      '#type' => 'textfield',
+      '#title' => $this->t('Cache'),
+      '#maxlength' => 255,
+      '#default_value' => $entity->getCache() ?? 0,
+      '#description' => $this->t("A relative date/time format that the PHP datetime parser understands, e.g. `1 week`. Defaults to `0` (no caching)."),
+    ];
+
     return $form;
   }
 
@@ -63,18 +110,13 @@ class OptionSetForm extends EntityForm {
    * {@inheritdoc}
    */
   public function save(array $form, FormStateInterface $form_state) {
-    $example = $this->entity;
-    $status = $example->save();
+    $options = $this->entity;
+    $status = $options->save();
 
     if ($status) {
-      $this->messenger()->addMessage($this->t('Saved the %label Option set.', [
-        '%label' => $example->label(),
+      $this->messenger()->addMessage($this->t('Saved the %title Option set.', [
+        '%title' => $options->getTitle(),
       ]));
-    }
-    else {
-      $this->messenger()->addMessage($this->t('The %label Option set was not saved.', [
-        '%label' => $example->label(),
-      ]), MessengerInterface::TYPE_ERROR);
     }
 
     $form_state->setRedirect('entity.cmrf_webform_option_set.collection');

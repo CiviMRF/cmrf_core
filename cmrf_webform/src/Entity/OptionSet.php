@@ -23,11 +23,23 @@ use Drupal\cmrf_webform\OptionSetInterface;
  *   admin_permission = "administer site configuration",
  *   entity_keys = {
  *     "id" = "id",
- *     "label" = "label",
+ *     "title" = "title",
+ *     "entity" = "entity",
+ *     "action" = "action",
+ *     "parameters" = "parameters",
+ *     "key_property" = "key_property",
+ *     "value_property" = "value_property",
+ *     "cache" = "cache",
  *   },
  *   config_export = {
  *     "id",
- *     "label"
+ *     "title",
+ *     "entity",
+ *     "action",
+ *     "parameters",
+ *     "key_property",
+ *     "value_property",
+ *     "cache",
  *   },
  *   links = {
  *     "edit-form" = "/admin/config/system/cmrf_webform_option_set/{cmrf_webform_option_set}",
@@ -45,11 +57,108 @@ class OptionSet extends ConfigEntityBase implements OptionSetInterface {
   public $id;
 
   /**
-   * The option set label.
+   * The option set title.
    *
    * @var string
    */
-  public $label;
+  public $title;
 
-  // todo
+  /**
+   * The option set entity name.
+   *
+   * @var string
+   */
+  public $entity;
+
+  /**
+   * The option set action name.
+   *
+   * @var string
+   */
+  public $action;
+
+  /**
+   * The option set parameters string.
+   *
+   * @var string
+   */
+  public $parameters;
+
+  /**
+   * The option set key property name.
+   *
+   * @var string
+   */
+  public $key_property;
+
+  /**
+   * The option set value property name.
+   *
+   * @var string
+   */
+  public $value_property;
+
+  /**
+   * The option set cache settings.
+   *
+   * @var string
+   */
+  public $cache;
+
+
+  public function getTitle() {
+    return $this->title;
+  }
+
+  public function setTitle($value) {
+    $this->title = $value;
+  }
+
+  public function getEntity() {
+    return $this->entity;
+  }
+
+  public function setEntity($value) {
+    $this->entity = $value;
+  }
+
+  public function getAction() {
+    return $this->action;
+  }
+
+  public function setAction($value) {
+    $this->action = $value;
+  }
+
+  public function getParameters() {
+    return $this->parameters;
+  }
+
+  public function setParameters($value) {
+    $this->parameters = $value;
+  }
+
+  public function getKeyProperty() {
+    return $this->key_property;
+  }
+
+  public function setKeyProperty($value) {
+    $this->key_property = $value;
+  }
+
+  public function getValueProperty() {
+    return $this->value_property;
+  }
+
+  public function setValueProperty($value) {
+    $this->value_property = $value;
+  }
+
+  public function getCache() {
+    return $this->cache;
+  }
+
+  public function setCache($value) {
+    $this->cache = $value;
+  }
 }

@@ -11,8 +11,10 @@ class CmrfWebformListBuilder extends ConfigEntityListBuilder {
    * {@inheritdoc}
    */
   public function buildHeader() {
-    $header['label'] = $this->t('Option set');
+    $header['title'] = $this->t('Option set');
     $header['id'] = $this->t('Machine name');
+    $header['entity'] = $this->t('Entity name');
+    $header['action'] = $this->t('Action name');
     return $header + parent::buildHeader();
   }
 
@@ -20,10 +22,11 @@ class CmrfWebformListBuilder extends ConfigEntityListBuilder {
    * {@inheritdoc}
    */
   public function buildRow(EntityInterface $entity) {
-    $row['label'] = $entity->label();
+    $row['title'] = $entity->getTitle();
     $row['id'] = $entity->id();
 
-    // todo
+    $row['entity'] = $entity->getEntity();
+    $row['action'] = $entity->getAction();
 
     return $row + parent::buildRow($entity);
   }   
