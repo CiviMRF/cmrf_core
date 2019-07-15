@@ -43,6 +43,7 @@ class Core extends AbstractCore {
     $loaded = CMRFProfile::loadMultiple($ids);
     foreach ($loaded as $entity) {
       $return[$entity->id()] = [
+        'label'    => $entity->label(),
         'url'      => $entity->url,
         'api_key'  => $entity->api_key,
         'site_key' => $entity->site_key,

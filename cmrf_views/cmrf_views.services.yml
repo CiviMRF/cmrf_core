@@ -1,0 +1,4 @@
+services:
+  cmrf_views.views:
+    class: Drupal\cmrf_views\CMRFViews
+    arguments: ['@cmrf_core.core']
