@@ -7,6 +7,7 @@ use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Messenger\MessengerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
+use Drupal\cmrf_webform\WebformOptionsManager;
 
 class OptionSetForm extends EntityForm {
 
@@ -27,6 +28,21 @@ class OptionSetForm extends EntityForm {
     return new static(
       $container->get('entity_type.manager')
     );
+  }
+   
+  public static function defaultValues() {
+    return [
+      'entity' => 'OptionSet',
+      'action' => 'get',
+      'parameters' => json_encode([
+        'is_active' => 1,
+        'option_group_id' => 'FOO',
+        'return' => 'value,label',
+      ]),
+      'cache' => 0,
+      'key_property' => 'label',
+      'value_property' => 'value',
+    ];
   }
 
   /**
@@ -73,7 +89,7 @@ class OptionSetForm extends EntityForm {
     $form['parameters'] = [
       '#type' => 'textarea',
       '#title' => $this->t('Parameters'),
-      '#default_value' => $entity->getParameters() ?? '{}',
+      '#default_value' => $entity->getParameters(),
       '#description' => $this->t("JSON-formatted object with API parameters for the entity and action entered above."),
     ];
 
@@ -99,9 +115,16 @@ class OptionSetForm extends EntityForm {
       '#type' => 'textfield',
       '#title' => $this->t('Cache'),
       '#maxlength' => 255,
-      '#default_value' => $entity->getCache() ?? 0,
+      '#default_value' => $entity->getCache(),
       '#description' => $this->t("A relative date/time format that the PHP datetime parser understands, e.g. `1 week`. Defaults to `0` (no caching)."),
     ];
+
+    if ($entity->isNew()) {
+      $defaults = static::defaultValues();
+      foreach ($defaults as $key => $value) {
+        $form[$key]['#default_value'] = $value;
+      }
+    }
 
     return $form;
   }
@@ -117,6 +140,7 @@ class OptionSetForm extends EntityForm {
       $this->messenger()->addMessage($this->t('Saved the %title Option set.', [
         '%title' => $options->getTitle(),
       ]));
+      WebformOptionsManager::add($options);
     }
 
     $form_state->setRedirect('entity.cmrf_webform_option_set.collection');
