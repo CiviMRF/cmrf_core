@@ -2,9 +2,9 @@
 
 namespace Drupal\cmrf_webform\Entity;
 
+use Drupal;
 use Drupal\Core\Config\Entity\ConfigEntityBase;
 use Drupal\cmrf_webform\OptionSetInterface;
-use Drupal\cmrf_webform\Utility\WebformOptionsManager;
 
 /**
  * Defines the OptionSet entity.
@@ -167,7 +167,7 @@ class OptionSet extends ConfigEntityBase implements OptionSetInterface {
     $ret = parent::save();
 
     if ($ret) {
-      WebformOptionsManager::create()->add($this);
+      Drupal::service('cmrf_webform.options_manager')->add($this);
     }
 
     return $ret;
@@ -175,7 +175,7 @@ class OptionSet extends ConfigEntityBase implements OptionSetInterface {
 
   public function delete() {
     $ret = parent::delete();
-    WebformOptionsManager::create()->delete($this);
+    Drupal::service('cmrf_webform.options_manager')->delete($this);
 
     return $ret;
   }
