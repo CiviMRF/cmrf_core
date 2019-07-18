@@ -7,7 +7,6 @@ use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Messenger\MessengerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
-use Drupal\cmrf_webform\WebformOptionsManager;
 
 class OptionSetForm extends EntityForm {
 
@@ -140,7 +139,6 @@ class OptionSetForm extends EntityForm {
       $this->messenger()->addMessage($this->t('Saved the %title Option set.', [
         '%title' => $options->getTitle(),
       ]));
-      WebformOptionsManager::add($options);
     }
 
     $form_state->setRedirect('entity.cmrf_webform_option_set.collection');

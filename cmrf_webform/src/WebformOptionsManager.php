@@ -7,7 +7,8 @@ use Drupal\cmrf_webform\OptionSetInterface;
 
 class WebformOptionsManager {
 
-  protected function getConfigurationObject(OptionSetInterface $entity) {
+  public function __construct
+  protected static function getConfigurationObject(OptionSetInterface $entity) {
     $config_factory = Drupal::configFactory();   
     return $config_factory->getEditable('webform.webform_options.' . $entity->id());
   }

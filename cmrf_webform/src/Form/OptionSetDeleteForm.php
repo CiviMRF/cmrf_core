@@ -5,7 +5,6 @@ namespace Drupal\cmrf_webform\Form;
 use Drupal\Core\Entity\EntityConfirmFormBase;
 use Drupal\Core\Url;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\cmrf_webform\WebformOptionsManager;
 
 class OptionSetDeleteForm extends EntityConfirmFormBase {
 
@@ -34,7 +33,6 @@ class OptionSetDeleteForm extends EntityConfirmFormBase {
    * {@inheritdoc}
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
-    WebformOptionsManager::delete($this->entity);
     $this->entity->delete();
     $this->messenger()->addMessage($this->t('Option set %label has been deleted.', array('%label' => $this->entity->label())));
     $form_state->setRedirectUrl($this->getCancelUrl());
