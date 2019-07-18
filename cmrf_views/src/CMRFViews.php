@@ -9,8 +9,7 @@ class CMRFViews {
   protected $core;
 
   public function __construct(Core $core) {
-    $this->core      = $core;
-    $this->connector = 'devz_no';
+    $this->core = $core;
   }
 
   /**
@@ -45,37 +44,363 @@ class CMRFViews {
 
     if (TRUE || $reset) {
       $data     = [];
-      $entities = $this->getDatasets();
-      if (!empty($entities)) {
-        foreach ($entities as $entity_name => $entity_definition) {
-          $fields = $this->getEntityFields($entity_definition['entity'], $entity_definition['action']);
-          if (count($fields)) {
-            $entity_definition['params'] = isset($entity_definition['params']) ? $entity_definition['params'] : '';
-            $data['cmrf:' . $entity_definition['profile'] . '_' . $entity_name] = [
-              'table' => [
-                'group' => $entity_definition['label'],
-                'base'  => [
-                  'field'       => 'id',
-                  'title'       => $entity_definition['label'],
-                  'query class' => 'cmrf_views',
-                  'entity'      => $entity_definition['entity'],
-                  'action'      => $entity_definition['action'],
-                  'count'       => $entity_definition['count'],
-                  'profile'     => $entity_definition['profile'],
-                  'params'      => json_encode($entity_definition['params']),
-                ],
-              ],
-              $fields,
-            ];
+      $datasets = $this->getDatasets();
+      if (!empty($datasets)) {
+        foreach ($datasets as $dataset_id => $dataset_prop) {
+          if ((!empty($dataset_prop['profile'])) && (!empty($dataset_prop['entity']) && (!empty($dataset_prop['action'])))) {
+            $fields = $this->getFields($dataset_prop);
+            if ((!empty($fields)) && (is_array($fields))) {
+              // Unique identifier for this group.
+              $uid = 'cmrf_views_' . $dataset_prop['profile'] . '_' . $dataset_id;
+              // Base data.
+              $data[$uid] = $this->getBaseData($dataset_prop);
+              // Fields (from the getEntityFields function).
+              $data[$uid] = array_merge($fields, $data['cmrf_views_' . $dataset_prop['profile'] . '_' . $dataset_id]);
+            }
           }
         }
       }
 
       //variable_set('cmrf_views_entities', json_encode($data));
     }
+
     return $data;
   }
 
+  /**
+   * Generate base table for views data.
+   *
+   * @param $dataset
+   *
+   * @return mixed
+   */
+  private function getBaseData($dataset) {
+    https://simulator.advancecare.pt/umbraco/Surface/Search/Results?q=&sort=relevance&currentPage=1&numSpecialties=120&numClinics=120&numDistricts=120&numProcedures=120&numCounties=120&numNetworks=120&policy=&lang=pt-PT&lat=32.6478443&lng=-16.907875&providerId=40284&practiceSeq=2&providerIdParent=501882766&practiceSeqParent=20&procedure=&specialty=&clinic=&district=Regi%C3%A3o%20Aut.%20da%20Madeira&network=&county=#
+    $base_data['table'] = [];
+
+    if (!empty($dataset['label'])) {
+      $base_data['table']['group'] = $dataset['label'];
+      $base_data['table']['base']  = [
+        'title'    => $dataset['label'],
+        'help'     => $dataset['label'] . ' provided by CiviCRM API',
+        'query_id' => 'civicrm_api',
+      ];
+    }
+
+    if (!empty($dataset['entity'])) {
+      $base_data['table']['base']['entity'] = $dataset['entity'];
+    }
+
+    if (!empty($dataset['action'])) {
+      $base_data['table']['base']['action'] = $dataset['action'];
+    }
+
+    if (!empty($dataset['getcount'])) {
+      $base_data['table']['base']['getcount'] = $dataset['getcount'];
+    }
+
+    if (!empty($dataset['profile'])) {
+      $base_data['table']['base']['profile'] = $dataset['profile'];
+    }
+
+    if (!empty($dataset['params'])) {
+      $base_data['table']['base']['params'] = json_encode(isset($dataset_prop['params']) ? $dataset_prop['params'] : '');
+    }
+
+    return $base_data;
+  }
+
+  /**
+   * Retrieve all the fields for an entity in the form of Drupal views.
+   *
+   * @param $api_entity
+   * @param $api_action
+   *
+   * @return array
+   */
+  public function getFields($dataset) {
+
+    if ((!empty($dataset['profile'])) && (!empty($dataset['entity'])) && (!empty($dataset['action']))) {
+
+      // API Call to retrieve the fields.
+      $call = $this->core->createCall($dataset['profile'], $dataset['entity'], 'getfields', ['api_action' => $dataset['action']], ['limit' => 0]);
+      $this->core->executeCall($call);
+      if ($call->getStatus() != Call::STATUS_DONE) {
+        return [];
+      }
+
+      // Get fields value.
+      $fields = $call->getReply();
+      if (empty($fields['values'])) {
+        return [];
+      }
+
+      // Loop through each field to create the appropriate structure for views data.
+      $views_fields = [];
+      foreach ($fields['values'] as $field_name => $field_prop) {
+
+        // If we don't have a field type, set it to 0.
+        if (!isset($field_prop['type'])) {
+          $field_prop['type'] = 0;
+        }
+
+        // Set field handler, filter, sort, etc.
+        switch ($field_prop['type']) {
+          case 1: // Integer field.
+          case 1024: // Money field.
+            $views_fields[$field_name] = $this->getNumericField($field_prop);
+            break;
+          case 4: // Date field.
+          case 12: // Date and time field.
+          case 256: // Timestamp field.
+            $views_fields[$field_name] = $this->getDateField($field_prop);
+            break;
+          case 16: // Boolean field.
+            $views_fields[$field_name] = $this->getBooleanField($field_prop);
+            break;
+          case 32: // Markup field.
+            $views_fields[$field_name] = $this->getMarkupField($field_prop);
+            break;
+          default: // Fallback standard field.
+            $views_fields[$field_name] = $this->getStandardField($field_prop);
+            break;
+        }
+
+        // Set field basic information.
+        $views_fields[$field_name]['title'] = empty($field_prop['title']) ? '' : $field_prop['title'];
+        $views_fields[$field_name]['help']  = empty($field_prop['description']) ? '' : $field_prop['description'];
+        $views_fields[$field_name]['help']  = empty($field_prop['description']) ? '' : $field_prop['description'];
+
+        // Set click sortable to 'true' by default.
+        $views_fields[$field_name]['field']['click sortable'] = TRUE;
+
+      }
+
+      return $views_fields;
+    }
+
+    return [];
+  }
+
+  /**
+   * Generate numeric field for views data.
+   *
+   * @param $prop
+   *
+   * @return mixed
+   */
+  private function getNumericField($prop) {
+
+    // Default.
+    $field['field']['id']    = 'numeric';
+    $field['sort']['id']     = 'standard';
+    $field['argument']['id'] = 'standard';
+
+    // If 'type' is 1024 (Money).
+    if ((!empty($prop['data_type'])) && ($prop['type'] == 1024)) {
+      $field['field']['float'] = TRUE;
+    }
+
+    // Add filter to the field.
+    if (!empty($prop['api.filter'])) {
+      $field['filter']['id'] = ($prop['type'] == 1024) ? 'string' : 'numeric';
+    }
+
+    // If 'data_type' is file.
+    if ((!empty($prop['data_type'])) && ($prop['data_type'] == 'File')) {
+      $field['field']['id'] = 'cmrf_views_file';
+    }
+
+    // TODO: Understand the multiple options field and where it should be a list or a single value
+    //       Also check 'money' field 1024 fieldOptions.
+    //if (!empty($fieldOtions)) {
+    //  $field['field']['id'] = 'cmrf_views_prerender_list';
+    //  $field['field']['options'] = $fieldOtions;
+    //}
+    //if (!empty($fieldOtions) && $filterField) {
+    //  $field['filter']['id'] = 'cmrf_views_handler_filter_in_operator';
+    //  $field['filter']['options'] = $fieldOtions;
+    //}
+
+    return $field;
+  }
+
+  /**
+   * Generate date field for views data.
+   *
+   * @param $prop
+   *
+   * @return mixed
+   */
+  private function getDateField($prop) {
+
+    // Default.
+    $field['field']['id']    = 'date';
+    $field['sort']['id']     = 'standard';
+    $field['argument']['id'] = 'date';
+
+    // Add filter to the field.
+    if (!empty($prop['api.filter'])) {
+      $field['filter']['id'] = 'date';
+    }
+
+    // TODO: Multiple value field date.
+    //if (!empty($fieldOtions) && $filterField) {
+    //  $field['filter']['id'] = 'cmrf_views_handler_filter_in_operator';
+    //  $field['filter']['options'] = $fieldOtions;
+    //}
+
+    return $field;
+  }
+
+  /**
+   * Generate boolean field for views data.
+   *
+   * @param $prop
+   *
+   * @return mixed
+   */
+  private function getBooleanField($prop) {
+
+    // Default.
+    $field['field']['id']    = 'boolean';
+    $field['sort']['id']     = 'standard';
+    $field['argument']['id'] = 'date';
+
+    // Add filter to the field.
+    if (!empty($prop['api.filter'])) {
+      $field['filter']['id'] = 'boolean';
+    }
+
+    // TODO: Check 'use equal' and 'options'
+    //if ($filterField) {
+    //  $field['filter']['id'] = 'cmrf_views_handler_filter_boolean_operator';
+    //  $field['filter']['use equal'] = TRUE;
+    //  $field['filter']['options'] = $fieldOtions;
+    //}
+
+    return $field;
+  }
+
+  /**
+   * Generate markup field for views data.
+   *
+   * @param $prop
+   *
+   * @return mixed
+   */
+  private function getMarkupField($prop) {
+
+    // Default.
+    $field['field']['id']    = 'markup';
+    $field['sort']['id']     = 'standard';
+    $field['argument']['id'] = 'standard';
+
+    // Add filter to the field.
+    if (!empty($prop['api.filter'])) {
+      $field['filter']['id'] = 'string';
+    }
+
+    // TODO: Check prerender_list and multiple options
+    //if (!empty($fieldOtions)) {
+    //  $field['field']['id'] = 'cmrf_views_prerender_list';
+    //  $field['field']['options'] = $fieldOtions;
+    //}
+    //if (!empty($fieldOtions) && $filterField) {
+    //  $field['filter']['id'] = 'cmrf_views_handler_filter_in_operator';
+    //  $field['filter']['options'] = $fieldOtions;
+    //}
+
+
+    return $field;
+  }
+
+  /**
+   * Generate standard field for views data.
+   *
+   * @param $prop
+   *
+   * @return mixed
+   */
+  private function getStandardField($prop) {
+
+    // Default.
+    $field['field']['id']    = 'standard';
+    $field['sort']['id']     = 'standard';
+    $field['argument']['id'] = 'standard';
+
+    // Add filter to the field.
+    if (!empty($prop['api.filter'])) {
+      $field['filter']['id'] = 'string';
+    }
+
+    // If 'data_type' is file.
+    if ((!empty($prop['data_type'])) && ($prop['data_type'] == 'File')) {
+      $field['field']['id'] = 'cmrf_views_file';
+    }
+
+    // TODO: Check prerender_list and multiple options
+    //else if (!empty($fieldOtions)) {
+    //  $field['field']['id'] = 'cmrf_views_prerender_list';
+    //  $field['field']['options'] = $fieldOtions;
+    //}
+    //if (!empty($fieldOtions) && $filterField) {
+    //  $field['filter']['id'] = 'cmrf_views_handler_filter_in_operator';
+    //  $field['filter']['options'] = $fieldOtions;
+    //}
+
+    return $field;
+  }
+
+  /**
+   * Fetch field options.
+   *
+   * @param $api_entity
+   * @param $api_action
+   * @param $field_name
+   *
+   * @return array
+   */
+  private function fetchOptions($api_entity, $api_action, $field_name) {
+
+    // Get field options API call.
+    $call = $this->core->createCall(
+      $this->connector,
+      $api_entity,
+      'getoptions',
+      ['field' => $field_name],
+      ['limit' => 0, 'cache' => '5 minutes']
+    );
+
+    // Execute call.
+    $this->core->executeCall($call);
+    if ($call->getStatus() == Call::STATUS_DONE) {
+      $optionResult = $call->getReply();
+
+      if (isset($optionResult['values']) && is_array($optionResult['values'])) {
+        return $optionResult['values'];
+      }
+    }
+
+    // Get fields API call.
+    $call = $this->core->createCall(
+      $this->connector,
+      $api_entity,
+      'getfields',
+      ['api_action' => $api_action],
+      ['limit' => 0]
+    );
+
+    // Execute call.
+    $this->core->executeCall($call);
+    if ($call->getStatus() == Call::STATUS_DONE) {
+      $fields = $call->getReply();
+      if (isset($fields['values']) && is_array($fields['values']) && isset($fields['values'][$field_name]) && isset($fields['values'][$field_name]['options']) && is_array($fields['values'][$field_name]['options'])) {
+        return $fields['values'][$field_name]['options'];
+      }
+    }
+    return [];
+  }
 
   /**
    * Get views datasets from the config entity.
@@ -105,177 +430,6 @@ class CMRFViews {
         ];
         $params                          = json_decode($entity->params, TRUE);
         $return[$entity->id()]['params'] = empty($params) ? [] : $params;
-      }
-    }
-
-    return $return;
-  }
-
-  private function fetchOptions($api_entity, $api_action, $field_name) {
-    // Get field options API call.
-    $call = $this->core->createCall(
-      $this->connector,
-      $api_entity,
-      'getoptions',
-      ['field' => $field_name],
-      [
-        'limit' => 0,
-        'cache' => '5 minutes',
-      ]
-    );
-
-    // Execute call.
-    $this->core->executeCall($call);
-    if ($call->getStatus() == Call::STATUS_DONE) {
-      $optionResult = $call->getReply();
-      if (isset($optionResult['values']) && is_array($optionResult['values'])) {
-        return $optionResult['values'];
-      }
-    }
-
-    // Get fields API call.
-    $call = $this->core->createCall(
-      $this->connector,
-      $api_entity,
-      'getfields',
-      ['api_action' => $api_action],
-      ['limit' => 0]
-    );
-
-    // Execute call.
-    $this->core->executeCall($call);
-    if ($call->getStatus() == Call::STATUS_DONE) {
-      $fields = $call->getReply();
-      if (isset($fields['values']) && is_array($fields['values']) && isset($fields['values'][$field_name]) && isset($fields['values'][$field_name]['options']) && is_array($fields['values'][$field_name]['options'])) {
-        return $fields['values'][$field_name]['options'];
-      }
-    }
-    return [];
-  }
-
-  /**
-   * Retrieve all the fields for an entity in the formal of Drupal views.
-   */
-  public function getEntityFields($api_entity, $api_action) {
-    $return = [];
-
-    // Create API call.
-    $call = $this->core->createCall(
-      $this->connector,
-      $api_entity,
-      'getfields',
-      ['api_action' => $api_action],
-      ['limit' => 0]
-    );
-
-    // Execute call.
-    $this->core->executeCall($call);
-    if ($call->getStatus() != Call::STATUS_DONE) {
-      return;
-    }
-    $fields = $call->getReply();
-    if (isset($fields['values']) && is_array($fields['values'])) {
-      foreach ($fields['values'] as $field_name => $field) {
-        $fieldOtions = FALSE;
-        $filterField = TRUE;
-        $returnField = TRUE;
-        if (isset($field['api.filter'])) {
-          $filterField = $field['api.filter'] ? TRUE : FALSE;
-        }
-        if (isset($field['api.return'])) {
-          $returnField = $field['api.return'] ? TRUE : FALSE;
-        }
-
-        // Check whether this field is a select field (such as event_type_id)
-        if (isset($field["pseudoconstant"]) || isset($field['options']) && is_array($field['options'])) {
-          $fieldOtions = $this->fetchOptions($api_entity, $api_action, $field_name);
-        }
-
-        if (!isset($field['type'])) {
-          $field['type'] = 0; // Set to 0 so we assign a default handler
-        }
-        $return[$field_name]['title'] = $field['title'];
-        if (isset($field['description'])) {
-          $return[$field_name]['help'] = $field['description'];
-        }
-        $return[$field_name]['field']['click sortable'] = TRUE;
-        switch ($field['type']) {
-          case 1: // Integer
-            $return[$field_name]['field']['handler'] = 'cmrf_views_handler_field_numeric';
-            $return[$field_name]['sort']['handler']  = 'views_handler_sort';
-            if (!empty($fieldOtions)) {
-              $return[$field_name]['field']['handler'] = 'cmrf_views_handler_field_prerender_list';
-              $return[$field_name]['field']['options'] = $fieldOtions;
-            }
-            if (!empty($fieldOtions) && $filterField) {
-              $return[$field_name]['filter']['handler'] = 'cmrf_views_handler_filter_in_operator';
-              $return[$field_name]['filter']['options'] = $fieldOtions;
-            }
-            elseif ($filterField) {
-              $return[$field_name]['filter']['handler'] = 'views_handler_filter_numeric';
-            }
-            $return[$field_name]['argument']['handler'] = 'views_handler_argument';
-            break;
-          case 4: // Date field
-          case 12: // Date and time field
-          case 256: // Timestamp field
-            $return[$field_name]['field']['handler'] = 'cmrf_views_handler_field_date';
-            $return[$field_name]['sort']['handler']  = 'views_handler_sort';
-            if (!empty($fieldOtions) && $filterField) {
-              $return[$field_name]['filter']['handler'] = 'cmrf_views_handler_filter_in_operator';
-              $return[$field_name]['filter']['options'] = $fieldOtions;
-            }
-            elseif ($filterField) {
-              $return[$field_name]['filter']['handler'] = 'views_handler_filter_date';
-            }
-            $return[$field_name]['argument']['handler'] = 'views_handler_argument_date';
-            break;
-          case 16: // Boolean
-            $return[$field_name]['field']['handler'] = 'views_handler_field_boolean';
-            $return[$field_name]['sort']['handler']  = 'views_handler_sort';
-            if ($filterField) {
-              $return[$field_name]['filter']['handler']   = 'cmrf_views_handler_filter_boolean_operator';
-              $return[$field_name]['filter']['use equal'] = TRUE;
-              $return[$field_name]['filter']['options']   = $fieldOtions;
-            }
-            $return[$field_name]['argument']['handler'] = 'views_handler_argument';
-            break;
-          case 32: // Text and Long Text
-            $return[$field_name]['field']['handler'] = 'cmrf_views_handler_field_markup';
-            $return[$field_name]['sort']['handler']  = 'views_handler_sort';
-            if (!empty($fieldOtions)) {
-              $return[$field_name]['field']['handler'] = 'cmrf_views_handler_field_prerender_list';
-              $return[$field_name]['field']['options'] = $fieldOtions;
-            }
-            if (!empty($fieldOtions) && $filterField) {
-              $return[$field_name]['filter']['handler'] = 'cmrf_views_handler_filter_in_operator';
-              $return[$field_name]['filter']['options'] = $fieldOtions;
-            }
-            elseif ($filterField) {
-              $return[$field_name]['filter']['handler'] = 'views_handler_filter_string';
-            }
-            $return[$field_name]['argument']['handler'] = 'views_handler_argument';
-            break;
-          default:
-            $return[$field_name]['field']['handler'] = 'cmrf_views_handler_field';
-            $return[$field_name]['sort']['handler']  = 'views_handler_sort';
-            if (isset($field['data_type']) && $field['data_type'] == 'File') {
-              $return[$field_name]['field']['handler'] = 'cmrf_views_handler_field_file';
-            }
-            else if (!empty($fieldOtions)) {
-              $return[$field_name]['field']['handler'] = 'cmrf_views_handler_field_prerender_list';
-              $return[$field_name]['field']['options'] = $fieldOtions;
-            }
-            if (!empty($fieldOtions) && $filterField) {
-              $return[$field_name]['filter']['handler'] = 'cmrf_views_handler_filter_in_operator';
-              $return[$field_name]['filter']['options'] = $fieldOtions;
-            }
-            elseif ($filterField) {
-              $return[$field_name]['filter']['handler'] = 'views_handler_filter_string';
-            }
-            $return[$field_name]['argument']['handler'] = 'views_handler_argument';
-            break;
-        }
       }
     }
 

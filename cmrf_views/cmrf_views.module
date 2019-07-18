@@ -18,64 +18,6 @@ function cmrf_views_get_connector_name($profile) {
 }
 
 /**
- * Retrieve a list of entities available for Drupal Views.
- *
- * This function caches the result as the definition are build upon requesting the data
- * from the remote civicrm installation.
- *
- * When $reset is TRUE then the cache is ignored and new values are stored in the cache.
- *
- * Returns the data in the format for the hook_views_data.
- *
- * @param bool $reset
- *   Whether the cache should reset.
- *
- * @return array
- *   In format which could be used by the hook_views_data.
- */
-function cmrf_views_entity_list($reset = FALSE) {
-  $data = [];
-
-  $strData = variable_get('cmrf_views_entities');
-  if (!empty($strData)) {
-    $data = json_decode($strData, TRUE);
-    if (!is_array($data)) {
-      $data  = [];
-      $reset = TRUE;
-    }
-  }
-  else {
-    $reset = TRUE;
-  }
-
-  if ($reset) {
-    $data     = [];
-    $entities = cmrf_views_default_entity_list();
-    drupal_alter('cmrf_views_entity_list', $entities);
-    foreach ($entities as $entity_name => $entity_definition) {
-      $fields = _cmrf_views_civicrm_fields($entity_definition['entity'], $entity_definition['action']);
-      if (count($fields)) {
-        $entity_definition['params']                                                          = isset($entity_definition['params']) ? $entity_definition['params'] : '';
-        $data['cmrf:' . $entity_definition['profile'] . '_' . $entity_name]                   = $fields;
-        $data['cmrf:' . $entity_definition['profile'] . '_' . $entity_name]['table']['group'] = $entity_definition['label'];
-        $data['cmrf:' . $entity_definition['profile'] . '_' . $entity_name]['table']['base']  = [
-          'field'       => 'id',
-          'title'       => $entity_definition['label'],
-          'query class' => 'cmrf_views',
-          'entity'      => $entity_definition['entity'],
-          'action'      => $entity_definition['action'],
-          'count'       => $entity_definition['count'],
-          'profile'     => $entity_definition['profile'],
-          'params'      => json_encode($entity_definition['params']),
-        ];
-      }
-    }
-    variable_set('cmrf_views_entities', json_encode($data));
-  }
-  return $data;
-}
-
-/**
  * Default list of CiviCRM entities which should be exposed to drupal views.
  */
 function cmrf_views_default_entity_list() {
