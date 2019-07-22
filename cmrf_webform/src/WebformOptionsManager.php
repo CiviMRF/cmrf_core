@@ -5,7 +5,6 @@ namespace Drupal\cmrf_webform;
 use Drupal;
 use Drupal\cmrf_webform\OptionSetInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
-use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\cmrf_core\Entity\CMRFConnector;
 
 class WebformOptionsManager {
@@ -36,6 +35,8 @@ class WebformOptionsManager {
   }
 
   protected function fetchPredefinedOptions(OptionSetInterface $entity) {
+    // todo: throw subclassed exceptions
+    // todo: use a service which will parse API results along with version
     $connector = $this->getModuleConnector();
     $api_entity = $entity->getEntity();
     $api_action = $entity->getAction();
@@ -44,12 +45,32 @@ class WebformOptionsManager {
     $this->core->executeCall($call);
 
     if ($call->getStatus() == get_class($call)::STATUS_DONE) {
-      return []; // todo: fetch options
+      $reply = $call->getReply();
+      if (!empty($reply['is_error'])) {
+        throw new \Exception($this->t('CMRF API call returned error'));
+      }
+      elseif (isset($reply['values']) && is_array($reply['values'])) {
+        $key_property = $entity->getKeyProperty();
+        $value_property = $entity->getValueProperty();
+        $values = "";
+        foreach ($reply['values'] as $row) {
+          $key = $row[$key_property];
+          $value = $row[$value_property];
+
+          // constructing yaml-like structure
+          $values.= "$key: $value\n";
+        }
+        return $values;
+      }
+      else {
+        throw new \Exception($this->t('Malformed CMRF API call response'));
+      }
     }
     else {
-      throw new \Exception($this->t('CMRF Api call was unsuccessful (%entity/%action)', [
+      throw new \Exception($this->t('CMRF Api call was unsuccessful (%entity/%action) - %status', [
         '%entity' => $api_entity,
         '%action' => $api_action,
+        '%status' => $call->getStatus(),
       ]));
     }
   }
