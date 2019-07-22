@@ -7,5 +7,6 @@ use Drupal\Core\Config\Entity\ConfigEntityInterface;
  */
 interface CMRFConnectorInterface extends ConfigEntityInterface {
 
-  // Add get/set methods for your configuration properties here.
+  public function getType();
+
 }

@@ -4,32 +4,47 @@ namespace Drupal\cmrf_webform;
 
 use Drupal;
 use Drupal\cmrf_webform\OptionSetInterface;
+use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Symfony\Component\DependencyInjection\ContainerInterface;
+use Drupal\cmrf_core\Entity\CMRFConnector;
 
 class WebformOptionsManager {
+
+  use StringTranslationTrait;
 
   protected $configFactory;
   protected $core;
 
-  public function __construct($core, $configFactory) {
+  public function __construct($core, $configFactory, $translation) {
     $this->core = $core;
     $this->configFactory = $configFactory;
+    $this->stringTranslation = $translation;
   }
 
   protected function getConfigurationObject(OptionSetInterface $entity) {
     return $this->configFactory->getEditable('webform.webform_options.' . $entity->id());
   }
 
+  protected function getModuleConnector($module = 'cmrf_webform') {
+    $list = CMRFConnector::loadMultiple();
+    foreach ($list as $id => $item) {
+      if ($item->getType() == $module) {
+        return $id;
+      }
+    }
+    throw new \Exception($this->t("No connector for module $module was found"));
+  }
+
   protected function fetchPredefinedOptions(OptionSetInterface $entity) {
-    $profile = 'default';# $this->core->getDefaultProfile();
+    $connector = $this->getModuleConnector();
     $api_entity = $entity->getEntity();
     $api_action = $entity->getAction();
     $parameters = json_decode($entity->getParameters(), true);
-    $call = $this->core->createCall($profile, $api_entity, $api_action, $parameters);
+    $call = $this->core->createCall($connector, $api_entity, $api_action, $parameters, []);
     $this->core->executeCall($call);
 
-    if ($call->getStatus() == Call::STATUS_DONE) {
-      return [];
+    if ($call->getStatus() == get_class($call)::STATUS_DONE) {
+      return []; // todo: fetch options
     }
     else {
       throw new \Exception($this->t('CMRF Api call was unsuccessful (%entity/%action)', [

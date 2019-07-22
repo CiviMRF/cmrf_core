@@ -66,6 +66,9 @@ class CMRFConnector extends ConfigEntityBase implements CMRFConnectorInterface {
    */
   public $type;
 
+  public function getType() {
+    return $this->type;
+  }
 
   public function getAvailableProfiles() {
     $return     = [];
