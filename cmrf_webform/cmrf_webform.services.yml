@@ -1,4 +1,4 @@
 services:
   cmrf_webform.options_manager:
     class: Drupal\cmrf_webform\WebformOptionsManager
-    arguments: ['@cmrf_core.core', '@config.factory', '@string_translation']
+    arguments: ['@cmrf_core.core', '@string_translation']

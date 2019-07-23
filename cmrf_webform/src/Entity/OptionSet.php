@@ -31,6 +31,7 @@ use Drupal\cmrf_webform\OptionSetInterface;
  *     "key_property" = "key_property",
  *     "value_property" = "value_property",
  *     "cache" = "cache",
+ *     "last_cached" = "last_cached",
  *   },
  *   config_export = {
  *     "id",
@@ -41,6 +42,7 @@ use Drupal\cmrf_webform\OptionSetInterface;
  *     "key_property",
  *     "value_property",
  *     "cache",
+ *     "last_cached",
  *   },
  *   links = {
  *     "edit-form" = "/admin/config/system/cmrf_webform_option_set/{cmrf_webform_option_set}",
@@ -106,6 +108,16 @@ class OptionSet extends ConfigEntityBase implements OptionSetInterface {
    */
   public $cache;
 
+  /**
+   * Timestamp of last Webform element recaching
+   *
+   * @var int
+   */
+  public $last_cached;
+
+  public function getWebformId() {
+    return 'cmrf_' . $this->id;
+  }
 
   public function getTitle() {
     return $this->title;
@@ -163,11 +175,14 @@ class OptionSet extends ConfigEntityBase implements OptionSetInterface {
     $this->cache = $value;
   }
 
-  public function save() {
+  public function save($update = true) {
     $ret = parent::save();
 
-    if ($ret) {
-      Drupal::service('cmrf_webform.options_manager')->add($this);
+    if ($update) {
+      if (!Drupal::service('cmrf_webform.options_manager')->add($this)) {
+        $this->delete();
+        throw new \Exception("Webform options save was unsuccessful");
+      }
     }
 
     return $ret;
@@ -175,8 +190,22 @@ class OptionSet extends ConfigEntityBase implements OptionSetInterface {
 
   public function delete() {
     $ret = parent::delete();
-    Drupal::service('cmrf_webform.options_manager')->delete($this);
+    if (!Drupal::service('cmrf_webform.options_manager')->delete($this)) {
+      // log
+    }
 
     return $ret;
+  }
+
+  public function needsRecaching() {
+    $recache_time = strtotime($this->getCache(), $this->last_cached);
+    return $this->last_cached === NULL ||
+      $recache_time === false ||
+      $recache_time < time();
+  }
+
+  public function setRecached() {
+    $this->last_cached = time();
+    $this->save(false);
   }
 }

@@ -1,1 +1,25 @@
 <?php
+
+use Drupal\Core\Form\FormStateInterface;
+use Drupal\cmrf_webform\WebformOptionsManager;
+use Drupal\cmrf_webform\Entity\OptionSet;
+
+function cmrf_webform_webform_options_alter(array &$options, array &$element, $options_id = NULL) {
+  if ($options_id !== NULL && substr($options_id, 0, 5) == 'cmrf_') {
+    $id = substr($options_id, 5);
+    $entity = OptionSet::load($id);
+    if ($entity === NULL) {
+      // log
+    }
+    else {
+      $service = Drupal::service('cmrf_webform.options_manager');
+      if (!$service->update($entity)) {
+        // log
+      }
+      else {
+        $option_set = $service->getConfigurationObject($entity, false);
+        $options = $option_set->getOptions();
+      }
+    }
+  }
+}

@@ -27,7 +27,7 @@ class OptionSetForm extends EntityForm {
       $container->get('entity_type.manager')
     );
   }
-   
+
   public static function defaultValues() {
     return [
       'entity' => 'OptionSet',
@@ -125,6 +125,18 @@ class OptionSetForm extends EntityForm {
     }
 
     return $form;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function validateForm(array &$form, FormStateInterface $form_state) {
+    parent::validateForm($form, $form_state);
+
+    $php_parameters = json_decode($form_state->getValue('parameters'));
+    if ($php_parameters === NULL) {
+      $form_state->setError($form['parameters'], $this->t('Parameters field does not contain a valid JSON'));
+    }
   }
 
   /**

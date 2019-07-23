@@ -6,22 +6,18 @@ use Drupal;
 use Drupal\cmrf_webform\OptionSetInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\cmrf_core\Entity\CMRFConnector;
+use Drupal\webform\Entity\WebformOptions;
+use Drupal\Core\Entity\EntityStorageException;
 
 class WebformOptionsManager {
 
   use StringTranslationTrait;
 
-  protected $configFactory;
   protected $core;
 
-  public function __construct($core, $configFactory, $translation) {
+  public function __construct($core, $translation) {
     $this->core = $core;
-    $this->configFactory = $configFactory;
     $this->stringTranslation = $translation;
-  }
-
-  protected function getConfigurationObject(OptionSetInterface $entity) {
-    return $this->configFactory->getEditable('webform.webform_options.' . $entity->id());
   }
 
   protected function getModuleConnector($module = 'cmrf_webform') {
@@ -41,7 +37,8 @@ class WebformOptionsManager {
     $api_entity = $entity->getEntity();
     $api_action = $entity->getAction();
     $parameters = json_decode($entity->getParameters(), true);
-    $call = $this->core->createCall($connector, $api_entity, $api_action, $parameters, []);
+    $options = $parameters['options'] ?? [];
+    $call = $this->core->createCall($connector, $api_entity, $api_action, $parameters, $options);
     $this->core->executeCall($call);
 
     if ($call->getStatus() == get_class($call)::STATUS_DONE) {
@@ -52,13 +49,14 @@ class WebformOptionsManager {
       elseif (isset($reply['values']) && is_array($reply['values'])) {
         $key_property = $entity->getKeyProperty();
         $value_property = $entity->getValueProperty();
-        $values = "";
+        $values = [];
         foreach ($reply['values'] as $row) {
-          $key = $row[$key_property];
-          $value = $row[$value_property];
+          if (isset($row[$key_property], $row[$value_property])) {
+            $key = $row[$key_property];
+            $value = $row[$value_property];
 
-          // constructing yaml-like structure
-          $values.= "$key: $value\n";
+            $values[$key] = $value;
+          }
         }
         return $values;
       }
@@ -75,36 +73,74 @@ class WebformOptionsManager {
     }
   }
 
-  protected function createPropertiesArray(OptionSetInterface $entity) {
-    $properties = [
-      'langcode' => 'en',
-      'status' => 'true',
-      'dependencies' => [
-        'enforced' => [
-          'module' => [
-            'webform',
-          ],
-        ],
-      ],
-      'id' => $entity->id(),
-      'label' => $entity->getTitle(),
-      'category' => 'CiviCRM integrated sets',
-      'likert' => false,
-      'options' => $this->fetchPredefinedOptions($entity),
-    ];
+  protected function setOptionProperties(WebformOptions $option_set, OptionSetInterface $entity) {
+    $option_set->set('id', $entity->getWebformId());
+    $option_set->set('label', $entity->getTitle());
+    $option_set->set('category', 'CiviCRM integrated sets');
+    $option_set->set('likert', false);
+    $option_set->setOptions($this->fetchPredefinedOptions($entity));
+  }
 
-    return $properties;
+  protected function saveOptions(WebformOptions $entity) {
+    try {
+      $entity->save();
+      return true;
+    }
+    catch (EntityStorageException $e) {
+      return false;
+    }
+  }
+
+  protected function deleteOptions(WebformOptions $entity) {
+    try {
+      $entity->delete();
+      return true;
+    }
+    catch (EntityStorageException $e) {
+      return false;
+    }
+  }
+
+  public function getConfigurationObject(OptionSetInterface $entity, $create = true) {
+    $existing = WebformOptions::load($entity->getWebformId());
+
+    if ($existing === NULL && $create) {
+      return WebformOptions::create();
+    }
+    else {
+      return $existing;
+    }
   }
 
   public function add(OptionSetInterface $entity) {
     $option_set = $this->getConfigurationObject($entity);
-    $properties = $this->createPropertiesArray($entity);
-    $option_set->setData($properties)->save();
+    $this->setOptionProperties($option_set, $entity, $options);
+    if ($this->saveOptions($option_set)) {
+      $entity->setRecached();
+      return true;
+    }
+    else {
+      return false;
+    }
+  }
+
+  public function update(OptionSetInterface $entity) {
+    $option_set = $this->getConfigurationObject($entity);
+    if ($entity->needsRecaching()) {
+      $this->setOptionProperties($option_set, $entity);
+      if ($this->saveOptions($option_set)) {
+        $entity->setRecached();
+        return true;
+      }
+      else {
+        return false;
+      }
+    }
   }
 
   public function delete(OptionSetInterface $entity) {
-    $option_set = $this->getConfigurationObject($entity);
-    $option_set->delete();
+    $option_set = $this->getConfigurationObject($entity, false);
+    return $this->deleteOptions($option_set);
   }
 
 }

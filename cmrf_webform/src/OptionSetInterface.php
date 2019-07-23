@@ -9,6 +9,8 @@ use Drupal\Core\Config\Entity\ConfigEntityInterface;
  */
 interface OptionSetInterface extends ConfigEntityInterface {
 
+  public function getWebformId();
+
   public function getTitle();
   public function setTitle($value);
 
@@ -29,5 +31,8 @@ interface OptionSetInterface extends ConfigEntityInterface {
 
   public function getCache();
   public function setCache($value);
+
+  public function needsRecaching();
+  public function setRecached();
 
 }
