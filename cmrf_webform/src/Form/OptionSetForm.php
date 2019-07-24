@@ -10,7 +10,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 class OptionSetForm extends EntityForm {
 
   /**
-   * Constructs an ExampleForm object.
+   * Constructs a Option Set object.
    *
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
    *   The entityTypeManager.

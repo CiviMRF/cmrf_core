@@ -3,3 +3,9 @@ entity.cmrf_webform_option_set.add_form:
   title: 'Add select options'
   appears_on:
     - entity.cmrf_webform_option_set.collection
+
+entity.cmrf_webform_submission.add_form:
+  route_name: 'entity.cmrf_webform_submission.add_form'
+  title: 'Add submission handlers'
+  appears_on:
+    - entity.cmrf_webform_submission.collection

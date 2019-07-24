@@ -1,14 +1,20 @@
+system.civi_mrf:
+  title: 'CiviMRF'
+  route_name: system.civi_mrf
+  description: 'Edit CiviMRF settings'
+  parent: system.admin_config
+
 entity.cmrf_profile.collection:
   title: 'CMRF profiles'
   route_name: entity.cmrf_profile.collection
   description: 'List and edit CMRF profiles'
-  parent: system.admin_config_system
+  parent: system.civi_mrf
   weight: 98
 
 entity.cmrf_connector.collection:
   title: 'CMRF connector'
   route_name: entity.cmrf_connector.collection
   description: 'List and edit CMRF connectors'
-  parent: system.admin_config_system
+  parent: system.civi_mrf
   weight: 99
 

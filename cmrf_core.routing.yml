@@ -1,0 +1,6 @@
+system.civi_mrf:
+  path: '/admin/config/civi_mrf'
+  defaults:
+    _title: 'CiviMRF configuration options'
+  requirements:
+    _permission: 'administer site configuration'

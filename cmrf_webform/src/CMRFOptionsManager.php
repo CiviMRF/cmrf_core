@@ -2,75 +2,38 @@
 
 namespace Drupal\cmrf_webform;
 
-use Drupal;
 use Drupal\cmrf_webform\OptionSetInterface;
-use Drupal\Core\StringTranslation\StringTranslationTrait;
-use Drupal\cmrf_core\Entity\CMRFConnector;
 use Drupal\webform\Entity\WebformOptions;
 use Drupal\Core\Entity\EntityStorageException;
-use RuntimeException;
 
-class WebformOptionsManager {
-
-  use StringTranslationTrait;
-
-  protected $core;
-
-  public function __construct($core, $translation) {
-    $this->core = $core;
-    $this->stringTranslation = $translation;
-  }
-
-  protected function getModuleConnector($module = 'cmrf_webform') {
-    $list = CMRFConnector::loadMultiple();
-    foreach ($list as $id => $item) {
-      if ($item->getType() == $module) {
-        return $id;
-      }
-    }
-    throw new RuntimeException($this->t("No connector for module $module was found"));
-  }
+class CMRFOptionsManager extends CMRFManager {
 
   protected function fetchPredefinedOptions(OptionSetInterface $entity) {
-    // todo: use a service which will parse API results along with version
     $connector = $this->getModuleConnector();
-    $api_entity = $entity->getEntity();
-    $api_action = $entity->getAction();
-    $parameters = json_decode($entity->getParameters(), true);
+    $parameters = $entity->getDecodedParameters();
     $options = $parameters['options'] ?? [];
-    $call = $this->core->createCall($connector, $api_entity, $api_action, $parameters, $options);
-    $this->core->executeCall($call);
+    $key_property = $entity->getKeyProperty();
+    $value_property = $entity->getValueProperty();
 
-    if ($call->getStatus() == get_class($call)::STATUS_DONE) {
-      $reply = $call->getReply();
-      if (!empty($reply['is_error'])) {
-        throw new RuntimeException($this->t('CMRF API call returned error'));
-      }
-      elseif (isset($reply['values']) && is_array($reply['values'])) {
-        $key_property = $entity->getKeyProperty();
-        $value_property = $entity->getValueProperty();
-        $values = [];
-        foreach ($reply['values'] as $row) {
-          if (isset($row[$key_property], $row[$value_property])) {
-            $key = $row[$key_property];
-            $value = $row[$value_property];
+    $reply = $this->sendApiRequest(
+      $connector,
+      $entity->getEntity(),
+      $entity->getAction(),
+      $parameters,
+      $options
+    );
 
-            $values[$key] = $value;
-          }
-        }
-        return $values;
-      }
-      else {
-        throw new RuntimeException($this->t('Malformed CMRF API call response'));
+    $values = [];
+    foreach ($reply as $row) {
+      if (isset($row[$key_property], $row[$value_property])) {
+        $key = $row[$key_property];
+        $value = $row[$value_property];
+
+        $values[$key] = $value;
       }
     }
-    else {
-      throw new RuntimeException($this->t('CMRF Api call was unsuccessful (%entity/%action) - %status', [
-        '%entity' => $api_entity,
-        '%action' => $api_action,
-        '%status' => $call->getStatus(),
-      ]));
-    }
+
+    return $values;
   }
 
   protected function setOptionProperties(WebformOptions $option_set, OptionSetInterface $entity) {

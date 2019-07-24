@@ -1,4 +1,8 @@
 services:
   cmrf_webform.options_manager:
-    class: Drupal\cmrf_webform\WebformOptionsManager
+    class: Drupal\cmrf_webform\CMRFOptionsManager
+    arguments: ['@cmrf_core.core', '@string_translation']
+
+  cmrf_webform.submissions_manager:
+    class: Drupal\cmrf_webform\CMRFSubmissionsManager
     arguments: ['@cmrf_core.core', '@string_translation']

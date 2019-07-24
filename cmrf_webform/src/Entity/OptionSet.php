@@ -14,7 +14,7 @@ use RuntimeException;
  *   id = "cmrf_webform_option_set",
  *   label = @Translation("CiviCRM Webform integration option set"),
  *   handlers = {
- *     "list_builder" = "Drupal\cmrf_webform\Controller\CmrfWebformListBuilder",
+ *     "list_builder" = "Drupal\cmrf_webform\Controller\OptionSetListBuilder",
  *     "form" = {
  *       "add" = "Drupal\cmrf_webform\Form\OptionSetForm",
  *       "edit" = "Drupal\cmrf_webform\Form\OptionSetForm",
@@ -146,6 +146,10 @@ class OptionSet extends ConfigEntityBase implements OptionSetInterface {
 
   public function getParameters() {
     return $this->parameters;
+  }
+
+  public function getDecodedParameters($as_array = true) {
+    return json_decode($this->parameters, $as_array);
   }
 
   public function setParameters($value) {

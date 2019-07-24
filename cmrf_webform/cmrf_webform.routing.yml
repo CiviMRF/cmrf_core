@@ -1,5 +1,13 @@
+system.cmrf_webform:
+  path: '/admin/config/cmrf_webform'
+  defaults:
+    _controller: '\Drupal\system\Controller\SystemController::systemAdminMenuBlockPage'
+  requirements:
+    _permission: 'administer site configuration'
+
+# OPTION SETS
 entity.cmrf_webform_option_set.collection:
-  path: '/admin/config/cmrf_webform_option_set'
+  path: '/admin/config/cmrf_webform/option_set'
   defaults:
     _entity_list: 'cmrf_webform_option_set'
     _title: 'Option sets configuration'
@@ -7,7 +15,7 @@ entity.cmrf_webform_option_set.collection:
     _permission: 'administer site configuration'
 
 entity.cmrf_webform_option_set.add_form:
-  path: '/admin/config/system/cmrf_webform_option_set/add'
+  path: '/admin/config/cmrf_webform/option_set/add'
   defaults:
     _entity_form: 'cmrf_webform_option_set.add'
     _title: 'Add option set'
@@ -15,7 +23,7 @@ entity.cmrf_webform_option_set.add_form:
     _permission: 'administer site configuration'
 
 entity.cmrf_webform_option_set.edit_form:
-  path: '/admin/config/system/cmrf_webform_option_set/{cmrf_webform_option_set}'
+  path: '/admin/config/cmrf_webform/option_set/{cmrf_webform_option_set}'
   defaults:
     _entity_form: 'cmrf_webform_option_set.edit'
     _title: 'Edit option set'
@@ -23,9 +31,42 @@ entity.cmrf_webform_option_set.edit_form:
     _permission: 'administer site configuration'
 
 entity.cmrf_webform_option_set.delete_form:
-  path: '/admin/config/system/cmrf_webform_option_set/{cmrf_webform_option_set}/delete'
+  path: '/admin/config/cmrf_webform/option_set/{cmrf_webform_option_set}/delete'
   defaults:
     _entity_form: 'cmrf_webform_option_set.delete'
+    _title: 'Delete option set'
+  requirements:
+    _permission: 'administer site configuration'
+
+# SUBMISSIONS
+entity.cmrf_webform_submission.collection:
+  path: '/admin/config/cmrf_webform/submission'
+  defaults:
+    _entity_list: 'cmrf_webform_submission'
+    _title: 'Option sets configuration'
+  requirements:
+    _permission: 'administer site configuration'
+
+entity.cmrf_webform_submission.add_form:
+  path: '/admin/config/cmrf_webform/submission/add'
+  defaults:
+    _entity_form: 'cmrf_webform_submission.add'
+    _title: 'Add option set'
+  requirements:
+    _permission: 'administer site configuration'
+
+entity.cmrf_webform_submission.edit_form:
+  path: '/admin/config/cmrf_webform/submission/{cmrf_webform_submission}'
+  defaults:
+    _entity_form: 'cmrf_webform_submission.edit'
+    _title: 'Edit option set'
+  requirements:
+    _permission: 'administer site configuration'
+
+entity.cmrf_webform_submission.delete_form:
+  path: '/admin/config/cmrf_webform/submission/{cmrf_webform_submission}/delete'
+  defaults:
+    _entity_form: 'cmrf_webform_submission.delete'
     _title: 'Delete option set'
   requirements:
     _permission: 'administer site configuration'

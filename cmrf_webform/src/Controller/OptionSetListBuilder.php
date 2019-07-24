@@ -5,7 +5,7 @@ namespace Drupal\cmrf_webform\Controller;
 use Drupal\Core\Config\Entity\ConfigEntityListBuilder;
 use Drupal\Core\Entity\EntityInterface;
 
-class CmrfWebformListBuilder extends ConfigEntityListBuilder {
+class OptionSetListBuilder extends ConfigEntityListBuilder {
 
   /**
    * {@inheritdoc}

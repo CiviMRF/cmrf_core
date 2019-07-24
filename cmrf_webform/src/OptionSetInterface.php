@@ -21,6 +21,7 @@ interface OptionSetInterface extends ConfigEntityInterface {
   public function setAction($value);
 
   public function getParameters();
+  public function getDecodedParameters($as_array);
   public function setParameters($value);
 
   public function getKeyProperty();

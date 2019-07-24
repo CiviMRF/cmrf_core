@@ -1,6 +1,18 @@
-entity.cmrf_webform_option_set.collection:
-  title: 'CiviMRF Webform settings'
-  parent: system.admin_config_system
+system.cmrf_webform:
+  title: 'Webform integration settings'
+  parent: system.civi_mrf
   description: 'Administer CiviMRF Webform integration'
-  route_name: entity.cmrf_webform_option_set.collection
+  route_name: system.cmrf_webform
   weight: 100
+
+entity.cmrf_webform_option_set.collection:
+  title: 'Webform option sets'
+  parent: system.cmrf_webform
+  description: 'Set handlers to fetch selection options from CiviMRF'
+  route_name: entity.cmrf_webform_option_set.collection
+
+entity.cmrf_webform_submission.collection:
+  title: 'Webform submission handling'
+  parent: system.cmrf_webform
+  description: 'Set handlers to send submissions to CiviMRF'
+  route_name: entity.cmrf_webform_submission.collection
