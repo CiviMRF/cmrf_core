@@ -29,6 +29,6 @@ class CmrfWebformListBuilder extends ConfigEntityListBuilder {
     $row['action'] = $entity->getAction();
 
     return $row + parent::buildRow($entity);
-  }   
+  }
 
 }

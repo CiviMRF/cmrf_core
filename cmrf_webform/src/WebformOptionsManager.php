@@ -8,6 +8,7 @@ use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\cmrf_core\Entity\CMRFConnector;
 use Drupal\webform\Entity\WebformOptions;
 use Drupal\Core\Entity\EntityStorageException;
+use RuntimeException;
 
 class WebformOptionsManager {
 
@@ -27,11 +28,10 @@ class WebformOptionsManager {
         return $id;
       }
     }
-    throw new \Exception($this->t("No connector for module $module was found"));
+    throw new RuntimeException($this->t("No connector for module $module was found"));
   }
 
   protected function fetchPredefinedOptions(OptionSetInterface $entity) {
-    // todo: throw subclassed exceptions
     // todo: use a service which will parse API results along with version
     $connector = $this->getModuleConnector();
     $api_entity = $entity->getEntity();
@@ -44,7 +44,7 @@ class WebformOptionsManager {
     if ($call->getStatus() == get_class($call)::STATUS_DONE) {
       $reply = $call->getReply();
       if (!empty($reply['is_error'])) {
-        throw new \Exception($this->t('CMRF API call returned error'));
+        throw new RuntimeException($this->t('CMRF API call returned error'));
       }
       elseif (isset($reply['values']) && is_array($reply['values'])) {
         $key_property = $entity->getKeyProperty();
@@ -61,11 +61,11 @@ class WebformOptionsManager {
         return $values;
       }
       else {
-        throw new \Exception($this->t('Malformed CMRF API call response'));
+        throw new RuntimeException($this->t('Malformed CMRF API call response'));
       }
     }
     else {
-      throw new \Exception($this->t('CMRF Api call was unsuccessful (%entity/%action) - %status', [
+      throw new RuntimeException($this->t('CMRF Api call was unsuccessful (%entity/%action) - %status', [
         '%entity' => $api_entity,
         '%action' => $api_action,
         '%status' => $call->getStatus(),

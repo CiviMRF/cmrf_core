@@ -5,6 +5,7 @@ namespace Drupal\cmrf_webform\Entity;
 use Drupal;
 use Drupal\Core\Config\Entity\ConfigEntityBase;
 use Drupal\cmrf_webform\OptionSetInterface;
+use RuntimeException;
 
 /**
  * Defines the OptionSet entity.
@@ -181,7 +182,7 @@ class OptionSet extends ConfigEntityBase implements OptionSetInterface {
     if ($update) {
       if (!Drupal::service('cmrf_webform.options_manager')->add($this)) {
         $this->delete();
-        throw new \Exception("Webform options save was unsuccessful");
+        throw new RuntimeException("Webform options save was unsuccessful");
       }
     }
 
@@ -191,7 +192,9 @@ class OptionSet extends ConfigEntityBase implements OptionSetInterface {
   public function delete() {
     $ret = parent::delete();
     if (!Drupal::service('cmrf_webform.options_manager')->delete($this)) {
-      // log
+      Drupal::logger('cmrf_webform')->alert("Couldn't delete WebformOptions entity for OptionSet %id", [
+        '%id' => $this->id(),
+      ]);
     }
 
     return $ret;

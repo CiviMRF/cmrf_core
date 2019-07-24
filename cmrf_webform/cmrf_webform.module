@@ -4,21 +4,30 @@ use Drupal\Core\Form\FormStateInterface;
 use Drupal\cmrf_webform\WebformOptionsManager;
 use Drupal\cmrf_webform\Entity\OptionSet;
 
+/**
+ * Implements hook_webform_options_alter.
+ */
 function cmrf_webform_webform_options_alter(array &$options, array &$element, $options_id = NULL) {
   if ($options_id !== NULL && substr($options_id, 0, 5) == 'cmrf_') {
     $id = substr($options_id, 5);
     $entity = OptionSet::load($id);
     if ($entity === NULL) {
-      // log
+      Drupal::logger('cmrf_webform')->alert('CMRF webform OptionSet entity %id was not found', [
+        '%id' => $id,
+      ]);
     }
     else {
       $service = Drupal::service('cmrf_webform.options_manager');
-      if (!$service->update($entity)) {
-        // log
+      try {
+        if ($service->update($entity)) {
+          $option_set = $service->getConfigurationObject($entity, false);
+          $options = $option_set->getOptions();
+        }
       }
-      else {
-        $option_set = $service->getConfigurationObject($entity, false);
-        $options = $option_set->getOptions();
+      catch (RuntimeException $e) {
+        Drupal::logger('cmrf_webform')->warning('CMRF webform update procedure was unsuccessful: %msg', [
+          '%msg' => $e->getMessage()
+        ]);
       }
     }
   }
