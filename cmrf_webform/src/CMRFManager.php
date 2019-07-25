@@ -25,7 +25,7 @@ class CMRFManager {
         return $id;
       }
     }
-    throw new RuntimeException($this->t("No connector for module $module was found"));
+    throw new RuntimeException("No connector for module $module was found");
   }
 
   protected function sendApiRequest($connector, $api_entity, $api_action, $parameters, $options) {
@@ -36,20 +36,20 @@ class CMRFManager {
       $reply = $call->getReply();
 
       if (!empty($reply['is_error'])) {
-        throw new RuntimeException($this->t('CMRF API call returned error'));
+        throw new RuntimeException('CMRF API call returned error');
       }
       if (!isset($reply['values']) || !is_array($reply['values'])) {
-        throw new RuntimeException($this->t('Malformed CMRF API call response'));
+        throw new RuntimeException('Malformed CMRF API call response');
       }
 
       return $reply['values'];
     }
     else {
-      throw new RuntimeException($this->t('CMRF Api call was unsuccessful (%entity/%action) - %status', [
+      throw new RuntimeException('CMRF Api call was unsuccessful (%entity/%action) - %status', [
         '%entity' => $api_entity,
         '%action' => $api_action,
         '%status' => $call->getStatus(),
-      ]));
+      ]);
     }
   }
 }

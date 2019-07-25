@@ -11,7 +11,7 @@ class OptionSetListBuilder extends ConfigEntityListBuilder {
    * {@inheritdoc}
    */
   public function buildHeader() {
-    $header['title'] = $this->t('Option set');
+    $header['label'] = $this->t('Option set');
     $header['id'] = $this->t('Machine name');
     $header['entity'] = $this->t('Entity name');
     $header['action'] = $this->t('Action name');
@@ -22,7 +22,7 @@ class OptionSetListBuilder extends ConfigEntityListBuilder {
    * {@inheritdoc}
    */
   public function buildRow(EntityInterface $entity) {
-    $row['title'] = $entity->getTitle();
+    $row['label'] = $entity->label();
     $row['id'] = $entity->id();
 
     $row['entity'] = $entity->getEntity();

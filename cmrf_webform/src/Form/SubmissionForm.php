@@ -6,8 +6,19 @@ use Drupal\Core\Entity\EntityForm;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
+use Drupal\webform\Entity\Webform;
 
 class SubmissionForm extends EntityForm {
+
+  protected function getWebformEntities() {
+    $webforms = Webform::loadMultiple();
+    $ret = [];
+    foreach ($webforms as $entity) {
+      $ret[$entity->id()] = $entity->label();
+    }
+
+    return $ret;
+  }
 
   /**
    * Constructs a Submission object.
@@ -30,6 +41,8 @@ class SubmissionForm extends EntityForm {
 
   public static function defaultValues() {
     return [
+      'delete_submission' => false,
+      'submit_in_background' => false,
       'entity' => 'Submission',
       'action' => 'post',
     ];
@@ -60,11 +73,35 @@ class SubmissionForm extends EntityForm {
       '#disabled' => !$entity->isNew(),
     ];
 
+    $form['webform'] = [
+      '#type' => 'select',
+      '#title' => $this->t('Webform entity'),
+      '#description' => $this->t('The webform entity item to use'),
+      '#options' => $this->getWebformEntities(),
+      '#required' => true,
+      '#default_value' => $entity->getWebform(),
+    ];
+
+    $form['delete_submission'] = [
+      '#type' => 'checkbox',
+      '#title' => $this->t('Delete the submission after processing'),
+      '#description' => $this->t('Deletes the submission form the webform results after the data has been submitted to CiviCRM.'),
+      '#default_value' => $entity->getDeleteSubmission(),
+    ];
+
+    $form['submit_in_background'] = [
+      '#type' => 'checkbox',
+      '#title' => $this->t('Handle the submission in the background'),
+      '#description' => $this->t('Submit this webform in the background. This means that the user does not have to wait till the submission is processed. You have to enable the cron to get this working.'),
+      '#default_value' => $entity->getSubmitInBackground(),
+    ];
+
     $form['entity'] = [
       '#type' => 'textfield',
       '#title' => $this->t('Entity'),
       '#maxlength' => 255,
       '#default_value' => $entity->getEntity(),
+      '#description' => $this->t('CiviMRF works with submitting data to the CiviCRM API. This field specifies which entity to use.'),
       '#required' => TRUE,
     ];
 
@@ -73,6 +110,7 @@ class SubmissionForm extends EntityForm {
       '#title' => $this->t('Action'),
       '#maxlength' => 255,
       '#default_value' => $entity->getAction(),
+      '#description' => $this->t('CiviMRF works with submitting data to the CiviCRM API. This field specifies which action to use.'),
       '#required' => TRUE,
     ];
 

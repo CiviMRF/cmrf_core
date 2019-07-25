@@ -3,6 +3,8 @@
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\cmrf_webform\WebformOptionsManager;
 use Drupal\cmrf_webform\Entity\OptionSet;
+use Drupal\cmrf_webform\Entity\Submission;
+use Drupal\webform\Entity\WebformSubmission;
 
 /**
  * Implements hook_webform_options_alter.
@@ -31,4 +33,18 @@ function cmrf_webform_webform_options_alter(array &$options, array &$element, $o
       }
     }
   }
+}
+
+/**
+ * Implements hook_entity_insert.
+ */
+function cmrf_webform_webform_submission_insert(WebformSubmission $entity) {
+  $webform_id = $entity->getWebform()->id();
+  $handler_ids = Drupal::entityQuery('cmrf_webform_submission')
+    ->condition('webform', $webform_id)
+    ->execute();
+  $cmrf_handlers = Submission::loadMultiple($handler_ids);
+  $service = Drupal::service('cmrf_webform.options_manager');
+
+  $service->execute($entity, $cmrf_handlers);
 }

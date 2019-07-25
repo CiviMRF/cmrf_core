@@ -38,7 +38,7 @@ class CMRFOptionsManager extends CMRFManager {
 
   protected function setOptionProperties(WebformOptions $option_set, OptionSetInterface $entity) {
     $option_set->set('id', $entity->getWebformId());
-    $option_set->set('label', $entity->getTitle());
+    $option_set->set('label', $entity->label());
     $option_set->set('category', 'CiviCRM integrated sets');
     $option_set->set('likert', false);
     $option_set->setOptions($this->fetchPredefinedOptions($entity));

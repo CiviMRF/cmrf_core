@@ -11,9 +11,6 @@ interface OptionSetInterface extends ConfigEntityInterface {
 
   public function getWebformId();
 
-  public function getTitle();
-  public function setTitle($value);
-
   public function getEntity();
   public function setEntity($value);
 

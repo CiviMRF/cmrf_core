@@ -51,11 +51,11 @@ class OptionSetForm extends EntityForm {
 
     $entity = $this->entity;
 
-    $form['title'] = [
+    $form['label'] = [
       '#type' => 'textfield',
-      '#title' => $this->t('Title'),
+      '#title' => $this->t('Label'),
       '#maxlength' => 255,
-      '#default_value' => $entity->getTitle(),
+      '#default_value' => $entity->label(),
       '#required' => TRUE,
     ];
 
@@ -147,8 +147,8 @@ class OptionSetForm extends EntityForm {
     $status = $options->save();
 
     if ($status) {
-      $this->messenger()->addMessage($this->t('Saved the %title Option set.', [
-        '%title' => $options->getTitle(),
+      $this->messenger()->addMessage($this->t('Saved the %label Option set.', [
+        '%label' => $options->label(),
       ]));
     }
 

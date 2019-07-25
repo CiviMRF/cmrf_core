@@ -25,7 +25,7 @@ use RuntimeException;
  *   admin_permission = "administer site configuration",
  *   entity_keys = {
  *     "id" = "id",
- *     "title" = "title",
+ *     "label" = "label",
  *     "entity" = "entity",
  *     "action" = "action",
  *     "parameters" = "parameters",
@@ -36,7 +36,7 @@ use RuntimeException;
  *   },
  *   config_export = {
  *     "id",
- *     "title",
+ *     "label",
  *     "entity",
  *     "action",
  *     "parameters",
@@ -61,11 +61,11 @@ class OptionSet extends ConfigEntityBase implements OptionSetInterface {
   public $id;
 
   /**
-   * The option set title.
+   * The option set label.
    *
    * @var string
    */
-  public $title;
+  public $label;
 
   /**
    * The option set entity name.
@@ -118,14 +118,6 @@ class OptionSet extends ConfigEntityBase implements OptionSetInterface {
 
   public function getWebformId() {
     return 'cmrf_' . $this->id;
-  }
-
-  public function getTitle() {
-    return $this->title;
-  }
-
-  public function setTitle($value) {
-    $this->title = $value;
   }
 
   public function getEntity() {

@@ -26,12 +26,18 @@ use RuntimeException;
  *   entity_keys = {
  *     "id" = "id",
  *     "label" = "label",
+ *     "webform" = "webform",
+ *     "delete_submission" = "delete_submission",
+ *     "submit_in_background" = "submit_in_background",
  *     "entity" = "entity",
  *     "action" = "action",
  *   },
  *   config_export = {
  *     "id",
  *     "label",
+ *     "webform",
+ *     "delete_submission",
+ *     "submit_in_background",
  *     "entity",
  *     "action",
  *   },
@@ -44,35 +50,76 @@ use RuntimeException;
 class Submission extends ConfigEntityBase implements SubmissionInterface {
 
   /**
-   * The option set ID.
+   * The submission ID.
    *
    * @var string
    */
   public $id;
 
   /**
-   * The option set label.
+   * The submission label.
    *
    * @var string
    */
   public $label;
 
   /**
-   * The option set entity name.
+   * The target webform entity.
+   *
+   * @var mixed
+   */
+  public $webform;
+
+  /**
+   * Whether to delete submission after sending
+   *
+   * @var mixed
+   */
+  public $delete_submission;
+
+  /**
+   * Whether to submit to API in cron run
+   *
+   * @var mixed
+   */
+  public $submit_in_background;
+
+  /**
+   * The submission entity name.
    *
    * @var string
    */
   public $entity;
 
   /**
-   * The option set action name.
+   * The submission action name.
    *
    * @var string
    */
   public $action;
 
-  public function getWebformId() {
-    return 'cmrf_' . $this->id;
+  public function setWebform($value) {
+    $this->webform = $value;
+  }
+
+  public function getWebform() {
+    return $this->webform;
+  }
+
+  public function setDeleteSubmission($value) {
+    $this->delete_submission = $value;
+  }
+
+  public function getDeleteSubmission() {
+    return $this->delete_submission;
+  }
+
+  public function setSubmitInBackground($value) {
+    $this->submit_in_background = $value;
+  }
+
+  public function getSubmitInBackground() {
+    return $this->submit_in_background;
   }
 
   public function getEntity() {
