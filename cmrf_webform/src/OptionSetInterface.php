@@ -3,19 +3,14 @@
 namespace Drupal\cmrf_webform;
 
 use Drupal\Core\Config\Entity\ConfigEntityInterface;
+use Drupal\cmrf_core\ApiCallEntityInterface;
 
 /**
  * Provides an interface defining an OptionSet entity.
  */
-interface OptionSetInterface extends ConfigEntityInterface {
+interface OptionSetInterface extends ConfigEntityInterface, ApiCallEntityInterface {
 
   public function getWebformId();
-
-  public function getEntity();
-  public function setEntity($value);
-
-  public function getAction();
-  public function setAction($value);
 
   public function getParameters();
   public function getDecodedParameters($as_array);

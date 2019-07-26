@@ -18,16 +18,6 @@ class CMRFManager {
     $this->stringTranslation = $translation;
   }
 
-  protected function getModuleConnector($module = 'cmrf_webform') {
-    $list = CMRFConnector::loadMultiple();
-    foreach ($list as $id => $item) {
-      if ($item->getType() == $module) {
-        return $id;
-      }
-    }
-    throw new RuntimeException("No connector for module $module was found");
-  }
-
   protected function sendApiRequest($connector, $api_entity, $api_action, $parameters, $options) {
     $call = $this->core->createCall($connector, $api_entity, $api_action, $parameters, $options);
     $this->core->executeCall($call);
@@ -45,11 +35,7 @@ class CMRFManager {
       return $reply['values'];
     }
     else {
-      throw new RuntimeException('CMRF Api call was unsuccessful (%entity/%action) - %status', [
-        '%entity' => $api_entity,
-        '%action' => $api_action,
-        '%status' => $call->getStatus(),
-      ]);
+      throw new RuntimeException("CMRF Api call was unsuccessful ($api_entity/$api_action) - " . $call->getStatus());
     }
   }
 }

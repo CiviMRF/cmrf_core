@@ -9,7 +9,7 @@ use Drupal\Core\Entity\EntityStorageException;
 class CMRFOptionsManager extends CMRFManager {
 
   protected function fetchPredefinedOptions(OptionSetInterface $entity) {
-    $connector = $this->getModuleConnector();
+    $connector = $entity->getConnector();
     $parameters = $entity->getDecodedParameters();
     $options = $parameters['options'] ?? [];
     $key_property = $entity->getKeyProperty();
@@ -77,7 +77,7 @@ class CMRFOptionsManager extends CMRFManager {
 
   public function add(OptionSetInterface $entity) {
     $option_set = $this->getConfigurationObject($entity);
-    $this->setOptionProperties($option_set, $entity, $options);
+    $this->setOptionProperties($option_set, $entity);
     if ($this->saveOptions($option_set)) {
       $entity->setRecached();
       return true;

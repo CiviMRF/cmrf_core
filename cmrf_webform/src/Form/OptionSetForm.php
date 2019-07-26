@@ -2,31 +2,9 @@
 
 namespace Drupal\cmrf_webform\Form;
 
-use Drupal\Core\Entity\EntityForm;
-use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\FormStateInterface;
-use Symfony\Component\DependencyInjection\ContainerInterface;
 
-class OptionSetForm extends EntityForm {
-
-  /**
-   * Constructs a Option Set object.
-   *
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
-   *   The entityTypeManager.
-   */
-  public function __construct(EntityTypeManagerInterface $entityTypeManager) {
-    $this->entityTypeManager = $entityTypeManager;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function create(ContainerInterface $container) {
-    return new static(
-      $container->get('entity_type.manager')
-    );
-  }
+class OptionSetForm extends ConnectorAwareForm {
 
   public static function defaultValues() {
     return [
@@ -66,6 +44,15 @@ class OptionSetForm extends EntityForm {
         'exists' => [$this, 'exist'],
       ],
       '#disabled' => !$entity->isNew(),
+    ];
+
+    $form['connector'] = [
+      '#type' => 'select',
+      '#title' => $this->t('Connector entity'),
+      '#description' => $this->t('The connector to use for this call'),
+      '#options' => $this->getConnectorEntities(),
+      '#required' => true,
+      '#default_value' => $entity->getConnector(),
     ];
 
     $form['entity'] = [

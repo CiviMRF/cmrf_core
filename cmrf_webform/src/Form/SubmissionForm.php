@@ -2,13 +2,10 @@
 
 namespace Drupal\cmrf_webform\Form;
 
-use Drupal\Core\Entity\EntityForm;
-use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\FormStateInterface;
-use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\webform\Entity\Webform;
 
-class SubmissionForm extends EntityForm {
+class SubmissionForm extends ConnectorAwareForm {
 
   protected function getWebformEntities() {
     $webforms = Webform::loadMultiple();
@@ -18,25 +15,6 @@ class SubmissionForm extends EntityForm {
     }
 
     return $ret;
-  }
-
-  /**
-   * Constructs a Submission object.
-   *
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
-   *   The entityTypeManager.
-   */
-  public function __construct(EntityTypeManagerInterface $entityTypeManager) {
-    $this->entityTypeManager = $entityTypeManager;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function create(ContainerInterface $container) {
-    return new static(
-      $container->get('entity_type.manager')
-    );
   }
 
   public static function defaultValues() {
@@ -71,6 +49,15 @@ class SubmissionForm extends EntityForm {
         'exists' => [$this, 'exist'],
       ],
       '#disabled' => !$entity->isNew(),
+    ];
+
+    $form['connector'] = [
+      '#type' => 'select',
+      '#title' => $this->t('Connector entity'),
+      '#description' => $this->t('The connector to use for this call'),
+      '#options' => $this->getConnectorEntities(),
+      '#required' => true,
+      '#default_value' => $entity->getConnector(),
     ];
 
     $form['webform'] = [
@@ -132,7 +119,7 @@ class SubmissionForm extends EntityForm {
     $status = $handler->save();
 
     if ($status) {
-      $this->messenger()->addMessage($this->t('Saved the %title submission handler.', [
+      $this->messenger()->addMessage($this->t('Saved the %label submission handler.', [
         '%label' => $handler->label(),
       ]));
     }

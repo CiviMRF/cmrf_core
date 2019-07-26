@@ -5,6 +5,7 @@ namespace Drupal\cmrf_webform\Entity;
 use Drupal;
 use Drupal\Core\Config\Entity\ConfigEntityBase;
 use Drupal\cmrf_webform\OptionSetInterface;
+use Drupal\cmrf_core\Entity\CMRFConnector;
 use RuntimeException;
 
 /**
@@ -26,6 +27,7 @@ use RuntimeException;
  *   entity_keys = {
  *     "id" = "id",
  *     "label" = "label",
+ *     "connector" = "connector",
  *     "entity" = "entity",
  *     "action" = "action",
  *     "parameters" = "parameters",
@@ -37,6 +39,7 @@ use RuntimeException;
  *   config_export = {
  *     "id",
  *     "label",
+ *     "connector" = "connector",
  *     "entity",
  *     "action",
  *     "parameters",
@@ -66,6 +69,13 @@ class OptionSet extends ConfigEntityBase implements OptionSetInterface {
    * @var string
    */
   public $label;
+
+  /**
+   * The connector entity's id.
+   *
+   * @var string
+   */
+  public $connector;
 
   /**
    * The option set entity name.
@@ -118,6 +128,18 @@ class OptionSet extends ConfigEntityBase implements OptionSetInterface {
 
   public function getWebformId() {
     return 'cmrf_' . $this->id;
+  }
+
+  public function getConnector() {
+    return $this->connector;
+  }
+
+  public function getConnectorEntity() {
+    return CMRFConnector::load($this->connector);
+  }
+
+  public function setConnector($value) {
+    $this->connector = $value;
   }
 
   public function getEntity() {

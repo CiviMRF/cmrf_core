@@ -1,0 +1,8 @@
+<?php
+
+/**
+ * Implements hook_install.
+ */
+function cmrf_webform_install() {
+    Drupal::service('queue')->get('cmrf_submissions', true)->createQueue();
+}

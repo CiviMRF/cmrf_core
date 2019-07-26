@@ -3,11 +3,12 @@
 namespace Drupal\cmrf_webform;
 
 use Drupal\Core\Config\Entity\ConfigEntityInterface;
+use Drupal\cmrf_core\ApiCallEntityInterface;
 
 /**
  * Provides an interface defining an OptionSet entity.
  */
-interface SubmissionInterface extends ConfigEntityInterface {
+interface SubmissionInterface extends ConfigEntityInterface, ApiCallEntityInterface {
 
   public function setWebform($value);
   public function getWebform();
@@ -17,11 +18,5 @@ interface SubmissionInterface extends ConfigEntityInterface {
 
   public function setSubmitInBackground($value);
   public function getSubmitInBackground();
-
-  public function getEntity();
-  public function setEntity($value);
-
-  public function getAction();
-  public function setAction($value);
 
 }

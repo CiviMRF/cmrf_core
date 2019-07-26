@@ -5,6 +5,8 @@ namespace Drupal\cmrf_webform\Entity;
 use Drupal;
 use Drupal\Core\Config\Entity\ConfigEntityBase;
 use Drupal\cmrf_webform\SubmissionInterface;
+use Drupal\webform\WebformInterface;
+use Drupal\cmrf_core\Entity\CMRFConnector;
 use RuntimeException;
 
 /**
@@ -26,6 +28,7 @@ use RuntimeException;
  *   entity_keys = {
  *     "id" = "id",
  *     "label" = "label",
+ *     "connector" = "connector",
  *     "webform" = "webform",
  *     "delete_submission" = "delete_submission",
  *     "submit_in_background" = "submit_in_background",
@@ -35,6 +38,7 @@ use RuntimeException;
  *   config_export = {
  *     "id",
  *     "label",
+ *     "connector" = "connector",
  *     "webform",
  *     "delete_submission",
  *     "submit_in_background",
@@ -62,6 +66,13 @@ class Submission extends ConfigEntityBase implements SubmissionInterface {
    * @var string
    */
   public $label;
+
+  /**
+   * The connector entity's id.
+   *
+   * @var string
+   */
+  public $connector;
 
   /**
    * The target webform entity.
@@ -97,6 +108,27 @@ class Submission extends ConfigEntityBase implements SubmissionInterface {
    * @var string
    */
   public $action;
+
+  public function getConnector() {
+    return $this->connector;
+  }
+
+  public function getConnectorEntity() {
+    return CMRFConnector::load($this->connector);
+  }
+
+  public function setConnector($value) {
+    $this->connector = $value;
+  }
+
+  public static function getForWebform(WebformInterface $entity) {
+    $handler_ids = Drupal::entityQuery('cmrf_webform_submission')
+      ->condition('webform', $entity->id())
+      ->execute();
+    $cmrf_handlers = static::loadMultiple($handler_ids);
+
+    return $cmrf_handlers;
+  }
 
   public function setWebform($value) {
     $this->webform = $value;
