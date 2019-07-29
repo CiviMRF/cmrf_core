@@ -4,64 +4,64 @@ namespace Drupal\cmrf_webform\Entity;
 
 use Drupal;
 use Drupal\Core\Config\Entity\ConfigEntityBase;
-use Drupal\cmrf_webform\SubmissionInterface;
+use Drupal\cmrf_webform\DefaultValueInterface;
 use Drupal\webform\WebformInterface;
 use Drupal\cmrf_core\Entity\CMRFConnector;
 use RuntimeException;
 
 /**
- * Defines the Submission entity.
+ * Defines the DefaultValue entity.
  *
  * @ConfigEntityType(
- *   id = "cmrf_webform_submission",
- *   label = @Translation("CiviCRM Webform integration submission handler"),
+ *   id = "cmrf_webform_default_value",
+ *   label = @Translation("CiviCRM Webform integration default value"),
  *   handlers = {
  *     "list_builder" = "Drupal\cmrf_webform\Controller\CMRFWebformListBuilder",
  *     "form" = {
- *       "add" = "Drupal\cmrf_webform\Form\SubmissionForm",
- *       "edit" = "Drupal\cmrf_webform\Form\SubmissionForm",
- *       "delete" = "Drupal\cmrf_webform\Form\SubmissionDeleteForm",
+ *       "add" = "Drupal\cmrf_webform\Form\DefaultValueForm",
+ *       "edit" = "Drupal\cmrf_webform\Form\DefaultValueForm",
+ *       "delete" = "Drupal\cmrf_webform\Form\DefaultValueDeleteForm",
  *     }
  *   },
- *   config_prefix = "cmrf_webform_submission",
+ *   config_prefix = "cmrf_webform_default_value",
  *   admin_permission = "administer site configuration",
  *   entity_keys = {
  *     "id" = "id",
  *     "label" = "label",
  *     "connector" = "connector",
  *     "webform" = "webform",
- *     "delete_submission" = "delete_submission",
- *     "submit_in_background" = "submit_in_background",
  *     "entity" = "entity",
  *     "action" = "action",
+ *     "parameters" = "parameters",
+ *     "options" = "options",
  *   },
  *   config_export = {
  *     "id",
  *     "label",
  *     "connector",
  *     "webform",
- *     "delete_submission",
- *     "submit_in_background",
  *     "entity",
  *     "action",
+ *     "parameters",
+ *     "options",
  *   },
  *   links = {
- *     "edit-form" = "/admin/config/system/cmrf_webform_submission/{cmrf_webform_submission}",
- *     "delete-form" = "/admin/config/system/cmrf_webform_submission/{cmrf_webform_submission}/delete",
+ *     "edit-form" = "/admin/config/system/cmrf_webform_default_value/{cmrf_webform_default_value}",
+ *     "delete-form" = "/admin/config/system/cmrf_webform_default_value/{cmrf_webform_default_value}/delete",
  *   }
  * )
  */
-class Submission extends ConfigEntityBase implements SubmissionInterface {
+class DefaultValue extends ConfigEntityBase implements DefaultValueInterface {
 
   /**
-   * The submission ID.
+   * The default value ID.
    *
    * @var string
    */
   public $id;
 
   /**
-   * The submission label.
+   * The default value label.
    *
    * @var string
    */
@@ -75,39 +75,39 @@ class Submission extends ConfigEntityBase implements SubmissionInterface {
   public $connector;
 
   /**
-   * The target webform entity.
+   * The webform entity's id.
    *
-   * @var mixed
+   * @var string
    */
   public $webform;
 
   /**
-   * Whether to delete submission after sending
-   *
-   * @var mixed
-   */
-  public $delete_submission;
-
-  /**
-   * Whether to submit to API in cron run
-   *
-   * @var mixed
-   */
-  public $submit_in_background;
-
-  /**
-   * The submission entity name.
+   * The default value entity name.
    *
    * @var string
    */
   public $entity;
 
   /**
-   * The submission action name.
+   * The default value action name.
    *
    * @var string
    */
   public $action;
+
+  /**
+   * The default value parameters string.
+   *
+   * @var string
+   */
+  public $parameters;
+
+  /**
+   * The default value options string.
+   *
+   * @var string
+   */
+  public $options;
 
   public function getConnector() {
     return $this->connector;
@@ -122,7 +122,7 @@ class Submission extends ConfigEntityBase implements SubmissionInterface {
   }
 
   public static function getForWebform(WebformInterface $entity) {
-    $handler_ids = Drupal::entityQuery('cmrf_webform_submission')
+    $handler_ids = Drupal::entityQuery('cmrf_webform_default_value')
       ->condition('webform', $entity->id())
       ->execute();
 
@@ -140,22 +140,6 @@ class Submission extends ConfigEntityBase implements SubmissionInterface {
     return $this->webform;
   }
 
-  public function setDeleteSubmission($value) {
-    $this->delete_submission = $value;
-  }
-
-  public function getDeleteSubmission() {
-    return $this->delete_submission;
-  }
-
-  public function setSubmitInBackground($value) {
-    $this->submit_in_background = $value;
-  }
-
-  public function getSubmitInBackground() {
-    return $this->submit_in_background;
-  }
-
   public function getEntity() {
     return $this->entity;
   }
@@ -170,6 +154,30 @@ class Submission extends ConfigEntityBase implements SubmissionInterface {
 
   public function setAction($value) {
     $this->action = $value;
+  }
+
+  public function getParameters() {
+    return $this->parameters;
+  }
+
+  public function getDecodedParameters($as_array = true) {
+    return json_decode($this->parameters, $as_array);
+  }
+
+  public function setParameters($value) {
+    $this->parameters = $value;
+  }
+
+  public function getOptions() {
+    return $this->options;
+  }
+
+  public function getDecodedOptions($as_array = true) {
+    return json_decode($this->options, $as_array);
+  }
+
+  public function setOptions($value) {
+    $this->options = $value;
   }
 
 }

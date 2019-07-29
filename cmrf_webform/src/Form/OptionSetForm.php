@@ -3,8 +3,11 @@
 namespace Drupal\cmrf_webform\Form;
 
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\cmrf_webform\Traits\ConnectorAwareTrait;
 
-class OptionSetForm extends ConnectorAwareForm {
+class OptionSetForm extends CMRFWebformFormBase {
+
+  use ConnectorAwareTrait;
 
   public static function defaultValues() {
     return [

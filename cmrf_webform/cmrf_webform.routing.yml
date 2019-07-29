@@ -43,7 +43,7 @@ entity.cmrf_webform_submission.collection:
   path: '/admin/config/cmrf_webform/submission'
   defaults:
     _entity_list: 'cmrf_webform_submission'
-    _title: 'Option sets configuration'
+    _title: 'submissions configuration'
   requirements:
     _permission: 'administer site configuration'
 
@@ -51,7 +51,7 @@ entity.cmrf_webform_submission.add_form:
   path: '/admin/config/cmrf_webform/submission/add'
   defaults:
     _entity_form: 'cmrf_webform_submission.add'
-    _title: 'Add option set'
+    _title: 'Add submission'
   requirements:
     _permission: 'administer site configuration'
 
@@ -59,7 +59,7 @@ entity.cmrf_webform_submission.edit_form:
   path: '/admin/config/cmrf_webform/submission/{cmrf_webform_submission}'
   defaults:
     _entity_form: 'cmrf_webform_submission.edit'
-    _title: 'Edit option set'
+    _title: 'Edit submission'
   requirements:
     _permission: 'administer site configuration'
 
@@ -67,6 +67,39 @@ entity.cmrf_webform_submission.delete_form:
   path: '/admin/config/cmrf_webform/submission/{cmrf_webform_submission}/delete'
   defaults:
     _entity_form: 'cmrf_webform_submission.delete'
-    _title: 'Delete option set'
+    _title: 'Delete submission'
+  requirements:
+    _permission: 'administer site configuration'
+
+# DEFAULT VALUES
+entity.cmrf_webform_default_value.collection:
+  path: '/admin/config/cmrf_webform/default_value'
+  defaults:
+    _entity_list: 'cmrf_webform_default_value'
+    _title: 'default values configuration'
+  requirements:
+    _permission: 'administer site configuration'
+
+entity.cmrf_webform_default_value.add_form:
+  path: '/admin/config/cmrf_webform/default_value/add'
+  defaults:
+    _entity_form: 'cmrf_webform_default_value.add'
+    _title: 'Add default value'
+  requirements:
+    _permission: 'administer site configuration'
+
+entity.cmrf_webform_default_value.edit_form:
+  path: '/admin/config/cmrf_webform/default_value/{cmrf_webform_default_value}'
+  defaults:
+    _entity_form: 'cmrf_webform_default_value.edit'
+    _title: 'Edit default value'
+  requirements:
+    _permission: 'administer site configuration'
+
+entity.cmrf_webform_default_value.delete_form:
+  path: '/admin/config/cmrf_webform/default_value/{cmrf_webform_default_value}/delete'
+  defaults:
+    _entity_form: 'cmrf_webform_default_value.delete'
+    _title: 'Delete default value'
   requirements:
     _permission: 'administer site configuration'

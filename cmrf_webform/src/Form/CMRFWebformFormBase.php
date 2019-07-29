@@ -3,23 +3,10 @@
 namespace Drupal\cmrf_webform\Form;
 
 use Drupal\Core\Entity\EntityForm;
-use Drupal\cmrf_core\Entity\CMRFConnector;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
-abstract class ConnectorAwareForm extends EntityForm {
-
-  protected function getConnectorEntities($module = 'cmrf_webform') {
-    $connectors = CMRFConnector::loadMultiple();
-    $ret = [];
-    foreach ($connectors as $entity) {
-      if ($entity->getType() == $module) {
-        $ret[$entity->id()] = $entity->label();
-      }
-    }
-
-    return $ret;
-  }
+abstract class CMRFWebformFormBase extends EntityForm {
 
   /**
    * Constructs a Option Set object.

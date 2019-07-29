@@ -15,7 +15,7 @@ use RuntimeException;
  *   id = "cmrf_webform_option_set",
  *   label = @Translation("CiviCRM Webform integration option set"),
  *   handlers = {
- *     "list_builder" = "Drupal\cmrf_webform\Controller\OptionSetListBuilder",
+ *     "list_builder" = "Drupal\cmrf_webform\Controller\CMRFWebformListBuilder",
  *     "form" = {
  *       "add" = "Drupal\cmrf_webform\Form\OptionSetForm",
  *       "edit" = "Drupal\cmrf_webform\Form\OptionSetForm",
@@ -229,4 +229,5 @@ class OptionSet extends ConfigEntityBase implements OptionSetInterface {
     $this->last_cached = time();
     $this->save(false);
   }
+
 }

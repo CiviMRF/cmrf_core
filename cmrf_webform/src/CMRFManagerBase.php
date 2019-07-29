@@ -7,7 +7,7 @@ use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\cmrf_core\Entity\CMRFConnector;
 use RuntimeException;
 
-class CMRFManager {
+abstract class CMRFManagerBase {
 
   use StringTranslationTrait;
 
@@ -18,7 +18,7 @@ class CMRFManager {
     $this->stringTranslation = $translation;
   }
 
-  protected function sendApiRequest($connector, $api_entity, $api_action, $parameters, $options) {
+  protected function sendApiRequest($connector, $api_entity, $api_action, $parameters, $options, $get = "values") {
     $call = $this->core->createCall($connector, $api_entity, $api_action, $parameters, $options);
     $this->core->executeCall($call);
 
@@ -28,11 +28,16 @@ class CMRFManager {
       if (!empty($reply['is_error'])) {
         throw new RuntimeException('CMRF API call returned error');
       }
-      if (!isset($reply['values']) || !is_array($reply['values'])) {
-        throw new RuntimeException('Malformed CMRF API call response');
+      if ($get === NULL) {
+        return $reply;
       }
+      else {
+        if (!isset($reply[$get]) || !is_array($reply[$get])) {
+          throw new RuntimeException('Malformed CMRF API call response');
+        }
 
-      return $reply['values'];
+        return $reply[$get];
+      }
     }
     else {
       throw new RuntimeException("CMRF Api call was unsuccessful ($api_entity/$api_action) - " . $call->getStatus());

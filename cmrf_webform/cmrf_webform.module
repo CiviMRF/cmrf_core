@@ -6,6 +6,7 @@ use Drupal\cmrf_webform\Entity\OptionSet;
 use Drupal\cmrf_webform\Entity\Submission;
 use Drupal\webform\WebformSubmissionInterface;
 use Drupal\webform\WebformInterface;
+use Drupal\Core\Entity\EntityFormInterface;
 
 /**
  * Implements hook_webform_options_alter.
@@ -65,6 +66,34 @@ function cmrf_webform_cron() {
  * Implements hook_entity_delete.
  */
 function cmrf_webform_webform_delete(WebformInterface $entity) {
-  $service = Drupal::service('cmrf_webform.options_manager');
-  $service->deleteWebformHandlers($entity);
+  $service = Drupal::service('cmrf_webform.submissions_manager');
+  $service->deleteWebformHandler($entity);
+  $service = Drupal::service('cmrf_webform.defaults_manager');
+  $service->deleteWebformHandler($entity);
+}
+
+/**
+ * Implements hook_form_alter.
+ */
+function cmrf_webform_form_alter(&$form, \Drupal\Core\Form\FormStateInterface $form_state, $form_id) {
+  $webform = $form_state->getFormObject();
+  if ($webform instanceof EntityFormInterface) {
+    $service = Drupal::service('cmrf_webform.defaults_manager');
+    $entity = $webform->getEntity();
+
+    if ($entity instanceof WebformSubmissionInterface) {
+      $parameters = Drupal::request()->query;
+
+      try {
+        if ($defaults = $service->fetch($entity, $parameters)) {
+          foreach ($defaults as $key => $value) {
+            $form["elements"][$key]["#value"] = $value;
+          }
+        }
+      }
+      catch (RuntimeException $e) {
+        Drupal::logger('cmrf_webform')->warning("Couldn't fetch default data for form $form_id");
+      }
+    }
+  }
 }

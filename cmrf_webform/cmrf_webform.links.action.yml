@@ -9,3 +9,9 @@ entity.cmrf_webform_submission.add_form:
   title: 'Add submission handlers'
   appears_on:
     - entity.cmrf_webform_submission.collection
+
+entity.cmrf_webform_default_value.add_form:
+  route_name: 'entity.cmrf_webform_default_value.add_form'
+  title: 'Add default value handlers'
+  appears_on:
+    - entity.cmrf_webform_default_value.collection

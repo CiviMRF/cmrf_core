@@ -7,7 +7,10 @@ use Drupal\webform\WebformInterface;
 use Drupal\cmrf_webform\Entity\Submission;
 use RuntimeException;
 
-class CMRFSubmissionsManager extends CMRFManager {
+// todo: Implement a better error mechanism, likely different types of exceptions to throw.
+class CMRFSubmissionsManager extends CMRFManagerBase {
+
+  const QUEUE_NAME = 'cmrf_submissions';
 
   protected $queueFactory;
   protected $queueError;
@@ -51,14 +54,12 @@ class CMRFSubmissionsManager extends CMRFManager {
 
   protected function removeProcessedQuery($item) {
     $queue = $this->getQueue();
-    if (!$queue->deleteItem($item)) {
-      $this->queueError = true;
-    }
+    $queue->deleteItem($item);
   }
 
   protected function queryApi(WebformSubmissionInterface $submission, SubmissionInterface $entity, $cron) {
     $connector = $entity->getConnector();
-    $parameters = $submission->toArray();
+    $parameters = $submission->getData();
     $options = [];
 
     try {
@@ -67,14 +68,14 @@ class CMRFSubmissionsManager extends CMRFManager {
         $entity->getEntity(),
         $entity->getAction(),
         $parameters,
-        $options
+        $options,
+        NULL
       );
       return true;
     }
     catch (RuntimeException $e) {
-      // fallback in case there was an error sending
       if (!$cron) {
-        $this->queueApiQuery($submission, $entity);
+        // fail silently - not to disturb user
         $this->submissionError = $e;
       } else {
         throw $e;
@@ -84,11 +85,9 @@ class CMRFSubmissionsManager extends CMRFManager {
   }
 
   protected function executeSingleHandler(WebformSubmissionInterface $submission, SubmissionInterface $handler, $cron = false) {
-    $delete = true;
+    $delete = $handler->getDeleteSubmission();
     if (!$handler->getSubmitInBackground() xor $cron) {
       $delete = $this->queryApi($submission, $handler, $cron) && $delete;
-      // Delete only if all of the cmrf submission handlers are set to deleting.
-      $delete = $delete && $handler->getDeleteSubmission();
     }
     elseif (!$cron) {
       $this->queueApiQuery($submission, $handler);
@@ -102,23 +101,23 @@ class CMRFSubmissionsManager extends CMRFManager {
   public function executeSubmissionHandlers(WebformSubmissionInterface $submission) {
     $this->resetErrors();
     $webform = $submission->getWebform();
-    $cmrf_handlers = Submission::getForWebform($webform);
+    $handler = Submission::getForWebform($webform);
 
-    $delete = count($cmrf_handlers) > 0;
-    foreach ($cmrf_handlers as $ind => $handler) {
-      $delete = $delete && $this->executeSingleHandler($submission, $handler);
+    if ($handler) {
+      $delete = $this->executeSingleHandler($submission, $handler);
+
+      if ($delete) {
+        $submission->delete();
+      }
     }
 
-    if ($delete) {
-      $submission->delete();
-    }
-    return count($cmrf_handlers);
+    return $handler == true;
   }
 
   public function executeQueuedSubmissionHandlers() {
     $this->resetErrors();
-    $error = false;
-    while (!$error && $item = $this->getQueuedQuery()) {
+    $success = true;
+    while ($success && $item = $this->getQueuedQuery()) {
       $data = $item->data;
       try {
         if ($this->executeSingleHandler($data['submission'], $data['handler'], true)) {
@@ -127,16 +126,16 @@ class CMRFSubmissionsManager extends CMRFManager {
         $this->removeProcessedQuery($item);
       }
       catch (RuntimeException $e) {
-        $error = true;
+        $success = false;
         $this->submissionError = $e;
       }
     }
-    return $error;
+    return $success;
   }
 
-  public function deleteWebformHandlers(WebformSubmissionInterface $webform) {
-    $cmrf_handlers = Submission::getForWebform($webform);
-    foreach ($cmrf_handlers as $handler) {
+  public function deleteWebformHandler(WebformInterface $webform) {
+    $handler = Submission::getForWebform($webform);
+    if ($handler) {
       $handler->delete();
     }
   }

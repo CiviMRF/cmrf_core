@@ -2,23 +2,23 @@
 
 namespace Drupal\cmrf_webform\Form;
 
-use Drupal\cmrf_webform\Entity\Submission;
+use Drupal\cmrf_webform\Entity\DefaultValue;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\cmrf_webform\Traits\ConnectorAwareTrait;
 use Drupal\cmrf_webform\Traits\WebformAwareTrait;
 use Drupal\webform\Entity\Webform;
 
-class SubmissionForm extends CMRFWebformFormBase {
+class DefaultValueForm extends CMRFWebformFormBase {
 
   use WebformAwareTrait;
   use ConnectorAwareTrait;
 
   public static function defaultValues() {
     return [
-      'delete_submission' => false,
-      'submit_in_background' => false,
-      'entity' => 'Submission',
-      'action' => 'post',
+      'entity' => 'Contact',
+      'action' => 'getsingle',
+      'parameters' => '{}',
+      'options' => '{}',
     ];
   }
 
@@ -29,6 +29,12 @@ class SubmissionForm extends CMRFWebformFormBase {
     $form = parent::form($form, $form_state);
 
     $entity = $this->entity;
+
+    $form['details'] = [
+      '#type' => 'html_tag',
+      '#tag' => 'p',
+      '#value' => $this->t('You may define a CiviCRM API action to use for retrieving default values for components in this Webform. When this is enabled, and a CiviCRM contact hash is present as a URL query parameter <i>hash</i>, the default value for each component in this Webform with the name of an attribute in the API call response will be set to the retrieved value for this attribute.'),
+    ];
 
     $form['label'] = [
       '#type' => 'textfield',
@@ -65,26 +71,11 @@ class SubmissionForm extends CMRFWebformFormBase {
       '#default_value' => $entity->getWebform(),
     ];
 
-    $form['delete_submission'] = [
-      '#type' => 'checkbox',
-      '#title' => $this->t('Delete the submission after processing'),
-      '#description' => $this->t('Deletes the submission form the webform results after the data has been submitted to CiviCRM.'),
-      '#default_value' => $entity->getDeleteSubmission(),
-    ];
-
-    $form['submit_in_background'] = [
-      '#type' => 'checkbox',
-      '#title' => $this->t('Handle the submission in the background'),
-      '#description' => $this->t('Submit this webform in the background. This means that the user does not have to wait till the submission is processed. You have to enable the cron to get this working.'),
-      '#default_value' => $entity->getSubmitInBackground(),
-    ];
-
     $form['entity'] = [
       '#type' => 'textfield',
       '#title' => $this->t('Entity'),
       '#maxlength' => 255,
       '#default_value' => $entity->getEntity(),
-      '#description' => $this->t('CiviMRF works with submitting data to the CiviCRM API. This field specifies which entity to use.'),
       '#required' => TRUE,
     ];
 
@@ -93,8 +84,21 @@ class SubmissionForm extends CMRFWebformFormBase {
       '#title' => $this->t('Action'),
       '#maxlength' => 255,
       '#default_value' => $entity->getAction(),
-      '#description' => $this->t('CiviMRF works with submitting data to the CiviCRM API. This field specifies which action to use.'),
       '#required' => TRUE,
+    ];
+
+    $form['parameters'] = [
+      '#type' => 'textarea',
+      '#title' => $this->t('Parameters'),
+      '#default_value' => $entity->getParameters(),
+      '#description' => $this->t("JSON-formatted CiviCRM API parameters. The parameter hash will be added automatically from the URL query parameter <i>hash</i>."),
+    ];
+
+    $form['options'] = [
+      '#type' => 'textarea',
+      '#title' => $this->t('Options'),
+      '#default_value' => $entity->getOptions(),
+      '#description' => $this->t("JSON-formatted CiviCRM API options"),
     ];
 
     if ($entity->isNew()) {
@@ -113,10 +117,17 @@ class SubmissionForm extends CMRFWebformFormBase {
   public function validateForm(array &$form, FormStateInterface $form_state) {
     parent::validateForm($form, $form_state);
 
+    foreach (['parameters', 'options'] as $field) {
+      $php_parameters = json_decode($form_state->getValue($field));
+      if ($php_parameters === NULL) {
+        $form_state->setError($form[$field], $this->t(ucfirst($field) . 'field does not contain a valid JSON'));
+      }
+    }
+
     $webform = Webform::load($form_state->getValue('webform'));
-    $exists = Submission::getForWebform($webform);
+    $exists = DefaultValue::getForWebform($webform);
     if ($exists !== NULL && $exists->id() != $form_state->getValue('id')) {
-      $form_state->setError($form['webform'], $this->t('Submission handler already exists for this form'));
+      $form_state->setError($form['webform'], $this->t('Default value handler already exists for this form'));
     }
   }
 
@@ -124,23 +135,22 @@ class SubmissionForm extends CMRFWebformFormBase {
    * {@inheritdoc}
    */
   public function save(array $form, FormStateInterface $form_state) {
-    $handler = $this->entity;
-    $status = $handler->save();
+    $status = $this->entity->save();
 
     if ($status) {
-      $this->messenger()->addMessage($this->t('Saved the %label submission handler.', [
-        '%label' => $handler->label(),
+      $this->messenger()->addMessage($this->t('Saved the %label Default values.', [
+        '%label' => $this->entity->label(),
       ]));
     }
 
-    $form_state->setRedirect('entity.cmrf_webform_submission.collection');
+    $form_state->setRedirect('entity.cmrf_webform_default_value.collection');
   }
 
   /**
    * Helper function to check whether an Example configuration entity exists.
    */
   public function exist($id) {
-    $entity = $this->entityTypeManager->getStorage('cmrf_webform_submission')->getQuery()
+    $entity = $this->entityTypeManager->getStorage('cmrf_webform_default_value')->getQuery()
       ->condition('id', $id)
       ->execute();
     return (bool) $entity;

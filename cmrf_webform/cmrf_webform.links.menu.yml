@@ -10,9 +10,18 @@ entity.cmrf_webform_option_set.collection:
   parent: system.cmrf_webform
   description: 'Set handlers to fetch selection options from CiviMRF'
   route_name: entity.cmrf_webform_option_set.collection
+  weight: 1
 
 entity.cmrf_webform_submission.collection:
   title: 'Webform submission handling'
   parent: system.cmrf_webform
   description: 'Set handlers to send submissions to CiviMRF'
   route_name: entity.cmrf_webform_submission.collection
+  weight: 2
+
+entity.cmrf_webform_default_value.collection:
+  title: 'Webform default form values'
+  parent: system.cmrf_webform
+  description: "Set handlers to fetch data to use as default values in form's fields"
+  route_name: entity.cmrf_webform_default_value.collection
+  weight: 3

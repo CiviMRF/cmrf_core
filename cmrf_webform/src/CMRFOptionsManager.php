@@ -6,7 +6,7 @@ use Drupal\cmrf_webform\OptionSetInterface;
 use Drupal\webform\Entity\WebformOptions;
 use Drupal\Core\Entity\EntityStorageException;
 
-class CMRFOptionsManager extends CMRFManager {
+class CMRFOptionsManager extends CMRFManagerBase {
 
   protected function fetchPredefinedOptions(OptionSetInterface $entity) {
     $connector = $entity->getConnector();

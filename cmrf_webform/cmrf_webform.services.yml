@@ -6,3 +6,7 @@ services:
   cmrf_webform.submissions_manager:
     class: Drupal\cmrf_webform\CMRFSubmissionsManager
     arguments: ['@cmrf_core.core', '@string_translation', '@queue']
+
+  cmrf_webform.defaults_manager:
+    class: Drupal\cmrf_webform\CMRFDefaultsManager
+    arguments: ['@cmrf_core.core', '@string_translation']
