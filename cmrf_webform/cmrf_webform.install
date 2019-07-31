@@ -1,6 +1,6 @@
 <?php
 
-use Drupal\cmrf_webform\CMRFSubmissionsManager;
+use Drupal\cmrf_webform\Manager\CMRFSubmissionsManager;
 
 /**
  * Implements hook_install.
