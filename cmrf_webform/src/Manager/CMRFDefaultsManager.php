@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\cmrf_webform;
+namespace Drupal\cmrf_webform\Manager;
 
 use Drupal\webform\WebformInterface;
 use Drupal\webform\WebformSubmissionInterface;

@@ -1,39 +1,25 @@
 <?php
 
-namespace Drupal\cmrf_webform;
+namespace Drupal\cmrf_webform\Manager;
 
 use Drupal\webform\WebformSubmissionInterface;
 use Drupal\webform\WebformInterface;
+use Drupal\cmrf_webform\SubmissionInterface;
 use Drupal\cmrf_webform\Entity\Submission;
+use Drupal\cmrf_webform\Exception\QueueException;
+use Drupal\cmrf_webform\Exception\SubmissionException;
 use RuntimeException;
 
-// todo: Implement a better error mechanism, likely different types of exceptions to throw.
 class CMRFSubmissionsManager extends CMRFManagerBase {
 
   const QUEUE_NAME = 'cmrf_submissions';
 
   protected $queueFactory;
-  protected $queueError;
-  protected $submissionError;
-
-  protected function resetErrors() {
-    $this->queueError = false;
-    $this->submissionError = false;
-  }
 
   public function __construct($core, $translation, $queue) {
     parent::__construct($core, $translation);
 
     $this->queueFactory = $queue;
-    $this->resetErrors();
-  }
-
-  public function getQueueError() {
-    return $this->queueError;
-  }
-
-  public function getSubmissionError() {
-    return $this->submissionError;
   }
 
   protected function getQueue() {
@@ -43,13 +29,18 @@ class CMRFSubmissionsManager extends CMRFManagerBase {
   protected function queueApiQuery(WebformSubmissionInterface $submission, SubmissionInterface $entity) {
     $queue = $this->getQueue();
     if (!$queue->createItem(['submission' => $submission, 'handler' => $entity])) {
-      $this->queueError = true;
+      throw new QueueException("Couldn't add CMRF submission task to a queue");
     }
   }
 
   protected function getQueuedQuery() {
     $queue = $this->getQueue();
     return $queue->claimItem(60);
+  }
+
+  protected function releaseQuery($item) {
+    $queue = $this->getQueue();
+    return $queue->releaseItem($item);
   }
 
   protected function removeProcessedQuery($item) {
@@ -74,13 +65,7 @@ class CMRFSubmissionsManager extends CMRFManagerBase {
       return true;
     }
     catch (RuntimeException $e) {
-      if (!$cron) {
-        // fail silently - not to disturb user
-        $this->submissionError = $e;
-      } else {
-        throw $e;
-      }
-      return false;
+      throw new SubmissionException($e->getMessage());
     }
   }
 
@@ -99,7 +84,6 @@ class CMRFSubmissionsManager extends CMRFManagerBase {
   }
 
   public function executeSubmissionHandlers(WebformSubmissionInterface $submission) {
-    $this->resetErrors();
     $webform = $submission->getWebform();
     $handler = Submission::getForWebform($webform);
 
@@ -115,22 +99,24 @@ class CMRFSubmissionsManager extends CMRFManagerBase {
   }
 
   public function executeQueuedSubmissionHandlers() {
-    $this->resetErrors();
-    $success = true;
-    while ($success && $item = $this->getQueuedQuery()) {
-      $data = $item->data;
+    $total = 0;
+
+    while ($item = $this->getQueuedQuery()) {
       try {
+        $data = $item->data;
         if ($this->executeSingleHandler($data['submission'], $data['handler'], true)) {
           $data['submission']->delete();
         }
         $this->removeProcessedQuery($item);
+        $total += 1;
       }
       catch (RuntimeException $e) {
-        $success = false;
-        $this->submissionError = $e;
+        $this->releaseQuery($item);
+        throw $e;
       }
     }
-    return $success;
+
+    return $total;
   }
 
   public function deleteWebformHandler(WebformInterface $webform) {

@@ -1,15 +1,11 @@
 <?php
 
-namespace Drupal\cmrf_webform;
+namespace Drupal\cmrf_webform\Manager;
 
-use Drupal\cmrf_webform\OptionSetInterface;
-use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\cmrf_core\Entity\CMRFConnector;
 use RuntimeException;
 
 abstract class CMRFManagerBase {
-
-  use StringTranslationTrait;
 
   protected $core;
 

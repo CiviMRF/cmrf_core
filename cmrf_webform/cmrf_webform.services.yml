@@ -1,12 +1,12 @@
 services:
   cmrf_webform.options_manager:
-    class: Drupal\cmrf_webform\CMRFOptionsManager
+    class: Drupal\cmrf_webform\Manager\CMRFOptionsManager
     arguments: ['@cmrf_core.core', '@string_translation']
 
   cmrf_webform.submissions_manager:
-    class: Drupal\cmrf_webform\CMRFSubmissionsManager
+    class: Drupal\cmrf_webform\Manager\CMRFSubmissionsManager
     arguments: ['@cmrf_core.core', '@string_translation', '@queue']
 
   cmrf_webform.defaults_manager:
-    class: Drupal\cmrf_webform\CMRFDefaultsManager
+    class: Drupal\cmrf_webform\Manager\CMRFDefaultsManager
     arguments: ['@cmrf_core.core', '@string_translation']

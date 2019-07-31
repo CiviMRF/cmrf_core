@@ -7,6 +7,8 @@ use Drupal\cmrf_webform\Entity\Submission;
 use Drupal\webform\WebformSubmissionInterface;
 use Drupal\webform\WebformInterface;
 use Drupal\Core\Entity\EntityFormInterface;
+use Drupal\cmrf_webform\Exception\QueueException;
+use Drupal\cmrf_webform\Exception\SubmissionException;
 
 /**
  * Implements hook_webform_options_alter.
@@ -42,23 +44,38 @@ function cmrf_webform_webform_options_alter(array &$options, array &$element, $o
  */
 function cmrf_webform_webform_submission_insert(WebformSubmissionInterface $entity) {
   $service = Drupal::service('cmrf_webform.submissions_manager');
-  $service->executeSubmissionHandlers($entity);
-  if ($error = $service->getSubmissionError()) {
-    Drupal::logger('cmrf_webform')->warning($error->getMessage());
-    Drupal::logger('cmrf_webform')->warning("Failed tasks have been moved to the queue");
+  try {
+    $service->executeSubmissionHandlers($entity);
+  }
+  catch (SubmissionException $e) {
+    Drupal::logger('cmrf_webform')->alert('CMRF Submission error: %msg', [
+      '%msg' => $e->getMessage()
+    ]);
+  }
+  catch (QueueException $e) {
+    Drupal::logger('cmrf_webform')->alert('CMRF Submission queueing error: %msg', [
+      '%msg' => $e->getMessage()
+    ]);
   }
 }
 
+/**
+ * Implements hook_webform_cron.
+ */
 function cmrf_webform_cron() {
   $service = Drupal::service('cmrf_webform.submissions_manager');
-  if (!$service->executeQueuedSubmissionHandlers()) {
-    Drupal::logger('cmrf_webform')->warning('CMRF webform cron error while sending request to CiviCRM API');
+  try {
+    $count = $service->executeQueuedSubmissionHandlers();
   }
-  if ($error = $service->getSubmissionError()) {
-    Drupal::logger('cmrf_webform')->warning($error->getMessage());
+  catch (SubmissionException $e) {
+    Drupal::logger('cmrf_webform')->alert('CMRF Submission error: %msg', [
+      '%msg' => $e->getMessage()
+    ]);
   }
-  if ($service->getQueueError()) {
-    Drupal::logger('cmrf_webform')->alert("CMRF webform cron couldn't update task Queue, possible duplicated requests!");
+  catch (QueueException $e) {
+    Drupal::logger('cmrf_webform')->alert('CMRF Submission queueing error: %msg', [
+      '%msg' => $e->getMessage()
+    ]);
   }
 }
 
