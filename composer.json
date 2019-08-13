@@ -1,30 +1,37 @@
 {
-  "name": "drupal/cmrf_core",
-  "type": "drupal-module",
-  "description": "CMRF CiviCRM REST Connection",
-  "keywords": ["Drupal"],
-  "license": "GPL-2.0+",
-  "homepage": "https://www.drupal.org/project/cmrf_core",
-  "minimum-stability": "dev",
-  "support": {
-    "issues": "https://www.drupal.org/project/issues/cmrf_core",
-    "source": "http://cgit.drupalcode.org/cmrf_core"
-  },
-  "repositories": [
-    {
-      "type": "package",
-      "package": {
-        "name": "CiviMRF/CMRF_Abstract_Core",
-        "version": "0.3",
-        "source": {
-          "url": "https://github.com/CiviMRF/CMRF_Abstract_Core.git",
-          "type": "git",
-          "reference": "master"
+    "name": "drupal/cmrf_core",
+    "type": "drupal-module",
+    "description": "CMRF CiviCRM REST Connection",
+    "keywords": [
+        "Drupal"
+    ],
+    "license": "GPL-2.0+",
+    "homepage": "https://www.drupal.org/project/cmrf_core",
+    "minimum-stability": "dev",
+    "support": {
+        "issues": "https://www.drupal.org/project/issues/cmrf_core",
+        "source": "http://cgit.drupalcode.org/cmrf_core"
+    },
+    "repositories": [
+        {
+            "type": "package",
+            "package": {
+                "name": "CiviMRF/CMRF_Abstract_Core",
+                "version": "0.4",
+                "source": {
+                    "url": "https://github.com/CiviMRF/CMRF_Abstract_Core.git",
+                    "type": "git",
+                    "reference": "master"
+                },
+                "autoload": {
+                    "psr-0": {
+                        "CMRF": ""
+                    }
+                }
+            }
         }
-      }
+    ],
+    "require": {
+        "civimrf/cmrf_abstract_core": "~0.4"
     }
-  ],
-  "require": {
-    "civimrf/cmrf_abstract_core": "0.3"
-  }
 }
