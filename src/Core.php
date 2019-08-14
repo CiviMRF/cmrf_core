@@ -1,6 +1,5 @@
 <?php namespace Drupal\cmrf_core;
 
-use CMRF\Connection\Curl as CurlConnection;
 use CMRF\Core\Core as AbstractCore;
 use CMRF\PersistenceLayer\SQLPersistingCallFactory;
 use Drupal\cmrf_core\Entity\CMRFConnector;
@@ -8,20 +7,21 @@ use Drupal\cmrf_core\Entity\CMRFProfile;
 
 class Core extends AbstractCore {
 
+  protected $connections = [];
+
   public function __construct() {
-    $info = \Drupal::database()->getConnectionOptions();
-    if (!isset($info['port'])) {
-      $info['port'] = NULL;
-    }
-    $conn       = new \mysqli($info['host'], $info['username'], $info['password'], $info['database'], $info['port']);
+    $db         = \Drupal::database()->getConnectionOptions();
     $table_name = \Drupal::database()->prefixTables("{civicrm_api_call}");
+    $conn       = new \mysqli($db['host'], $db['username'], $db['password'], $db['database'], empty($db['port']) ? NULL : $db['port']);
     $factory    = new SQLPersistingCallFactory($conn, $table_name, ['\Drupal\cmrf_core\Call', 'createNew'], ['\Drupal\cmrf_core\Call', 'createWithRecord']);
     parent::__construct($factory);
   }
 
   protected function getConnection($connector_id) {
-    //TODO: store open connections for reuse.
-    return new CurlConnection($this, $connector_id);
+    if (!isset($this->connections[$connector_id])) {
+      $this->connections[$connector_id] = new Connection($this, $connector_id);
+    }
+    return $this->connections[$connector_id];
   }
 
   public function getConnectionProfile($connector_id) {
