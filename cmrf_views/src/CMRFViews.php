@@ -47,15 +47,15 @@ class CMRFViews {
       $datasets = $this->getDatasets();
       if (!empty($datasets)) {
         foreach ($datasets as $dataset_id => $dataset_prop) {
-          if ((!empty($dataset_prop['profile'])) && (!empty($dataset_prop['entity']) && (!empty($dataset_prop['action'])))) {
+          if ((!empty($dataset_prop['connector'])) && (!empty($dataset_prop['entity']) && (!empty($dataset_prop['action'])))) {
             $fields = $this->getFields($dataset_prop);
             if ((!empty($fields)) && (is_array($fields))) {
               // Unique identifier for this group.
-              $uid = 'cmrf_views_' . $dataset_prop['profile'] . '_' . $dataset_id;
+              $uid = 'cmrf_views_' . $dataset_prop['connector'] . '_' . $dataset_id;
               // Base data.
               $data[$uid] = $this->getBaseData($dataset_prop);
               // Fields (from the getEntityFields function).
-              $data[$uid] = array_merge($fields, $data['cmrf_views_' . $dataset_prop['profile'] . '_' . $dataset_id]);
+              $data[$uid] = array_merge($fields, $data['cmrf_views_' . $dataset_prop['connector'] . '_' . $dataset_id]);
             }
           }
         }
@@ -99,8 +99,8 @@ class CMRFViews {
       $base_data['table']['base']['getcount'] = $dataset['getcount'];
     }
 
-    if (!empty($dataset['profile'])) {
-      $base_data['table']['base']['profile'] = $dataset['profile'];
+    if (!empty($dataset['connector'])) {
+      $base_data['table']['base']['connector'] = $dataset['connector'];
     }
 
     if (!empty($dataset['params'])) {
@@ -120,10 +120,10 @@ class CMRFViews {
    */
   public function getFields($dataset) {
 
-    if ((!empty($dataset['profile'])) && (!empty($dataset['entity'])) && (!empty($dataset['action']))) {
+    if ((!empty($dataset['connector'])) && (!empty($dataset['entity'])) && (!empty($dataset['action']))) {
 
       // API Call to retrieve the fields.
-      $call = $this->core->createCall($dataset['profile'], $dataset['entity'], 'getfields', ['api_action' => $dataset['action']], ['limit' => 0]);
+      $call = $this->core->createCall($dataset['connector'], $dataset['entity'], 'getfields', ['api_action' => $dataset['action']], ['limit' => 0]);
       $this->core->executeCall($call);
       if ($call->getStatus() != Call::STATUS_DONE) {
         return [];
@@ -422,11 +422,11 @@ class CMRFViews {
     if (!empty($loaded)) {
       foreach ($loaded as $entity) {
         $return[$entity->id()]           = [
-          'label'    => $entity->label(),
-          'profile'  => $entity->profile,
-          'entity'   => $entity->entity,
-          'action'   => $entity->action,
-          'getcount' => $entity->getcount,
+          'label'     => $entity->label(),
+          'connector' => $entity->connector,
+          'entity'    => $entity->entity,
+          'action'    => $entity->action,
+          'getcount'  => $entity->getcount,
         ];
         $params                          = json_decode($entity->params, TRUE);
         $return[$entity->id()]['params'] = empty($params) ? [] : $params;

@@ -39,7 +39,13 @@ class API extends QueryPluginBase {
    * @param \Drupal\cmrf_core\Core  $core
    * @param \Drupal\views\ViewsData $views_data
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, Core $core, ViewsData $views_data) {
+  public function __construct(
+    array $configuration,
+    $plugin_id,
+    $plugin_definition,
+    Core $core,
+    ViewsData $views_data
+  ) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
     $this->core      = $core;
     $this->viewsData = $views_data;
@@ -48,7 +54,12 @@ class API extends QueryPluginBase {
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition) {
+  public static function create(
+    ContainerInterface $container,
+    array $configuration,
+    $plugin_id,
+    $plugin_definition
+  ) {
     return new static(
       $configuration,
       $plugin_id,
@@ -90,7 +101,7 @@ class API extends QueryPluginBase {
       $api_entity       = $table_data['table']['base']['entity'];
       $api_action       = $table_data['table']['base']['action'];
       $api_count_action = $table_data['table']['base']['count'];
-      $profile          = $table_data['table']['base']['profile'];
+      $connector        = $table_data['table']['base']['connector'];
       $dataset_params   = json_decode($table_data['table']['base']['params'], TRUE);
       if (!is_array($dataset_params)) {
         $dataset_params = [];
@@ -169,7 +180,7 @@ class API extends QueryPluginBase {
       $view->result = [];
 
       // Data API call.
-      $call = $this->core->createCall($profile, $api_entity, $api_action, $parameters, $options);
+      $call = $this->core->createCall($connector, $api_entity, $api_action, $parameters, $options);
       $this->core->executeCall($call);
       if ($call->getStatus() == Call::STATUS_DONE) {
         $result = $call->getReply();
@@ -190,7 +201,7 @@ class API extends QueryPluginBase {
       $countOptions['cache'] = $view->query->options['cache'];
 
       // Count API call.
-      $call = $this->core->createCall($profile, $api_entity, $api_count_action, $parameters, $options);
+      $call = $this->core->createCall($connector, $api_entity, $api_count_action, $parameters, $options);
       $this->core->executeCall($call);
       if ($call->getStatus() == Call::STATUS_DONE) {
         $result = $call->getReply();

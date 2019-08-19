@@ -10,9 +10,9 @@ cmrf_views.cmrf_dataset.*:
       label: 'Label'
     uuid:
       type: string
-    profile:
+    connector:
       type: string
-      label: 'Profile'
+      label: 'Connector'
     entity:
       type: string
       label: 'Entity'

@@ -3,3 +3,9 @@ entity.cmrf_dataset.add_form:
   title: 'Add dataset'
   appears_on:
     - entity.cmrf_dataset.collection
+
+cmrf_views.clear_cache:
+  route_name: cmrf_views.clear_cache
+  title: 'Clear cache'
+  appears_on:
+    - entity.cmrf_dataset.collection

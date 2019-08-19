@@ -12,11 +12,11 @@ class CMRFDatasetListBuilder extends ConfigEntityListBuilder {
    * {@inheritdoc}
    */
   public function buildHeader() {
-    $header['label']      = $this->t('CMRF Dataset');
-    $header['id']         = $this->t('Machine name');
-    $header['profile']    = $this->t('Profile');
-    $header['entity']     = $this->t('Entity');
-    $header['action']     = $this->t('Action');
+    $header['label']     = $this->t('CMRF Dataset');
+    $header['id']        = $this->t('Machine name');
+    $header['connector'] = $this->t('Connector');
+    $header['entity']    = $this->t('Entity');
+    $header['action']    = $this->t('Action');
     return $header + parent::buildHeader();
   }
 
@@ -25,11 +25,11 @@ class CMRFDatasetListBuilder extends ConfigEntityListBuilder {
    */
   public function buildRow(EntityInterface $entity) {
     /** @var CMRFDataset $entity */
-    $row['label']      = $entity->label();
-    $row['id']         = $entity->id();
-    $row['profile']    = $entity->profile;
-    $row['entity']     = $entity->entity;
-    $row['action']     = $entity->action;
+    $row['label']   = $entity->label();
+    $row['id']      = $entity->id();
+    $row['connector'] = $entity->connector;
+    $row['entity']  = $entity->entity;
+    $row['action']  = $entity->action;
     return $row + parent::buildRow($entity);
   }
 

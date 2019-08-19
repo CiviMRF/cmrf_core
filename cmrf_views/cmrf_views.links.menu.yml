@@ -2,6 +2,6 @@ entity.cmrf_dataset.collection:
   title: 'CMRF Datasets'
   route_name: entity.cmrf_dataset.collection
   description: 'List and edit CMRF views datasets'
-  parent: system.admin_config_system
+  parent: system.civi_mrf
   weight: 100
 

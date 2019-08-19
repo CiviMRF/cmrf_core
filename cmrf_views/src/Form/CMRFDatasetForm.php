@@ -30,14 +30,8 @@ class CMRFDatasetForm extends EntityForm {
   public function form(array $form, FormStateInterface $form_state) {
     $form = parent::form($form, $form_state);
 
-    // Get connection profiles from the core.
-    $profiles         = $this->core->getConnectionProfiles();
-    $profiles_options = [];
-    if (!empty($profiles)) {
-      foreach ($profiles as $profile_name => $profile) {
-        $profiles_options[$profile_name] = $profile['label'];
-      }
-    }
+    // Get connectors from the core.
+    $connectors = $this->core->getConnectors();
 
     //$form_state['dataset'] = $dataset;
     $entity = $this->entity;
@@ -60,11 +54,11 @@ class CMRFDatasetForm extends EntityForm {
       ],
     ];
 
-    $form['profile'] = [
+    $form['connector'] = [
       '#type'          => 'select',
-      '#title'         => t('CiviMRF Connection profile'),
-      '#options'       => $profiles_options,
-      '#default_value' => $entity->profile,
+      '#title'         => t('CiviMRF Connector'),
+      '#options'       => $connectors,
+      '#default_value' => $entity->connector,
       '#required'      => TRUE,
     ];
 
@@ -105,17 +99,25 @@ class CMRFDatasetForm extends EntityForm {
    */
   public function save(array $form, FormStateInterface $form_state) {
     $saved   = parent::save($form, $form_state);
-    $context = ['@type' => $this->entity->bundle(), '%label' => $this->entity->label(), 'link' => $this->entity->toLink($this->t('View'))->toString()];
+    $context = ['@type'  => $this->entity->bundle(),
+                '%label' => $this->entity->label(),
+                'link'   => $this->entity->toLink($this->t('View'))->toString(),
+    ];
     $logger  = $this->logger('CMRF Views');
-    $t_args  = ['@type' => $this->entity->label(), '%label' => $this->entity->toLink($this->entity->label())->toString()];
+    $t_args  = ['@type'  => $this->entity->label(),
+                '%label' => $this->entity->toLink($this->entity->label())
+                                         ->toString(),
+    ];
 
     if ($saved === SAVED_NEW) {
       $logger->notice('@type: added %label.', $context);
-      $this->messenger()->addStatus($this->t('@type %label has been created.', $t_args));
+      $this->messenger()->addStatus($this->t('@type %label has been created.',
+        $t_args));
     }
     else {
       $logger->notice('@type: updated %label.', $context);
-      $this->messenger()->addStatus($this->t('@type %label has been updated.', $t_args));
+      $this->messenger()->addStatus($this->t('@type %label has been updated.',
+        $t_args));
     }
 
     // Redirect the user to the media overview if the user has the 'access media

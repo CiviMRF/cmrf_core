@@ -34,7 +34,6 @@ class Core extends AbstractCore {
 
 
   public function getConnectionProfiles() {
-
     $return  = [];
     $query   = \Drupal::entityQuery('cmrf_profile');
     $results = $query->execute();
@@ -121,6 +120,18 @@ class Core extends AbstractCore {
 
   protected function storeSettings($settings) {
     //no settings yet in d8.
+  }
+
+  public function getConnectors() {
+    $return  = [];
+    $query   = \Drupal::entityQuery('cmrf_connector');
+    $results = $query->execute();
+    $ids     = array_keys($results);
+    $loaded  = CMRFConnector::loadMultiple($ids);
+    foreach ($loaded as $entity) {
+      $return[$entity->id()] = $entity->label();
+    }
+    return $return;
   }
 
 }
