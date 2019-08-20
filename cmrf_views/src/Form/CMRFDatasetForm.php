@@ -39,14 +39,14 @@ class CMRFDatasetForm extends EntityForm {
     $form['label'] = [
       '#type'          => 'textfield',
       '#title'         => 'Label',
-      '#default_value' => $entity->label(),
+      '#default_value' => empty($entity->label()) ? NULL : $entity->label(),
       '#required'      => TRUE,
     ];
 
     $form['id'] = [
       '#type'          => 'machine_name',
       '#description'   => t('The name is used in URLs for this dataset. Use only lowercase alphanumeric characters, underscores (_), and hyphens (-).'),
-      '#default_value' => $entity->id(),
+      '#default_value' => empty($entity->id()) ? NULL : $entity->id(),
       '#required'      => TRUE,
       '#machine_name'  => [
         'exists'          => [$this, 'exists'],
@@ -58,14 +58,14 @@ class CMRFDatasetForm extends EntityForm {
       '#type'          => 'select',
       '#title'         => t('CiviMRF Connector'),
       '#options'       => $connectors,
-      '#default_value' => $entity->connector,
+      '#default_value' => empty($entity->connector) ? NULL : $entity->connector,
       '#required'      => TRUE,
     ];
 
     $form['entity'] = [
       '#type'          => 'textfield',
       '#title'         => t('Entity'),
-      '#default_value' => $entity->entity,
+      '#default_value' => empty($entity->entity) ? NULL : $entity->entity,
       '#required'      => TRUE,
     ];
 
@@ -87,7 +87,7 @@ class CMRFDatasetForm extends EntityForm {
       '#type'          => 'textarea',
       '#title'         => t('API Parameters'),
       '#description'   => t('Enter the api parameters in JSON format. E.g. {"contact_sub_type": "Student", "is_deleted": "0", "is_deceased": "0"}'),
-      '#default_value' => $entity->params,
+      '#default_value' => empty($entity->params) ? NULL : $entity->params,
       '#required'      => FALSE,
     ];
 

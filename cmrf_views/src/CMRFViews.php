@@ -235,7 +235,7 @@ class CMRFViews {
   private function getDateField($prop) {
 
     // Default.
-    $field['field']['id']    = 'date';
+    $field['field']['id']    = 'cmrf_views_date';
     $field['sort']['id']     = 'standard';
     $field['argument']['id'] = 'date';
 
