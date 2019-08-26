@@ -9,6 +9,7 @@ class cmrf_views_plugin_query_civimrf extends views_plugin_query {
   }
 
   function execute(&$view) {
+    $pager_enabled = true;
     $table_data = views_fetch_data($this->base_table);
     $entity = $table_data['table']['base']['entity'];
     $get_api_action = $table_data['table']['base']['action'];
@@ -17,6 +18,10 @@ class cmrf_views_plugin_query_civimrf extends views_plugin_query {
     $dataset_params = json_decode($table_data['table']['base']['params'], TRUE);
     if (!is_array($dataset_params)) {
       $dataset_params = [];
+    }
+
+    if ($this->pager instanceof views_plugin_pager_none || $this->pager instanceof views_plugin_pager_some) {
+      $pager_enabled = false;
     }
 
     $start = microtime(TRUE);
@@ -97,11 +102,15 @@ class cmrf_views_plugin_query_civimrf extends views_plugin_query {
       }
     }
 
-    $countOptions['cache'] = $view->query->options['cache'];
-    $call = cmrf_views_sendCall($entity, $count_api_action, $parameters, $countOptions, $profile);
-    $result = $call->getReply();
-    $this->pager->total_items = $result['result'];
-    $view->total_rows = $result['result'];
+    if ($pager_enabled) {
+      $countOptions['cache'] = $view->query->options['cache'];
+      $call = cmrf_views_sendCall($entity, $count_api_action, $parameters, $countOptions, $profile);
+      $countResult = $call->getReply();
+      $this->pager->total_items = $countResult['result'];
+      $view->total_rows = $countResult['result'];
+    } else {
+      $view->total_rows = $result['count'];
+    }
 
     // Tell pager and views total item count.
     // Create a new pager object.
