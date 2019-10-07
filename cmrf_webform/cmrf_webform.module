@@ -666,20 +666,9 @@ function cmrf_webform_webform_component_render_alter(array &$element, array &$co
     && !empty($node->cmrf_retrieve_default_values['enable'])
     && !empty($_GET['hash'])
   ) {
-    // Retrieve default values for this component's Webform node from static
-    //cache.
-    $default_values = &drupal_static(__FUNCTION__ . '_default_values_' . $node->nid);
-    if (!isset($default_values)) {
-      $call = cmrf_webform_send_call(
-        $node->cmrf_retrieve_default_values['entity'],
-        $node->cmrf_retrieve_default_values['action'],
-        json_decode($node->cmrf_retrieve_default_values['parameters'], TRUE)
-        + array('hash' => $_GET['hash']),
-        json_decode($node->cmrf_retrieve_default_values['options'], TRUE),
-        $node->cmrf_profile
-      );
-      $default_values = $call->getStatus() == 'DONE' ? $call->getReply() : array();
-    }
+    // Retrieve default values for this component's Webform node.
+    $default_values_call = _cmrf_webform_default_values_retrieve($node, $_GET['hash']);
+    $default_values = $default_values_call->getStatus() == 'DONE' ? $default_values_call->getReply() : array();
 
     // Set the component's default value, if there is a match.
     if (isset($default_values[$component['form_key']])) {
@@ -691,6 +680,31 @@ function cmrf_webform_webform_component_render_alter(array &$element, array &$co
       }
     }
   }
+}
+
+/**
+ * Retrieves default values for a given CiviCRM contact hash.
+ *
+ * @param \stdClass $node
+ *
+ * @param string $hash
+ *
+ * @return \CMRF\Core\Call
+ */
+function _cmrf_webform_default_values_retrieve(&$node, $hash) {
+  $default_values_call = &drupal_static(__FUNCTION__ . '_' . $node->nid . '_' . $hash);
+  if (!isset($default_values_call)) {
+    $default_values_call = cmrf_webform_send_call(
+      $node->cmrf_retrieve_default_values['entity'],
+      $node->cmrf_retrieve_default_values['action'],
+      json_decode($node->cmrf_retrieve_default_values['parameters'], TRUE)
+      + array('hash' => $hash),
+      json_decode($node->cmrf_retrieve_default_values['options'], TRUE),
+      $node->cmrf_profile
+    );
+  }
+
+  return $default_values_call;
 }
 
 /**
@@ -844,6 +858,8 @@ function cmrf_webform_settings($form, &$form_state, $node) {
     'action' => '',
     'parameters' => '',
     'options' => '',
+    'invalid_hash_message' => NULL,
+    'invalid_hash_redirect' => NULL,
   );
 
   $form['#node'] = $node;
@@ -1017,6 +1033,33 @@ function cmrf_webform_settings($form, &$form_state, $node) {
     ),
   );
 
+  $form['retrieve_default_values']['invalid_hash'] = array(
+    '#type' => 'fieldset',
+    '#tree' => FALSE,
+    '#title' => t('Invalid contact hashes'),
+    '#description' => t('When the CiviCRM contact hash is invalid, a message can be displayed and/or the user can be redirected to another page (e.g. a webform for retrieving a new contact hash link). Contact hashes are considered invalid, if the API call specified above fails or returns an error.'),
+  );
+  $form['retrieve_default_values']['invalid_hash']['invalid_hash_message'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Message for invalid hash parameter'),
+    '#description' => t('Message to display when opening the Webform without or with an invalid hash parameter. Leave empty to not show a message for invalid hash parameters.'),
+    '#default_value' => $retrieve_default_values['invalid_hash_message'] ? $retrieve_default_values['invalid_hash_message'] : NULL,
+    '#parents' => array(
+      'retrieve_default_values',
+      'invalid_hash_message',
+    ),
+  );
+  $form['retrieve_default_values']['invalid_hash']['invalid_hash_redirect'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Redirect path for invalid hash parameter'),
+    '#description' => t('Path to redirect to when opening the Webform without or with an invalid hash parameter. Leave empty to not redirect for invalid hash parameters.'),
+    '#default_value' => $retrieve_default_values['invalid_hash_redirect'] ? $retrieve_default_values['invalid_hash_redirect'] : NULL,
+    '#parents' => array(
+      'retrieve_default_values',
+      'invalid_hash_redirect',
+    ),
+  );
+
   $form['actions']['#type'] = 'actions';
   $form['actions']['submit']['#type'] = 'submit';
   $form['actions']['submit']['#value'] = t('Save');
@@ -1065,6 +1108,14 @@ function cmrf_webform_settings_validate(array &$form, array &$form_state) {
             )
           );
         }
+      }
+
+      // Validate redirect path, if set.
+      if (!drupal_valid_path($form_state['values']['retrieve_default_values']['invalid_hash_redirect'])) {
+        form_error(
+          $form['retrieve_default_values']['invalid_hash']['invalid_hash_redirect'],
+          t('The redirect path entered is not valid.')
+        );
       }
     }
   }
@@ -1123,7 +1174,36 @@ function cmrf_webform_node_load($nodes, $types) {
         'action' => $cmrf_webform->cmrf_retrieve_default_values_action,
         'parameters' => $cmrf_webform->cmrf_retrieve_default_values_parameters,
         'options' => $cmrf_webform->cmrf_retrieve_default_values_options,
+        'invalid_hash_message' => $cmrf_webform->cmrf_retrieve_default_values_invalid_hash_message,
+        'invalid_hash_redirect' => $cmrf_webform->cmrf_retrieve_default_values_invalid_hash_redirect,
       );
+    }
+  }
+}
+
+/**
+ * Implements hook_node_view().
+ */
+function cmrf_webform_node_view($node, $view_mode, $langcode) {
+  if (
+    !empty($node->cmrf_enable)
+    && !empty($node->cmrf_retrieve_default_values['enable'])
+  ) {
+    if (!empty($_GET['hash'])) {
+      $default_values_call = _cmrf_webform_default_values_retrieve($node, $_GET['hash']);
+      $reply = $default_values_call->getReply();
+      $hash_valid = ($default_values_call->getStatus() == 'DONE' && empty($reply['is_error']));
+    }
+    else {
+      $hash_valid = FALSE;
+    }
+    if (!$hash_valid) {
+      if (!empty($node->cmrf_retrieve_default_values['invalid_hash_message'])) {
+        drupal_set_message($node->cmrf_retrieve_default_values['invalid_hash_message']);
+      }
+      if (!empty($node->cmrf_retrieve_default_values['invalid_hash_redirect'])) {
+        drupal_goto($node->cmrf_retrieve_default_values['invalid_hash_redirect']);
+      }
     }
   }
 }
@@ -1147,6 +1227,8 @@ function cmrf_webform_node_insert($node) {
         'cmrf_retrieve_default_values_action' => !empty($node->cmrf_retrieve_default_values['action']) ? $node->cmrf_retrieve_default_values['action'] : NULL,
         'cmrf_retrieve_default_values_parameters' => !empty($node->cmrf_retrieve_default_values['parameters']) ? $node->cmrf_retrieve_default_values['parameters'] : NULL,
         'cmrf_retrieve_default_values_options' => !empty($node->cmrf_retrieve_default_values['options']) ? $node->cmrf_retrieve_default_values['options'] : NULL,
+        'cmrf_retrieve_default_values_invalid_hash_message' => !empty($node->cmrf_retrieve_default_values['invalid_hash_message']) ? $node->cmrf_retrieve_default_values['invalid_hash_message'] : NULL,
+        'cmrf_retrieve_default_values_invalid_hash_redirect' => !empty($node->cmrf_retrieve_default_values['invalid_hash_redirect']) ? $node->cmrf_retrieve_default_values['invalid_hash_redirect'] : NULL,
       ))
       ->execute();
   }
@@ -1173,6 +1255,8 @@ function cmrf_webform_node_update($node) {
         'cmrf_retrieve_default_values_action' => !empty($node->cmrf_retrieve_default_values['action']) ? $node->cmrf_retrieve_default_values['action'] : NULL,
         'cmrf_retrieve_default_values_parameters' => !empty($node->cmrf_retrieve_default_values['parameters']) ? $node->cmrf_retrieve_default_values['parameters'] : NULL,
         'cmrf_retrieve_default_values_options' => !empty($node->cmrf_retrieve_default_values['options']) ? $node->cmrf_retrieve_default_values['options'] : NULL,
+        'cmrf_retrieve_default_values_invalid_hash_message' => !empty($node->cmrf_retrieve_default_values['invalid_hash_message']) ? $node->cmrf_retrieve_default_values['invalid_hash_message'] : NULL,
+        'cmrf_retrieve_default_values_invalid_hash_redirect' => !empty($node->cmrf_retrieve_default_values['invalid_hash_redirect']) ? $node->cmrf_retrieve_default_values['invalid_hash_redirect'] : NULL,
       ))
       ->execute();
   }
