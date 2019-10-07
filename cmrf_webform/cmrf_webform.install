@@ -93,6 +93,16 @@ function cmrf_webform_schema() {
           'size' => 'normal', // TODO: Is this sufficient (16 KB in MySQL)?
           'description' => 'The API options to use for retrieving default values.',
         ),
+        'cmrf_retrieve_default_values_invalid_hash_message' => array(
+          'type' => 'text',
+          'size' => 'normal',
+          'description' => 'Message to display when opening the Webform without or with an invalid hash parameter.',
+        ),
+        'cmrf_retrieve_default_values_invalid_hash_redirect' => array(
+          'type' => 'varchar',
+          'length' => 255,
+          'description' => 'Path to redirect to when opening the Webform without or with an invalid hash parameter.',
+        ),
       ),
       'primary key' => array('nid'),
     ),
@@ -329,6 +339,30 @@ function cmrf_webform_update_7004() {
       'size' => 'tiny',
       'not null' => TRUE,
       'default' => 0,
+    )
+  );
+}
+
+/**
+ * Update database schema for invalid contact hashes configuration.
+ */
+function cmrf_webform_update_7005() {
+  db_add_field(
+    'cmrf_webforms',
+    'cmrf_retrieve_default_values_invalid_hash_message',
+    array(
+      'type' => 'text',
+      'size' => 'normal',
+      'description' => 'Message to display when opening the Webform without or with an invalid hash parameter.',
+    )
+  );
+  db_add_field(
+    'cmrf_webforms',
+    'cmrf_retrieve_default_values_invalid_hash_redirect',
+    array(
+      'type' => 'varchar',
+      'length' => 255,
+      'description' => 'Path to redirect to when opening the Webform without or with an invalid hash parameter.',
     )
   );
 }
