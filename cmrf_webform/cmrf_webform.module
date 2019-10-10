@@ -1111,7 +1111,10 @@ function cmrf_webform_settings_validate(array &$form, array &$form_state) {
       }
 
       // Validate redirect path, if set.
-      if (!drupal_valid_path($form_state['values']['retrieve_default_values']['invalid_hash_redirect'])) {
+      if (
+        !empty($form_state['values']['retrieve_default_values']['invalid_hash_redirect'])
+        && !drupal_valid_path($form_state['values']['retrieve_default_values']['invalid_hash_redirect'])
+      ) {
         form_error(
           $form['retrieve_default_values']['invalid_hash']['invalid_hash_redirect'],
           t('The redirect path entered is not valid.')
