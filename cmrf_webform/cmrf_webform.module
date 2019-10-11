@@ -117,12 +117,22 @@ function cmrf_webform_submit($node, $submission) {
   $data = $submission->data;
   $webform = $node->webform;
   foreach($webform['components'] as $index => $component) {
-    if (isset($data[$index])) {
+    if (isset($node->cmrf_parameters[$component['form_key']])) {
+      // Check whether to submit the component value and as which param name.
+      $param_name = $node->cmrf_parameters[$component['form_key']];
+      $submit = $param_name != -1;
+    }
+    else {
+      // Default behavior, when no parameter mapping is provided.
+      $param_name = $component['form_key'];
+      $submit = TRUE;
+    }
+    if ($submit && isset($data[$index])) {
       $value = $data[$index];
       if (is_array($value) && empty($component['extra']['multiple'])) {
         $value = reset($value);
       }
-      $params[$component['form_key']] = $value;
+      $params[$param_name] = $value;
     }
   }
   drupal_alter('cmrf_webform_submit_params', $params, $node, $submission);
@@ -850,6 +860,7 @@ function cmrf_webform_settings($form, &$form_state, $node) {
   $queue = isset($node->cmrf_queue) && $node->cmrf_queue ? TRUE : FALSE;
   $entity = isset($node->cmrf_entity) ? $node->cmrf_entity : '';
   $action = isset($node->cmrf_action) ? $node->cmrf_action : '';
+  $parameter_mapping = isset($node->cmrf_parameters) ? $node->cmrf_parameters : array();
   $profile = isset($node->cmrf_profile) ? $node->cmrf_profile : '';
   $clear_submission = isset($node->cmrf_clear_submission) ? $node->cmrf_clear_submission : TRUE;
   $retrieve_default_values = isset($node->cmrf_retrieve_default_values) ? $node->cmrf_retrieve_default_values : array(
@@ -935,6 +946,38 @@ function cmrf_webform_settings($form, &$form_state, $node) {
       ),
     ),
   );
+
+  // Provide a configurable mapping of Webform components to API parameters, and
+  // the option to not submit specified parameters.
+  $form['parameters'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Parameter mapping'),
+    '#description' => t('You may change how each Webform component value is being submitted to the API, selecting whether to use the default form key, a custom parameter name or not submit the component value at all.'),
+    '#tree' => TRUE,
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE,
+  );
+  if (module_exists('select_or_other')) {
+    foreach ($node->webform['components'] as $cid => $component) {
+      $form['parameters'][$component['form_key']] = array(
+        '#type' => 'select_or_other',
+        '#select_type' => 'radios',
+        '#title' => $component['name'],
+        '#options' => array(
+          -1 => t('Do not submit'),
+          $component['form_key'] => t('Use default (<code>@default</code>)', array('@default' => $component['form_key'])),
+        ),
+        '#other' => t('Provide custom parameter name'),
+        '#other_unknown_defaults' => 'other',
+        '#other_delimiter' => ', ', // This is the select_or_other default.
+        '#default_value' => isset($parameter_mapping[$component['form_key']]) ? $parameter_mapping[$component['form_key']] : $component['form_key'],
+        '#required' => TRUE,
+      );
+    }
+  }
+  else {
+    $form['parameters']['#description'] .= t(' <span class="error">The module <a href="https://drupal.org/project/select_or_other">Select (or other)</a> is needed for defining a parameter mapping.</span>');
+  }
 
   // Form fields for the API action to use for retrieving default values for the
   // Webform's components.
@@ -1140,6 +1183,7 @@ function cmrf_webform_settings_submit(array &$form, array &$form_state) {
   $node->cmrf_profile = $form_state['values']['cmrf_profile'] ? $form_state['values']['cmrf_profile'] : '';
   $node->cmrf_entity = $form_state['values']['cmrf_entity'] ? $form_state['values']['cmrf_entity'] : '';
   $node->cmrf_action = $form_state['values']['cmrf_action'] ? $form_state['values']['cmrf_action'] : '';
+  $node->cmrf_parameters = !empty($form_state['values']['parameters']) ? $form_state['values']['parameters'] : array();
   $node->cmrf_retrieve_default_values = $form_state['values']['retrieve_default_values'] ? $form_state['values']['retrieve_default_values'] : '';
   node_save($node);
 
@@ -1169,6 +1213,7 @@ function cmrf_webform_node_load($nodes, $types) {
     $node->cmrf_profile = $cmrf_webform->cmrf_profile ? $cmrf_webform->cmrf_profile : '';
     $node->cmrf_entity = $cmrf_webform->cmrf_entity ? $cmrf_webform->cmrf_entity : '';
     $node->cmrf_action = $cmrf_webform->cmrf_action ? $cmrf_webform->cmrf_action : '';
+    $node->cmrf_parameters = $cmrf_webform->cmrf_parameters ? unserialize($cmrf_webform->cmrf_parameters) : array();
 
     if ($cmrf_webform->cmrf_retrieve_default_values_enable) {
       $node->cmrf_retrieve_default_values = array(
@@ -1225,6 +1270,7 @@ function cmrf_webform_node_insert($node) {
         'cmrf_profile' => !empty($node->cmrf_profile) ? $node->cmrf_profile : '',
         'cmrf_entity' => !empty($node->cmrf_entity) ? $node->cmrf_entity : '',
         'cmrf_action' => !empty($node->cmrf_action) ? $node->cmrf_action : '',
+        'cmrf_parameters' => !empty($node->cmrf_parameters) ? serialize($node->cmrf_parameters) : serialize(array()),
         'cmrf_retrieve_default_values_enable' => !empty($node->cmrf_retrieve_default_values['enable']) ? 1 : 0,
         'cmrf_retrieve_default_values_entity' => !empty($node->cmrf_retrieve_default_values['entity']) ? $node->cmrf_retrieve_default_values['entity'] : NULL,
         'cmrf_retrieve_default_values_action' => !empty($node->cmrf_retrieve_default_values['action']) ? $node->cmrf_retrieve_default_values['action'] : NULL,
@@ -1253,6 +1299,7 @@ function cmrf_webform_node_update($node) {
         'cmrf_profile' => !empty($node->cmrf_profile) ? $node->cmrf_profile : '',
         'cmrf_entity' => !empty($node->cmrf_entity) ? $node->cmrf_entity : '',
         'cmrf_action' => !empty($node->cmrf_action) ? $node->cmrf_action : '',
+        'cmrf_parameters' => !empty($node->cmrf_parameters) ? serialize($node->cmrf_parameters) : serialize(array()),
         'cmrf_retrieve_default_values_enable' => !empty($node->cmrf_retrieve_default_values['enable']) ? 1 : 0,
         'cmrf_retrieve_default_values_entity' => !empty($node->cmrf_retrieve_default_values['entity']) ? $node->cmrf_retrieve_default_values['entity'] : NULL,
         'cmrf_retrieve_default_values_action' => !empty($node->cmrf_retrieve_default_values['action']) ? $node->cmrf_retrieve_default_values['action'] : NULL,

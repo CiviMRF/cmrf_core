@@ -66,6 +66,12 @@ function cmrf_webform_schema() {
           'length' => 255,
           'not null' => TRUE,
         ),
+        'cmrf_parameters' => array(
+          'description' => 'A mapping of Webform component keys to parameter names',
+          'type' => 'text',
+          'size' => 'normal', // TODO: Is this sufficient (16 KB in MySQL)?
+          'serialize' => TRUE,
+        ),
         'cmrf_retrieve_default_values_enable' => array(
           'description' => 'Whether to retrieve default values using an API call.',
           'type' => 'int',
@@ -363,6 +369,22 @@ function cmrf_webform_update_7005() {
       'type' => 'varchar',
       'length' => 255,
       'description' => 'Path to redirect to when opening the Webform without or with an invalid hash parameter.',
+    )
+  );
+}
+
+/**
+ * Update database schema for parameter mapping configuration.
+ */
+function cmrf_webform_update_7006() {
+  db_add_field(
+    'cmrf_webforms',
+    'cmrf_parameters',
+    array(
+      'description' => 'A mapping of Webform component keys to parameter names',
+      'type' => 'text',
+      'size' => 'normal', // TODO: Is this sufficient (16 KB in MySQL)?
+      'serialize' => TRUE,
     )
   );
 }
