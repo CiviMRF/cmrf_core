@@ -29,39 +29,22 @@ class CMRFViews {
    *   In format which could be used by the hook_views_data.
    */
   public function getViewsData($reset = FALSE) {
-    $data = [];
-    //$strData = variable_get('cmrf_views_entities');
-    //if (!empty($strData)) {
-    //  $data = json_decode($strData, TRUE);
-    //  if (!is_array($data)) {
-    //    $data  = [];
-    //    $reset = TRUE;
-    //  }
-    //}
-    //else {
-    //  $reset = TRUE;
-    //}
-
-    if (TRUE || $reset) {
-      $data     = [];
-      $datasets = $this->getDatasets();
-      if (!empty($datasets)) {
-        foreach ($datasets as $dataset_id => $dataset_prop) {
-          if ((!empty($dataset_prop['connector'])) && (!empty($dataset_prop['entity']) && (!empty($dataset_prop['action'])))) {
-            $fields = $this->getFields($dataset_prop);
-            if ((!empty($fields)) && (is_array($fields))) {
-              // Unique identifier for this group.
-              $uid = 'cmrf_views_' . $dataset_prop['connector'] . '_' . $dataset_id;
-              // Base data.
-              $data[$uid] = $this->getBaseData($dataset_prop);
-              // Fields (from the getEntityFields function).
-              $data[$uid] = array_merge($fields, $data['cmrf_views_' . $dataset_prop['connector'] . '_' . $dataset_id]);
-            }
+    $data     = [];
+    $datasets = $this->getDatasets();
+    if (!empty($datasets)) {
+      foreach ($datasets as $dataset_id => $dataset_prop) {
+        if ((!empty($dataset_prop['connector'])) && (!empty($dataset_prop['entity']) && (!empty($dataset_prop['action'])))) {
+          $fields = $this->getFields($dataset_prop);
+          if ((!empty($fields)) && (is_array($fields))) {
+            // Unique identifier for this group.
+            $uid = 'cmrf_views_' . $dataset_id;
+            // Base data.
+            $data[$uid] = $this->getBaseData($dataset_prop);
+            // Fields (from the getEntityFields function).
+            $data[$uid] = array_merge($fields, $data[$uid]);
           }
         }
       }
-
-      //variable_set('cmrf_views_entities', json_encode($data));
     }
 
     return $data;
@@ -75,7 +58,6 @@ class CMRFViews {
    * @return mixed
    */
   private function getBaseData($dataset) {
-    https://simulator.advancecare.pt/umbraco/Surface/Search/Results?q=&sort=relevance&currentPage=1&numSpecialties=120&numClinics=120&numDistricts=120&numProcedures=120&numCounties=120&numNetworks=120&policy=&lang=pt-PT&lat=32.6478443&lng=-16.907875&providerId=40284&practiceSeq=2&providerIdParent=501882766&practiceSeqParent=20&procedure=&specialty=&clinic=&district=Regi%C3%A3o%20Aut.%20da%20Madeira&network=&county=#
     $base_data['table'] = [];
 
     if (!empty($dataset['label'])) {
@@ -104,7 +86,7 @@ class CMRFViews {
     }
 
     if (!empty($dataset['params'])) {
-      $base_data['table']['base']['params'] = json_encode(isset($dataset_prop['params']) ? $dataset_prop['params'] : '');
+      $base_data['table']['base']['params'] = json_encode(isset($dataset['params']) ? $dataset['params'] : '');
     }
 
     return $base_data;
@@ -194,7 +176,7 @@ class CMRFViews {
     // Default.
     $field['field']['id']    = 'numeric';
     $field['sort']['id']     = 'standard';
-    $field['argument']['id'] = 'standard';
+    $field['argument']['id'] = 'cmrf_views_argument_standard';
 
     // If 'type' is 1024 (Money).
     if ((!empty($prop['data_type'])) && ($prop['type'] == 1024)) {
@@ -203,7 +185,7 @@ class CMRFViews {
 
     // Add filter to the field.
     if (!empty($prop['api.filter'])) {
-      $field['filter']['id'] = ($prop['type'] == 1024) ? 'string' : 'numeric';
+      $field['filter']['id'] = ($prop['type'] == 1024) ? 'cmrf_views_filter_text' : 'cmrf_views_filter_numeric';
     }
 
     // If 'data_type' is file.
@@ -241,7 +223,7 @@ class CMRFViews {
 
     // Add filter to the field.
     if (!empty($prop['api.filter'])) {
-      $field['filter']['id'] = 'date';
+      $field['filter']['id'] = 'cmrf_views_filter_date';
     }
 
     // TODO: Multiple value field date.
@@ -269,7 +251,7 @@ class CMRFViews {
 
     // Add filter to the field.
     if (!empty($prop['api.filter'])) {
-      $field['filter']['id'] = 'boolean';
+      $field['filter']['id'] = 'cmrf_views_filter_boolean';
     }
 
     // TODO: Check 'use equal' and 'options'
@@ -292,13 +274,13 @@ class CMRFViews {
   private function getMarkupField($prop) {
 
     // Default.
-    $field['field']['id']    = 'markup';
+    $field['field']['id']    = 'cmrf_views_markup';
     $field['sort']['id']     = 'standard';
-    $field['argument']['id'] = 'standard';
+    $field['argument']['id'] = 'cmrf_views_argument_standard';
 
     // Add filter to the field.
     if (!empty($prop['api.filter'])) {
-      $field['filter']['id'] = 'string';
+      $field['filter']['id'] = 'cmrf_views_filter_text';
     }
 
     // TODO: Check prerender_list and multiple options
@@ -310,7 +292,6 @@ class CMRFViews {
     //  $field['filter']['id'] = 'cmrf_views_handler_filter_in_operator';
     //  $field['filter']['options'] = $fieldOtions;
     //}
-
 
     return $field;
   }
@@ -325,13 +306,13 @@ class CMRFViews {
   private function getStandardField($prop) {
 
     // Default.
-    $field['field']['id']    = 'standard';
+    $field['field']['id']    = 'cmrf_views_standard';
     $field['sort']['id']     = 'standard';
-    $field['argument']['id'] = 'standard';
+    $field['argument']['id'] = 'cmrf_views_argument_standard';
 
     // Add filter to the field.
     if (!empty($prop['api.filter'])) {
-      $field['filter']['id'] = 'string';
+      $field['filter']['id'] = 'cmrf_views_filter_text';
     }
 
     // If 'data_type' is file.

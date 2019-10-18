@@ -117,28 +117,6 @@ class API extends QueryPluginBase {
       $parameters = [];
       $start      = microtime(TRUE);
 
-      // Count options.
-      $options['cache'] = empty($view->query->options['cache']) ? NULL : $view->query->options['cache'];
-      $options['limit'] = 0;
-
-      // Count API call.
-      $call = $this->core->createCall($connector, $api_entity, $api_count_action, $parameters, $options);
-      $this->core->executeCall($call);
-      if ($call->getStatus() == Call::STATUS_DONE) {
-        $result = $call->getReply();
-        if (!empty($result['result'])) {
-          $view->getPager()->total_items = $result['result'];
-          $view->total_rows              = $result['result'];
-        }
-      }
-
-      // Update pager.
-      $view->getPager()->updatePageInfo();
-
-      // TODO: verify views cache.
-      $options['limit']  = $view->getPager()->getItemsPerPage();
-      $options['offset'] = $view->getCurrentPage() * $view->getPager()->getItemsPerPage();
-
       // Set the return fields
       $parameters['return'] = [];
 
@@ -193,6 +171,28 @@ class API extends QueryPluginBase {
         }
       }
 
+      // Count options.
+      $options['cache'] = empty($view->query->options['cache']) ? NULL : $view->query->options['cache'];
+      $options['limit'] = 0;
+
+      // Count API call.
+      $call = $this->core->createCall($connector, $api_entity, $api_count_action, $parameters, $options);
+      $this->core->executeCall($call);
+      if ($call->getStatus() == Call::STATUS_DONE) {
+        $result = $call->getReply();
+        if (!empty($result['result'])) {
+          $view->getPager()->total_items = $result['result'];
+          $view->total_rows              = $result['result'];
+        }
+      }
+
+      // Update pager.
+      $view->getPager()->updatePageInfo();
+
+      // TODO: verify views cache.
+      $options['limit']  = $view->getPager()->getItemsPerPage();
+      $options['offset'] = $view->getCurrentPage() * $view->getPager()->getItemsPerPage();
+
       // View result init.
       $view->result = [];
 
@@ -213,7 +213,6 @@ class API extends QueryPluginBase {
           }
         }
       }
-
 
       // Execute time.
       $view->execute_time = microtime(TRUE) - $start;
@@ -268,7 +267,7 @@ class API extends QueryPluginBase {
     }
 
     $this->where[$group]['conditions'][] = [
-      'field'    => str_replace('.', '', $field),
+      'field'    => $field,
       'value'    => $value,
       'operator' => $operator,
     ];

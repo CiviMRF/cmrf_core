@@ -6,7 +6,7 @@ use Drupal\views\ResultRow;
 /**
  * Field handler to display all taxonomy terms of a node.
  *
- * @ingroup views_field_handlers
+ * @ingroup cmrf_views_field_handlers
  *
  * @ViewsField("cmrf_views_prerender_list")
  */

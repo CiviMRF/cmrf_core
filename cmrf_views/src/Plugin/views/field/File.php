@@ -15,6 +15,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  * Class File
  *
  * @package Drupal\cmrf_views\Plugin\views\field
+ * @ingroup cmrf_views_field_handlers
  * @ViewsField("cmrf_views_file")
  */
 class File extends FieldPluginBase {
@@ -47,15 +48,16 @@ class File extends FieldPluginBase {
     );
   }
 
-
   /**
    * {@inheritdoc}
    */
   protected function defineOptions() {
-    $options                = parent::defineOptions();
-    $options['behaviour']   = ['default' => 'image'];
-    $options['image_style'] = ['default' => 'original'];
-    $options['image_path']  = ['default' => 'civicrm'];
+    $options                       = parent::defineOptions();
+    $options['behaviour']          = ['default' => 'image'];
+    $options['image_style']        = ['default' => 'original'];
+    $options['image_path']         = ['default' => 'civicrm'];
+    $options['image_class']        = ['default' => NULL];
+    $options['image_fallback_url'] = ['default' => NULL];
 
     return $options;
   }
@@ -124,6 +126,18 @@ class File extends FieldPluginBase {
       '#default_value' => isset($this->options['image_class']) ? $this->options['image_class'] : NULL,
     ];
 
+    $form['image_fallback_url'] = [
+      '#type'          => 'textfield',
+      '#title'         => $this->t('Image fallback URL'),
+      '#description'   => $this->t("Fallback image to show when there's no image from the CRM"),
+      '#states'        => [
+        'visible' => [
+          ':input[name="field_behaviour"]' => ['value' => 'image'],
+        ],
+      ],
+      '#default_value' => isset($this->options['image_fallback_url']) ? $this->options['image_fallback_url'] : NULL,
+    ];
+
     parent::buildOptionsForm($form, $form_state);
   }
 
@@ -135,6 +149,15 @@ class File extends FieldPluginBase {
    * {@inheritdoc}
    */
   public function render(ResultRow $values) {
+    // If we have no file and behaviour is an image.
+    if ((empty($values->{$this->field_alias})) &&
+        (!empty($this->options['behaviour'])) &&
+        ($this->options['behaviour'] == 'image') &&
+        (!empty($this->options['image_fallback_url']))) {
+      return $this->renderFallbackImage();
+    }
+
+    // If we have a file.
     if (!empty($values->{$this->field_alias})) {
       $value = $values->{$this->field_alias};
       if (is_numeric($value)) {
@@ -152,6 +175,10 @@ class File extends FieldPluginBase {
           $this->core->executeCall($file);
           // Get reply.
           $attachment = $file->getReply();
+          // If we get an error, render fallback image.
+          if (!empty($attachment['is_error'])) {
+            return $this->renderFallbackImage();
+          }
           // Check if we have necessary information to generate a link or save/show the file
           if ((!empty($attachment['url'])) && (!empty($attachment['mime_type'])) && (!empty($attachment['name']))) {
             if (!empty($this->options['behaviour'])) {
@@ -200,6 +227,20 @@ class File extends FieldPluginBase {
               }
               return $image_render;
             }
+            // Get the style.
+            $style = \Drupal::entityTypeManager()->getStorage('image_style')->load($image_style);
+            // Get the styled image derivative.
+            $style_uri_path = $style->buildUri($file_uri_path);
+            // If the derivative doesn't exist yet, create it.
+            if (!file_exists($style_uri_path)) {
+              $style->createDerivative($file_uri_path, $style_uri_path);
+            }
+            // Render the image style.
+            $image_render = ['#theme' => 'image', '#uri' => $style_uri_path];
+            if (!empty($this->options['image_class'])) {
+              $image_render['#attributes'] = ['class' => $this->options['image_class']];
+            }
+            return $image_render;
           }
         }
       }
@@ -238,5 +279,13 @@ class File extends FieldPluginBase {
     return NULL;
   }
 
+  private function renderFallbackImage() {
+    // Render fallback image.
+    $image_render = ['#theme' => 'image', '#uri' => $this->options['image_fallback_url']];
+    if (!empty($this->options['image_class'])) {
+      $image_render['#attributes'] = ['class' => $this->options['image_class']];
+    }
+    return $image_render;
+  }
 
 }

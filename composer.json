@@ -17,7 +17,7 @@
             "type": "package",
             "package": {
                 "name": "CiviMRF/CMRF_Abstract_Core",
-                "version": "0.4",
+                "version": "dev-master",
                 "source": {
                     "url": "https://github.com/CiviMRF/CMRF_Abstract_Core.git",
                     "type": "git",
@@ -32,6 +32,7 @@
         }
     ],
     "require": {
-        "civimrf/cmrf_abstract_core": "0.4"
+        "civimrf/cmrf_abstract_core": "dev-master",
+        "mossadal/math-parser": "dev-master"
     }
 }
