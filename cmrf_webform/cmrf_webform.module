@@ -956,6 +956,11 @@ function cmrf_webform_settings($form, &$form_state, $node) {
     '#tree' => TRUE,
     '#collapsible' => TRUE,
     '#collapsed' => TRUE,
+    '#states' => array(
+      'visible' => array(
+        'select[name="cmrf_enable"]' => array('value' => 'cmrf_webform'),
+      ),
+    ),
   );
   if (module_exists('select_or_other')) {
     foreach ($node->webform['components'] as $cid => $component) {
