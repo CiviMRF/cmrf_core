@@ -22,15 +22,8 @@ class Core extends AbstractCore {
   protected $connections = array();
 
   public function __construct() {
-    $info = \Database::getConnectionInfo('default');
-    $info = $info['default'];
-    if(!isset($info['port']) || empty($info['port'])) {
-      $info['port'] = NULL;
-    }
-
     $table_name = \Database::getConnection()->prefixTables("{cmrf_core_call}");
-    $connection = new \mysqli($info['host'],$info['username'],$info['password'],$info['database'],$info['port']);
-    $factory = new SQLPersistingCallFactory($connection, $table_name, array('\CMRF\Drupal\Call','createNew'), array('\CMRF\Drupal\Call','createWithRecord'));
+    $factory = new SQLPersistingCallFactory($table_name, array('\CMRF\Drupal\Call','createNew'), array('\CMRF\Drupal\Call','createWithRecord'));
     parent::__construct($factory);
   }
 
