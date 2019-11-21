@@ -686,7 +686,13 @@ function cmrf_webform_webform_component_render_alter(array &$element, array &$co
         $element['#value'] = $default_values[$component['form_key']];
       }
       else {
-        $element['#default_value'] = $default_values[$component['form_key']];
+        // default as array if select multiple
+        if ($component['type'] == 'select' && $component['extra']['multiple'] == 1 && (!is_array($default_values[$component['form_key']]))) {
+          $element['#default_value'] = [$default_values[$component['form_key']]];
+        }
+        else {
+          $element['#default_value'] = $default_values[$component['form_key']];
+        }
       }
     }
   }
