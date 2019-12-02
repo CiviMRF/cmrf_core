@@ -682,9 +682,21 @@ function cmrf_webform_webform_component_render_alter(array &$element, array &$co
 
     // Set the component's default value, if there is a match.
     if (isset($default_values[$component['form_key']])) {
+      // Set the static value for hidden elements.
       if ($component['type'] == 'hidden') {
         $element['#value'] = $default_values[$component['form_key']];
       }
+      // Make default values an array, if it is a multiple-select element.
+      elseif (
+        $component['type'] == 'select'
+        && $component['extra']['multiple'] == 1
+        && !is_array($default_values[$component['form_key']])
+      ) {
+        $element['#default_value'] = array(
+          $default_values[$component['form_key']],
+        );
+      }
+      // Set default value for all other element types.
       else {
         $element['#default_value'] = $default_values[$component['form_key']];
       }
