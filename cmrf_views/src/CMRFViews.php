@@ -35,11 +35,11 @@ class CMRFViews {
       foreach ($datasets as $dataset_id => $dataset_prop) {
         if ((!empty($dataset_prop['connector'])) && (!empty($dataset_prop['entity']) && (!empty($dataset_prop['action'])))) {
           $fields = $this->getFields($dataset_prop);
+          // Unique identifier for this group.
+          $uid = 'cmrf_views_' . $dataset_id;
+          // Base data.
+          $data[$uid] = $this->getBaseData($dataset_prop);
           if ((!empty($fields)) && (is_array($fields))) {
-            // Unique identifier for this group.
-            $uid = 'cmrf_views_' . $dataset_id;
-            // Base data.
-            $data[$uid] = $this->getBaseData($dataset_prop);
             // Fields (from the getEntityFields function).
             $data[$uid] = array_merge($fields, $data[$uid]);
           }
@@ -193,17 +193,6 @@ class CMRFViews {
       $field['field']['id'] = 'cmrf_views_file';
     }
 
-    // TODO: Understand the multiple options field and where it should be a list or a single value
-    //       Also check 'money' field 1024 fieldOptions.
-    //if (!empty($fieldOtions)) {
-    //  $field['field']['id'] = 'cmrf_views_prerender_list';
-    //  $field['field']['options'] = $fieldOtions;
-    //}
-    //if (!empty($fieldOtions) && $filterField) {
-    //  $field['filter']['id'] = 'cmrf_views_handler_filter_in_operator';
-    //  $field['filter']['options'] = $fieldOtions;
-    //}
-
     return $field;
   }
 
@@ -224,13 +213,11 @@ class CMRFViews {
     // Add filter to the field.
     if (!empty($prop['api.filter'])) {
       $field['filter']['id'] = 'cmrf_views_filter_date';
+      if (!empty($prop['options'])) {
+        $field['filter']['id']      = 'cmrf_views_filter_list';
+        $field['filter']['options'] = $prop['options'];
+      }
     }
-
-    // TODO: Multiple value field date.
-    //if (!empty($fieldOtions) && $filterField) {
-    //  $field['filter']['id'] = 'cmrf_views_handler_filter_in_operator';
-    //  $field['filter']['options'] = $fieldOtions;
-    //}
 
     return $field;
   }
@@ -281,17 +268,11 @@ class CMRFViews {
     // Add filter to the field.
     if (!empty($prop['api.filter'])) {
       $field['filter']['id'] = 'cmrf_views_filter_text';
+      if (!empty($prop['options'])) {
+        $field['filter']['id']      = 'cmrf_views_filter_list';
+        $field['filter']['options'] = $prop['options'];
+      }
     }
-
-    // TODO: Check prerender_list and multiple options
-    //if (!empty($fieldOtions)) {
-    //  $field['field']['id'] = 'cmrf_views_prerender_list';
-    //  $field['field']['options'] = $fieldOtions;
-    //}
-    //if (!empty($fieldOtions) && $filterField) {
-    //  $field['filter']['id'] = 'cmrf_views_handler_filter_in_operator';
-    //  $field['filter']['options'] = $fieldOtions;
-    //}
 
     return $field;
   }
@@ -313,6 +294,10 @@ class CMRFViews {
     // Add filter to the field.
     if (!empty($prop['api.filter'])) {
       $field['filter']['id'] = 'cmrf_views_filter_text';
+      if (!empty($prop['options'])) {
+        $field['filter']['id']      = 'cmrf_views_filter_list';
+        $field['filter']['options'] = $prop['options'];
+      }
     }
 
     // If 'data_type' is file.
@@ -320,33 +305,24 @@ class CMRFViews {
       $field['field']['id'] = 'cmrf_views_file';
     }
 
-    // TODO: Check prerender_list and multiple options
-    //else if (!empty($fieldOtions)) {
-    //  $field['field']['id'] = 'cmrf_views_prerender_list';
-    //  $field['field']['options'] = $fieldOtions;
-    //}
-    //if (!empty($fieldOtions) && $filterField) {
-    //  $field['filter']['id'] = 'cmrf_views_handler_filter_in_operator';
-    //  $field['filter']['options'] = $fieldOtions;
-    //}
-
     return $field;
   }
 
   /**
    * Fetch field options.
    *
+   * @param $connector
    * @param $api_entity
    * @param $api_action
    * @param $field_name
    *
    * @return array
    */
-  private function fetchOptions($api_entity, $api_action, $field_name) {
+  private function fetchOptions($connector, $api_entity, $api_action, $field_name) {
 
     // Get field options API call.
     $call = $this->core->createCall(
-      $this->connector,
+      $connector,
       $api_entity,
       'getoptions',
       ['field' => $field_name],
@@ -365,7 +341,7 @@ class CMRFViews {
 
     // Get fields API call.
     $call = $this->core->createCall(
-      $this->connector,
+      $connector,
       $api_entity,
       'getfields',
       ['api_action' => $api_action],
