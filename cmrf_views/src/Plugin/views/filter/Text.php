@@ -14,7 +14,7 @@ class Text extends StringFilter {
   /**
    * Add this filter to the query.
    *
-   * Due to the nature of fapi, the value and the operator have an unintended
+   * Due to the nature of api, the value and the operator have an unintended
    * level of indirection. You will find them in $this->operator
    * and $this->value respectively.
    */
@@ -22,8 +22,6 @@ class Text extends StringFilter {
     $this->ensureMyTable();
     $field = "$this->realField";
     $info = $this->operators();
-    var_dump($info);
-    die();
     if (!empty($info[$this->operator]['method'])) {
       $this->{$info[$this->operator]['method']}($field);
     }
