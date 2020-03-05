@@ -1,0 +1,35 @@
+<?php
+
+/**
+ * @file
+ * Contains cmrf_call_report.module.
+ */
+
+use Drupal\Core\Routing\RouteMatchInterface;
+
+/**
+ * Implements hook_help().
+ */
+function cmrf_call_report_help($route_name, RouteMatchInterface $route_match) {
+  switch ($route_name) {
+    // Main module help for the cmrf_call_report module.
+    case 'help.page.cmrf_call_report':
+      $output = '';
+      $output .= '<h3>' . t('About') . '</h3>';
+      $output .= '<p>' . t('Shows the CiviCRM Api calls in a report.cd') . '</p>';
+      return $output;
+
+    default:
+  }
+}
+
+/**
+ * Implements hook_theme().
+ */
+function cmrf_call_report_theme() {
+  return [
+    'cmrf_call_report' => [
+      'render element' => 'children',
+    ],
+  ];
+}

@@ -1,0 +1,8 @@
+name: 'CMRF Call Report'
+type: module
+description: 'Shows the CiviCRM Api calls in a report.'
+core: 8.x
+package: CiviCRM
+dependencies:
+  - cmrf_core
+  - cmrf_views
