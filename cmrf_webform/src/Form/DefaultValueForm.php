@@ -87,6 +87,15 @@ class DefaultValueForm extends CMRFWebformFormBase {
       '#required' => TRUE,
     ];
 
+    $form['field_key'] = [
+      '#type' => 'textfield',
+      '#title' => $this->t('Element machine name'),
+      '#description' => $this->t('Machine name of element to be prefilled'),
+      '#maxlength' => 255,
+      '#default_value' => $entity->getFieldKey(),
+      '#required' => TRUE,
+    ];
+
     $form['parameters'] = [
       '#type' => 'textarea',
       '#title' => $this->t('Parameters'),
@@ -124,11 +133,11 @@ class DefaultValueForm extends CMRFWebformFormBase {
       }
     }
 
-    $webform = Webform::load($form_state->getValue('webform'));
-    $exists = DefaultValue::getForWebform($webform);
-    if ($exists !== NULL && $exists->id() != $form_state->getValue('id')) {
-      $form_state->setError($form['webform'], $this->t('Default value handler already exists for this form'));
-    }
+    // $webform = Webform::load($form_state->getValue('webform'));
+    // $exists = DefaultValue::getForWebform($webform);
+    // if ($exists !== NULL && $exists->id() != $form_state->getValue('id')) {
+    //   $form_state->setError($form['webform'], $this->t('Default value handler already exists for this form'));
+    // }
   }
 
   /**

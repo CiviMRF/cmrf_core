@@ -95,7 +95,7 @@ function cmrf_webform_webform_delete(WebformInterface $entity) {
 function cmrf_webform_form_alter(&$form, \Drupal\Core\Form\FormStateInterface $form_state, $form_id) {
   $webform = $form_state->getFormObject();
   if ($webform instanceof EntityFormInterface) {
-    $service = Drupal::service('cmrf_webform.defaults_manager');
+    $service = \Drupal::service('cmrf_webform.defaults_manager');
     $entity = $webform->getEntity();
 
     if ($entity instanceof WebformSubmissionInterface) {
@@ -104,7 +104,7 @@ function cmrf_webform_form_alter(&$form, \Drupal\Core\Form\FormStateInterface $f
       try {
         if ($defaults = $service->fetch($entity, $parameters)) {
           foreach ($defaults as $key => $value) {
-            $form["elements"][$key]["#value"] = $value;
+            findFieldKey($form['elements'], $key, $value);
           }
         }
       }
@@ -114,3 +114,23 @@ function cmrf_webform_form_alter(&$form, \Drupal\Core\Form\FormStateInterface $f
     }
   }
 }
+
+  /**
+   * Find element in which should be pre-filled and dp the pre-filling
+   * We loop, because if fieldset or flexbox used, the field key changes
+   */
+  function findFieldKey(&$elements, $default_key, $default_value) {
+    foreach ($elements as $key => $value) {
+      if (isset($elements[$default_key])) {
+        if (in_array($elements[$default_key]['#type'], array('textfield', 'hidden'))) {
+          $elements[$default_key]['#value'] = $default_value;
+        } elseif (($elements[$default_key]['#type'] == 'select')) {
+          $elements[$default_key]['#options'] = $default_value;
+        }
+      } elseif (!preg_match('/^#/', $key)) {
+        if ($value['#type'] == 'fieldset' || $value['#type'] == 'container' || $value['#type'] == 'webform_flexbox') {
+          findFieldKey($elements[$key], $default_key, $default_value);
+        }
+      }
+    }
+  }

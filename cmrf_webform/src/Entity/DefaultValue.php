@@ -32,6 +32,7 @@ use RuntimeException;
  *     "webform" = "webform",
  *     "entity" = "entity",
  *     "action" = "action",
+ *     "field_key" = "field_key",
  *     "parameters" = "parameters",
  *     "options" = "options",
  *   },
@@ -42,6 +43,7 @@ use RuntimeException;
  *     "webform",
  *     "entity",
  *     "action",
+ *     "field_key",
  *     "parameters",
  *     "options",
  *   },
@@ -96,6 +98,13 @@ class DefaultValue extends ConfigEntityBase implements DefaultValueInterface {
   public $action;
 
   /**
+   * The default value for element machine name.
+   *
+   * @var string
+   */
+  public $field_key;
+
+  /**
    * The default value parameters string.
    *
    * @var string
@@ -127,7 +136,11 @@ class DefaultValue extends ConfigEntityBase implements DefaultValueInterface {
       ->execute();
 
     if (count($handler_ids) > 0) {
-      return static::load(reset($handler_ids));
+      $handler = array();
+      foreach ($handler_ids as $id) {
+        $handler[] = static::load($id);
+      }
+      return $handler;
     }
     return NULL;
   }
@@ -154,6 +167,14 @@ class DefaultValue extends ConfigEntityBase implements DefaultValueInterface {
 
   public function setAction($value) {
     $this->action = $value;
+  }
+
+  public function getFieldKey() {
+    return $this->field_key;
+  }
+
+  public function setFieldKey($value) {
+    $this->field_key = $value;
   }
 
   public function getParameters() {
