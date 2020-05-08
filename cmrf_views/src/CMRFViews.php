@@ -189,7 +189,12 @@ class CMRFViews {
 
     // Add filter to the field.
     if (!empty($prop['api.filter'])) {
-      $field['filter']['id'] = ($prop['type'] == 1024) ? 'cmrf_views_filter_text' : 'cmrf_views_filter_numeric';
+      if (!empty($prop['options'])) {
+        $field['filter']['id'] = 'cmrf_views_filter_optionlist';
+        $field['filter']['options'] = $prop['options'];
+      } else {
+        $field['filter']['id'] = ($prop['type'] == 1024) ? 'cmrf_views_filter_text' : 'cmrf_views_filter_numeric';
+      }
     }
 
     // If 'data_type' is file.
@@ -218,7 +223,7 @@ class CMRFViews {
     if (!empty($prop['api.filter'])) {
       $field['filter']['id'] = 'cmrf_views_filter_date';
       if (!empty($prop['options'])) {
-        $field['filter']['id']      = 'cmrf_views_filter_list';
+        $field['filter']['id']      = 'cmrf_views_filter_optionlist';
         $field['filter']['options'] = $prop['options'];
       }
     }
@@ -273,7 +278,7 @@ class CMRFViews {
     if (!empty($prop['api.filter'])) {
       $field['filter']['id'] = 'cmrf_views_filter_text';
       if (!empty($prop['options'])) {
-        $field['filter']['id']      = 'cmrf_views_filter_list';
+        $field['filter']['id']      = 'cmrf_views_filter_optionlist';
         $field['filter']['options'] = $prop['options'];
       }
     }
@@ -307,7 +312,7 @@ class CMRFViews {
     if (!empty($prop['api.filter'])) {
       $field['filter']['id'] = 'cmrf_views_filter_text';
       if (!empty($prop['options'])) {
-        $field['filter']['id']      = 'cmrf_views_filter_list';
+        $field['filter']['id']      = 'cmrf_views_filter_optionlist';
         $field['filter']['options'] = $prop['options'];
       }
     }
