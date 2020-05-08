@@ -23,13 +23,9 @@ class Standard extends \Drupal\views\Plugin\views\field\Standard {
         $merge = '';
         foreach ($values->{$alias} as $key => $value) {
           if ($key == 'display_name') {
-            var_dump($value);
-            die();
             $merge .= $value;
           }
         }
-        //var_dump($values->{$alias}, $merge);
-        //die();
         $values->{$alias} = NULL;
         $values->{$alias} = $merge;
 
