@@ -85,6 +85,7 @@ function cmrf_webform_webform_submission_insert($node, $submission) {
 function cmrf_webform_clear_submission(\CMRF\Drupal\Call $call) {
   $metadata = $call->getMetadata();
   if (isset($metadata['sid']) && isset($metadata['nid'])) {
+    module_load_include('inc', 'webform', 'includes/webform.submissions');
     $sid = $metadata['sid'];
     $nid = $metadata['nid'];
     $node = node_load($nid);
