@@ -1,0 +1,14 @@
+entity.cmrf_dataset.edit_form:
+  route_name: entity.cmrf_dataset.edit_form
+  title: 'Edit'
+  base_route: entity.cmrf_dataset.edit_form
+
+entity.cmrf_dataset.delete_form:
+  route_name: entity.cmrf_dataset.delete_form
+  title: 'Delete'
+  base_route: entity.cmrf_dataset.edit_form
+
+entity.cmrf_dataset_relationship.collection:
+  route_name: entity.cmrf_dataset_relationship.collection
+  title: 'Relationships'
+  base_route: entity.cmrf_dataset.edit_form

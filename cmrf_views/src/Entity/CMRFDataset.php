@@ -33,7 +33,7 @@ use Drupal\Core\Config\Entity\ConfigEntityBase;
  *     "add-form" = "/admin/config/cmrf/dataset/add",
  *     "edit-form" = "/admin/config/cmrf/dataset/{cmrf_dataset}/edit",
  *     "delete-form" = "/admin/config/cmrf/dataset/{cmrf_dataset}/delete",
- *     "collection" = "/admin/config/cmrf/dataset"
+ *     "collection" = "/admin/config/cmrf/dataset",
  *   }
  * )
  */
