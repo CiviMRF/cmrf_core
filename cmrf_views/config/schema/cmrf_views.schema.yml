@@ -91,3 +91,6 @@ views.filter.cmrf_views_filter_optionlist:
             type: views.filter.group_item.cmrf_views_filter_optionlist
             label: 'Group item'
 
+views.relationship.cmrf_dataset_relationship:
+  type: views_relationship
+  label: 'CiviMRF Dataset Relationship'
