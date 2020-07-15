@@ -34,4 +34,22 @@ class CMRFDatasetRelationshipListBuilder extends ConfigEntityListBuilder {
     return $row + parent::buildRow($entity);
   }
 
+  /**
+   * {@inheritDoc}
+   */
+  protected function getEntityIds() {
+    $query = $this->getStorage()->getQuery()
+      ->sort($this->entityType->getKey('id'))
+      // Filter for current cmrf_dataset.
+      ->condition(
+        'referencing_dataset',
+        \Drupal::routeMatch()->getParameter('cmrf_dataset')
+      );
+
+    if ($this->limit) {
+      $query->pager($this->limit);
+    }
+    return $query->execute();
+  }
+
 }

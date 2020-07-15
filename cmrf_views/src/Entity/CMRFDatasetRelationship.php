@@ -57,31 +57,19 @@ class CMRFDatasetRelationship extends ConfigEntityBase implements CMRFDatasetRel
   public function __construct(array $values, $entity_type) {
     parent::__construct($values, $entity_type);
 
-    $datasets = $this->referencedEntities();
-    $this->referencing_dataset = reset($datasets);
+    if (empty($values['referencing_dataset'])) {
+      $values['referencing_dataset'] = \Drupal::routeMatch()->getParameter('cmrf_dataset');
+    }
+    $this->referencing_dataset = $values['referencing_dataset'];
   }
 
   /**
    * {@inheritDoc}
    */
-  public function urlRouteParameters($rel) {
+  protected function urlRouteParameters($rel) {
     $parameters = parent::urlRouteParameters($rel);
-    $parameters['cmrf_dataset'] = $this->get('referencing_dataset');
+    $parameters['cmrf_dataset'] = $this->referencing_dataset;
     return $parameters;
-  }
-
-  /**
-   * {@inheritDoc}
-   */
-  public function referencedEntities() {
-    $referenced_entities = [];
-
-    // TODO: This might not yield the expected result.
-    $cmrf_dataset_id = \Drupal::routeMatch()
-      ->getParameter('cmrf_dataset');
-    $referenced_entities[$cmrf_dataset_id] = $cmrf_dataset_id;
-
-    return $referenced_entities;
   }
 
 }
