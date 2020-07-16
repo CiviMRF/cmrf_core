@@ -1,9 +1,6 @@
 <?php namespace Drupal\cmrf_views\Entity;
 
 use Drupal\Core\Config\Entity\ConfigEntityBase;
-use Drupal\Core\Routing\CurrentRouteMatch;
-use Drupal\Core\Routing\RouteMatch;
-use Drupal\Core\Routing\RouteMatchInterface;
 
 /**
  * Defines the CMRF dataset relationship entity.
@@ -52,6 +49,13 @@ class CMRFDatasetRelationship extends ConfigEntityBase implements CMRFDatasetRel
   public $referencing_dataset;
 
   /**
+   * @var array
+   *   A static array of all CMRFDatasetRelationship entity objects, keyed by
+   *   their ID and grouped by their referencing CMRFDataset.
+   */
+  protected static $_relationships;
+
+  /**
    * {@inheritDoc}
    */
   public function __construct(array $values, $entity_type) {
@@ -70,6 +74,24 @@ class CMRFDatasetRelationship extends ConfigEntityBase implements CMRFDatasetRel
     $parameters = parent::urlRouteParameters($rel);
     $parameters['cmrf_dataset'] = $this->referencing_dataset;
     return $parameters;
+  }
+
+  /**
+   * Loads entities by a given CiviMRFDataset entity ID.
+   *
+   * @param $dataset_id
+   *   The CiviMRFDataset entity ID.
+   *
+   * @return array
+   *   An array of entity objects indexed by their IDs.
+   */
+  public static function loadByDataset($dataset_id) {
+    if (!isset(self::$_relationships[$dataset_id])) {
+      foreach (self::loadMultiple() as $relationship_id => $relationship) {
+        self::$_relationships[$relationship->referencing_dataset][$relationship_id] = $relationship;
+      }
+    }
+    return (isset(self::$_relationships[$dataset_id]) ? self::$_relationships[$dataset_id] : []);
   }
 
 }

@@ -2,21 +2,45 @@
 
 namespace Drupal\cmrf_views\Plugin\views\relationship;
 
-use Drupal\Core\Form\FormStateInterface;
-use Drupal\views\ViewExecutable;
-use Drupal\views\Plugin\views\display\DisplayPluginBase;
 use Drupal\views\Plugin\views\relationship\RelationshipPluginBase;
-use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
- * Relationship handler to return the CiviMRF Dataset configured for the view's
+ * Relationship handler to return the CMRFDataset configured for the view's
  * base Dataset.
  *
  * @ingroup views_relationship_handlers
  *
  * @ViewsRelationship("cmrf_dataset_relationship")
  */
-
 class DatasetRelationship extends RelationshipPluginBase {
+
+  /**
+   * Retrieves the base "table" of this relationship, which is the referenced
+   * CMRFDataset entity ID.
+   *
+   * @return string
+   */
+  public function getBase() {
+    return $this->configuration['base'];
+  }
+
+  /**
+   * Retrieves the base "field" of this relationship, which is the referenced
+   * key of the CiviCRM entity the referenced CMRFDataset fetches.
+   *
+   * @return string
+   */
+  public function getBaseField() {
+    return $this->configuration['base field'];
+  }
+
+  /**
+   * Retrieves the CMRFDatasetRelationship ID this relationship is using.
+   *
+   * @return string
+   */
+  public function getDatasetRelationshipId() {
+    return $this->configuration['cmrf_dataset_relationship'];
+  }
 
 }

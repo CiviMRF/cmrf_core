@@ -3,6 +3,7 @@
 use Drupal\cmrf_core\Call;
 use Drupal\cmrf_core\Core;
 use Drupal\cmrf_views\Entity\CMRFDataset;
+use Drupal\cmrf_views\Entity\CMRFDatasetRelationship;
 
 class CMRFViews {
 
@@ -34,6 +35,7 @@ class CMRFViews {
     if (!empty($datasets)) {
       foreach ($datasets as $dataset_id => $dataset_prop) {
         if ((!empty($dataset_prop['connector'])) && (!empty($dataset_prop['entity']) && (!empty($dataset_prop['action'])))) {
+          $dataset_prop['id'] = $dataset_id;
           $fields = $this->getFields($dataset_prop);
           // Unique identifier for this group.
           $uid = 'cmrf_views_' . $dataset_id;
@@ -111,6 +113,8 @@ class CMRFViews {
         return [];
       }
 
+      $dataset_relationships = CMRFDatasetRelationship::loadByDataset($dataset['id']);
+
       // Get fields value.
       $fields = $call->getReply();
       if (empty($fields['values'])) {
@@ -156,7 +160,21 @@ class CMRFViews {
         // Set click sortable to 'true' by default.
         $views_fields[$field_name]['field']['click sortable'] = TRUE;
 
+        // Add relationship properties when configured for this field.
+        foreach ($dataset_relationships as $dataset_relationship) {
+          if ($dataset_relationship->referencing_key == $field_name) {
+            $views_fields[$field_name]['relationship'] = [
+              'base' => $dataset_relationship->referenced_dataset,
+              'base field' => $dataset_relationship->referenced_key,
+              'id' => 'cmrf_dataset_relationship',
+              'label' => $dataset_relationship->label,
+              'cmrf_dataset_relationship' => $dataset_relationship->id,
+            ];
+          }
+        }
       }
+
+      // TODO: Add fields for entities brought in by relationships.
 
       return $views_fields;
     }

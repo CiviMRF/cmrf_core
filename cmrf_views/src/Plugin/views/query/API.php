@@ -2,8 +2,10 @@
 
 use Drupal\cmrf_core\Call;
 use Drupal\cmrf_core\Core;
+use Drupal\cmrf_views\CMRFViewsResultRow;
+use Drupal\cmrf_views\Entity\CMRFDataset;
+use Drupal\cmrf_views\Entity\CMRFDatasetRelationship;
 use Drupal\views\Plugin\views\query\QueryPluginBase;
-use Drupal\views\ResultRow;
 use Drupal\views\ViewExecutable;
 use Drupal\views\ViewsData;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -209,9 +211,70 @@ class API extends QueryPluginBase {
             // Mandatory field for views rows.
             $row['index'] = $index++;
             // Add row to view result.
-            $view->result[] = new ResultRow($row);
+            $view->result[] = new CMRFViewsResultRow($row);
           }
         }
+      }
+
+      foreach ($view->relationship as $field_name => $relationship) {
+        $referenced_keys = [];
+        foreach ($view->result as $row_key => &$row) {
+          $referenced_keys[] = $row->{$field_name};
+        }
+        $relationship_dataset = CMRFDataset::load($relationship->getBase());
+        if (!is_array(
+          $dataset_params = json_decode($relationship_dataset->params, TRUE)
+        )) {
+          $dataset_params = [];
+        }
+        // Add Views filters and sorts.
+        $parameters = $this->calculateApiParameters($parameters);
+        // Restrict to foreign keys in current result set.
+        $parameters[$relationship->getBaseField()] = ['IN' => $referenced_keys];
+        // Add dataset parameters, overriding already set values.
+        $parameters = array_merge($dataset_params, $parameters);
+        $options = [
+          'cache' => empty($view->query->options['cache']) ? NULL : $view->query->options['cache'],
+          'limit' => 0,
+        ];
+        $call = $this->core->createCall(
+          $relationship_dataset->connector,
+          $relationship_dataset->entity,
+          $relationship_dataset->action,
+          $parameters,
+          $options
+        );
+        $this->core->executeCall($call);
+        if ($call->getStatus() == Call::STATUS_DONE) {
+          $result = $call->getReply();
+          if ((!empty($result['values'])) && (is_array($result['values']))) {
+            foreach ($result['values'] as $value) {
+              $relationship_row = json_decode(json_encode($value), TRUE);
+              // Prefix value properties with relationship ID.
+              $dataset_relationship_id = $relationship->getDatasetRelationshipId();
+              $relationship_row = array_combine(
+                array_map(
+                  function ($k) use ($dataset_relationship_id) {
+                    return $dataset_relationship_id . '_' . $k;
+                  },
+                  array_keys($relationship_row)
+                ),
+                $relationship_row
+              );
+              // Add values to corresponding base row.
+              $row_key = array_search(
+                $relationship_row[$relationship->getBaseField()],
+                array_column($view->result, $field_name)
+              );
+              $view->result[$row_key]->addValues($relationship_row);
+            }
+          }
+        }
+
+        // TODO: Apply filters and sorts for fields brought in by relationships.
+        //   This will potentially filter out results or change the order, so
+        //   that new records will have to be loaded in. Not sure how to handle
+        //   that ...
       }
 
       // Execute time.
@@ -368,6 +431,22 @@ class API extends QueryPluginBase {
       'field'     => $as,
       'direction' => strtoupper($order),
     ];
+  }
+
+  /**
+   * Adds filters and sorts as CiviCRM API parameters.
+   *
+   * @param $parameters
+   *   The API parameter array to add filters and sorts to.
+   *
+   * @return array
+   *   The API parameters array with filters and sorts added.
+   */
+  protected function calculateApiParameters($parameters) {
+    // TODO: Add filters and sorts as API parameters.
+    //   This might become a generic helper method for preparing API parameters
+    //   from a view's filters and sorts.
+    return $parameters;
   }
 
 }
