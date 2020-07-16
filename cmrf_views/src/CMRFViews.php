@@ -102,7 +102,7 @@ class CMRFViews {
    *
    * @return array
    */
-  public function getFields($dataset) {
+  public function getFields($dataset, $prefixes = []) {
 
     if ((!empty($dataset['connector'])) && (!empty($dataset['entity'])) && (!empty($dataset['action']))) {
 
@@ -124,6 +124,7 @@ class CMRFViews {
       // Loop through each field to create the appropriate structure for views data.
       $views_fields = [];
       foreach ($fields['values'] as $field_name => $field_prop) {
+        $field_name = implode('_', array_merge($prefixes, [$field_name]));
 
         // If we don't have a field type, set it to 0.
         if (!isset($field_prop['type'])) {
@@ -174,7 +175,15 @@ class CMRFViews {
         }
       }
 
-      // TODO: Add fields for entities brought in by relationships.
+      // Add fields for entities brought in by relationships.
+      // TODO: Make them be listed under the relationship's entity name.
+      foreach ($dataset_relationships as $dataset_relationship) {
+        $dataset_relationship_dataset = CMRFDataset::load($dataset_relationship->referenced_dataset);
+        $views_fields += $this->getFields(
+          $dataset_relationship_dataset->toArray(),
+          $prefixes + [$dataset_relationship->id()]
+        );
+      }
 
       return $views_fields;
     }

@@ -15,6 +15,13 @@ use Drupal\views\Plugin\views\relationship\RelationshipPluginBase;
 class DatasetRelationship extends RelationshipPluginBase {
 
   /**
+   * {@inheritDoc}
+   */
+  public function query() {
+    // Do nothing here.
+  }
+
+  /**
    * Retrieves the base "table" of this relationship, which is the referenced
    * CMRFDataset entity ID.
    *

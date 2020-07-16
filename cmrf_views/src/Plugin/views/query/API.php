@@ -220,17 +220,12 @@ class API extends QueryPluginBase {
           $referenced_keys[] = $row->{$field_name};
         }
         $relationship_dataset = CMRFDataset::load($relationship->getBase());
-        if (!is_array(
-          $dataset_params = json_decode($relationship_dataset->params, TRUE)
-        )) {
-          $dataset_params = [];
-        }
         // Add Views filters and sorts.
         $parameters = $this->calculateApiParameters($parameters);
         // Restrict to foreign keys in current result set.
         $parameters[$relationship->getBaseField()] = ['IN' => $referenced_keys];
         // Add dataset parameters, overriding already set values.
-        $parameters = array_merge($dataset_params, $parameters);
+        $parameters = array_merge($relationship_dataset->params, $parameters);
         $options = [
           'cache' => empty($view->query->options['cache']) ? NULL : $view->query->options['cache'],
           'limit' => 0,
@@ -246,10 +241,11 @@ class API extends QueryPluginBase {
         if ($call->getStatus() == Call::STATUS_DONE) {
           $result = $call->getReply();
           if ((!empty($result['values'])) && (is_array($result['values']))) {
-            foreach ($result['values'] as $value) {
-              $relationship_row = json_decode(json_encode($value), TRUE);
+            foreach ($result['values'] as $relationship_row) {
               // Prefix value properties with relationship ID.
               $dataset_relationship_id = $relationship->getDatasetRelationshipId();
+              $base_field_name = $relationship->getBaseField();
+              // Prefix properties of the relationship.
               $relationship_row = array_combine(
                 array_map(
                   function ($k) use ($dataset_relationship_id) {
@@ -259,12 +255,15 @@ class API extends QueryPluginBase {
                 ),
                 $relationship_row
               );
-              // Add values to corresponding base row.
-              $row_key = array_search(
-                $relationship_row[$relationship->getBaseField()],
-                array_column($view->result, $field_name)
-              );
-              $view->result[$row_key]->addValues($relationship_row);
+              // Add values to corresponding base rows.
+              foreach ($view->result as $row_key => &$row) {
+                if (
+                  isset($row->{$field_name})
+                  && $row->{$field_name} == $relationship_row[$dataset_relationship_id . '_' . $base_field_name]
+                ) {
+                  $row->addValues($relationship_row);
+                }
+              }
             }
           }
         }
