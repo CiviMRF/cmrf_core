@@ -109,7 +109,7 @@ class API extends QueryPluginBase {
       $api_action       = $table_data['table']['base']['action'];
       $api_count_action = $table_data['table']['base']['getcount'];
       $connector        = $table_data['table']['base']['connector'];
-      $dataset_params   = json_decode($table_data['table']['base']['params'], TRUE);
+      $dataset_params   = $table_data['table']['base']['params'];
       if (!is_array($dataset_params)) {
         $dataset_params = [];
       }
@@ -203,9 +203,7 @@ class API extends QueryPluginBase {
         $result = $call->getReply();
         if ((!empty($result['values'])) && (is_array($result['values']))) {
           $index = 0;
-          foreach ($result['values'] as $value) {
-            // Row data.
-            $row = json_decode(json_encode($value), TRUE);
+          foreach ($result['values'] as $row) {
             // Mandatory field for views rows.
             $row['index'] = $index++;
             // Add row to view result.
