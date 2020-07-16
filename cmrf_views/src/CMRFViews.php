@@ -88,7 +88,7 @@ class CMRFViews {
     }
 
     if (!empty($dataset['params'])) {
-      $base_data['table']['base']['params'] = json_encode(isset($dataset['params']) ? $dataset['params'] : '');
+      $base_data['table']['base']['params'] = $dataset['params'];
     }
 
     return $base_data;
@@ -400,31 +400,10 @@ class CMRFViews {
    * @return array
    */
   public function getDatasets() {
-
-    // Return init.
     $return = [];
-
-    // Get entities ids.
-    $query   = \Drupal::entityQuery('cmrf_dataset');
-    $results = $query->execute();
-    $ids     = array_keys($results);
-
-    // Load entities by id.
-    $loaded = CMRFDataset::loadMultiple($ids);
-    if (!empty($loaded)) {
-      foreach ($loaded as $entity) {
-        $return[$entity->id()]           = [
-          'label'     => $entity->label(),
-          'connector' => $entity->connector,
-          'entity'    => $entity->entity,
-          'action'    => $entity->action,
-          'getcount'  => $entity->getcount,
-        ];
-        $params                          = json_decode($entity->params, TRUE);
-        $return[$entity->id()]['params'] = empty($params) ? [] : $params;
-      }
+    foreach (CMRFDataset::loadMultiple() as $dataset_id => $dataset) {
+      $return[$dataset_id] = $dataset->toArray();
     }
-
     return $return;
   }
 
