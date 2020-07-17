@@ -4,8 +4,8 @@ use Drupal\cmrf_core\Call;
 use Drupal\cmrf_core\Core;
 use Drupal\cmrf_views\CMRFViewsResultRow;
 use Drupal\cmrf_views\Entity\CMRFDataset;
-use Drupal\cmrf_views\Entity\CMRFDatasetRelationship;
 use Drupal\views\Plugin\views\query\QueryPluginBase;
+use Drupal\views\ResultRow;
 use Drupal\views\ViewExecutable;
 use Drupal\views\ViewsData;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -80,7 +80,7 @@ class API extends QueryPluginBase {
    * @return string
    */
   public function ensureTable($table, $relationship = NULL) {
-    return '';
+    return $table;
   }
 
   /**
@@ -94,7 +94,53 @@ class API extends QueryPluginBase {
    * @return mixed
    */
   public function addField($table, $field, $alias = '', $params = []) {
-    return $field;
+    // We check for this specifically because it gets a special alias.
+    if ($table == $this->view->storage->get('base_table') && $field == $this->view->storage->get('base_field') && empty($alias)) {
+      $alias = $this->view->storage->get('base_field');
+    }
+
+    if (!$alias && $table) {
+      $alias = $table . '_' . $field;
+    }
+
+    // Make sure an alias is assigned
+    $alias = $alias ? $alias : $field;
+
+    // Create a field info array.
+    $field_info = [
+        'field' => $field,
+        'table' => $table,
+        'alias' => $alias,
+      ] + $params;
+
+    // Test to see if the field is actually the same or not. Due to
+    // differing parameters changing the aggregation function, we need
+    // to do some automatic alias collision detection:
+    $base = $alias;
+    $counter = 0;
+    while (!empty($this->fields[$alias]) && $this->fields[$alias] != $field_info) {
+      $field_info['alias'] = $alias = $base . '_' . ++$counter;
+    }
+
+    if (empty($this->fields[$alias])) {
+      $this->fields[$alias] = $field_info;
+    }
+
+    // Keep track of all aliases used.
+    $this->fieldAliases[$table][$field] = $alias;
+
+    return $alias;
+  }
+
+  /**
+   * Returns the alias for the given field added to $table.
+   *
+   * @access protected
+   *
+   * @see \Drupal\cmrf_views\Plugin\views\query\API::addField()
+   */
+  protected function getFieldAlias($table_alias, $field) {
+    return isset($this->fieldAliases[$table_alias][$field]) ? $this->fieldAliases[$table_alias][$field] : FALSE;
   }
 
   /**
@@ -198,6 +244,11 @@ class API extends QueryPluginBase {
       // View result init.
       $view->result = [];
 
+      $field_id_alias_mapping = array_combine(
+        array_keys($view->field),
+        array_column($view->field, 'field_alias')
+      );
+
       // Data API call.
       $call = $this->core->createCall($connector, $api_entity, $api_action, $parameters, $options);
       $this->core->executeCall($call);
@@ -209,59 +260,74 @@ class API extends QueryPluginBase {
             // Mandatory field for views rows.
             $row['index'] = $index++;
             // Add row to view result.
-            $view->result[] = new CMRFViewsResultRow($row);
+            $base_result = [];
+            foreach ($row as $key => $value) {
+              if ($field_alias = self::getFieldAlias($view->storage->get('base_table'), $key)) {
+                $base_result[$field_alias] = $value;
+              }
+            }
+            $view->result[] = new CMRFViewsResultRow($base_result);
           }
+          // Set row indices for template_preprocess_views_view_fields to be
+          // able to retrieve the values.
+          array_walk($view->result, function (ResultRow $row, $index) {
+            $row->index = $index;
+          });
         }
       }
 
       foreach ($view->relationship as $field_name => $relationship) {
+        $field_name = self::getFieldAlias($view->storage->get('base_table'), $field_name);
         $referenced_keys = [];
         foreach ($view->result as $row_key => &$row) {
-          $referenced_keys[] = $row->{$field_name};
+          if (isset($row->{$field_name})) {
+            $referenced_keys[] = $row->{$field_name};
+          }
         }
-        $relationship_dataset = CMRFDataset::load($relationship->getBase());
-        // Add Views filters and sorts.
-        $parameters = $this->calculateApiParameters($parameters);
-        // Restrict to foreign keys in current result set.
-        $parameters[$relationship->getBaseField()] = ['IN' => $referenced_keys];
-        // Add dataset parameters, overriding already set values.
-        $parameters = array_merge($relationship_dataset->params, $parameters);
-        $options = [
-          'cache' => empty($view->query->options['cache']) ? NULL : $view->query->options['cache'],
-          'limit' => 0,
-        ];
-        $call = $this->core->createCall(
-          $relationship_dataset->connector,
-          $relationship_dataset->entity,
-          $relationship_dataset->action,
-          $parameters,
-          $options
-        );
-        $this->core->executeCall($call);
-        if ($call->getStatus() == Call::STATUS_DONE) {
-          $result = $call->getReply();
-          if ((!empty($result['values'])) && (is_array($result['values']))) {
-            foreach ($result['values'] as $relationship_row) {
-              // Prefix value properties with relationship ID.
-              $dataset_relationship_id = $relationship->getDatasetRelationshipId();
-              $base_field_name = $relationship->getBaseField();
-              // Prefix properties of the relationship.
-              $relationship_row = array_combine(
-                array_map(
-                  function ($k) use ($dataset_relationship_id) {
-                    return $dataset_relationship_id . '_' . $k;
-                  },
-                  array_keys($relationship_row)
-                ),
-                $relationship_row
-              );
-              // Add values to corresponding base rows.
-              foreach ($view->result as $row_key => &$row) {
-                if (
-                  isset($row->{$field_name})
-                  && $row->{$field_name} == $relationship_row[$dataset_relationship_id . '_' . $base_field_name]
-                ) {
-                  $row->addValues($relationship_row);
+        if (!empty($referenced_keys)) {
+          $base_field_alias = self::getFieldAlias(
+            $relationship->tableAlias,
+            $relationship->getBaseField()
+          );
+          $dataset_relationship = $relationship->getDatasetRelationship();
+          $referenced_dataset = CMRFDataset::load($dataset_relationship->referenced_dataset);
+          // Add Views filters and sorts.
+          $parameters = $this->calculateApiParameters($parameters);
+          // Restrict to foreign keys in current result set.
+          $parameters[$relationship->getBaseField()] = ['IN' => $referenced_keys];
+          // Add dataset parameters, overriding already set values.
+          $parameters = $referenced_dataset->params + $parameters;
+          $options = [
+            'cache' => empty($view->query->options['cache']) ? NULL : $view->query->options['cache'],
+            'limit' => 0,
+          ];
+          $call = $this->core->createCall(
+            $referenced_dataset->connector,
+            $referenced_dataset->entity,
+            $referenced_dataset->action,
+            $parameters,
+            $options
+          );
+          $this->core->executeCall($call);
+          if ($call->getStatus() == Call::STATUS_DONE) {
+            $result = $call->getReply();
+            if ((!empty($result['values'])) && (is_array($result['values']))) {
+              foreach ($result['values'] as $relationship_row) {
+                // Filter for needed fields only and rename with aliases.
+                $relationship_result = [];
+                foreach ($relationship_row as $key => $value) {
+                  if ($field_alias = self::getFieldAlias($relationship->tableAlias, $key)) {
+                    $relationship_result[$field_alias] = $value;
+                  }
+                }
+                // Add values to corresponding base rows.
+                foreach ($view->result as $row_key => &$row) {
+                  if (
+                    isset($row->{$field_name})
+                    && $row->{$field_name} == $relationship_result[$base_field_alias]
+                  ) {
+                    $row->addValues($relationship_result);
+                  }
                 }
               }
             }

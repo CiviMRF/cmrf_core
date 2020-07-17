@@ -2,7 +2,9 @@
 
 namespace Drupal\cmrf_views\Plugin\views\relationship;
 
+use Drupal\cmrf_views\Entity\CMRFDatasetRelationship;
 use Drupal\views\Plugin\views\relationship\RelationshipPluginBase;
+use Drupal\views\Views;
 
 /**
  * Relationship handler to return the CMRFDataset configured for the view's
@@ -18,7 +20,11 @@ class DatasetRelationship extends RelationshipPluginBase {
    * {@inheritDoc}
    */
   public function query() {
-    // Do nothing here.
+    $this->ensureMyTable();
+    // Add both, the referencing and the referenced key as fields, so they are
+    // always there for matching.
+    $this->query->addField($this->view->storage->get('base_table'), $this->options['id']);
+    $this->query->addField($this->table, $this->field);
   }
 
   /**
@@ -42,12 +48,21 @@ class DatasetRelationship extends RelationshipPluginBase {
   }
 
   /**
-   * Retrieves the CMRFDatasetRelationship ID this relationship is using.
+   * Retrieves the CMRFDatasetRelationship entity ID this relationship is using.
    *
    * @return string
    */
   public function getDatasetRelationshipId() {
     return $this->configuration['cmrf_dataset_relationship'];
+  }
+
+  /**
+   * Retrieves the CMRFDatasetRelationship entity this relationship is using.
+   *
+   * @return CMRFDatasetRelationship
+   */
+  public function getDatasetRelationship() {
+    return CMRFDatasetRelationship::load($this->getDatasetRelationshipId());
   }
 
 }

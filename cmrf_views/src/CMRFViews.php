@@ -102,7 +102,7 @@ class CMRFViews {
    *
    * @return array
    */
-  public function getFields($dataset, $prefixes = []) {
+  public function getFields($dataset) {
 
     if ((!empty($dataset['connector'])) && (!empty($dataset['entity'])) && (!empty($dataset['action']))) {
 
@@ -113,18 +113,18 @@ class CMRFViews {
         return [];
       }
 
-      $dataset_relationships = CMRFDatasetRelationship::loadByDataset($dataset['id']);
-
       // Get fields value.
       $fields = $call->getReply();
       if (empty($fields['values'])) {
         return [];
       }
 
+      // Retrieve available relationships available for the current dataset.
+      $dataset_relationships = CMRFDatasetRelationship::loadByDataset($dataset['id']);
+
       // Loop through each field to create the appropriate structure for views data.
       $views_fields = [];
       foreach ($fields['values'] as $field_name => $field_prop) {
-        $field_name = implode('_', array_merge($prefixes, [$field_name]));
 
         // If we don't have a field type, set it to 0.
         if (!isset($field_prop['type'])) {
@@ -156,7 +156,7 @@ class CMRFViews {
         // Set field basic information.
         $views_fields[$field_name]['title'] = empty($field_prop['title']) ? '' : $field_prop['title'];
         $views_fields[$field_name]['help']  = empty($field_prop['description']) ? '' : $field_prop['description'];
-        $views_fields[$field_name]['help']  = empty($field_prop['description']) ? '' : $field_prop['description'];
+        $views_fields[$field_name]['group'] = $dataset['label'];
 
         // Set click sortable to 'true' by default.
         $views_fields[$field_name]['field']['click sortable'] = TRUE;
@@ -165,24 +165,16 @@ class CMRFViews {
         foreach ($dataset_relationships as $dataset_relationship) {
           if ($dataset_relationship->referencing_key == $field_name) {
             $views_fields[$field_name]['relationship'] = [
-              'base' => $dataset_relationship->referenced_dataset,
+              'base' => 'cmrf_views_' . $dataset_relationship->referenced_dataset,
               'base field' => $dataset_relationship->referenced_key,
               'id' => 'cmrf_dataset_relationship',
               'label' => $dataset_relationship->label,
               'cmrf_dataset_relationship' => $dataset_relationship->id,
+              'relationship table' => 'cmrf_views_' . $dataset_relationship->referenced_dataset,
+              'relationship field' => $dataset_relationship->referenced_key,
             ];
           }
         }
-      }
-
-      // Add fields for entities brought in by relationships.
-      // TODO: Make them be listed under the relationship's entity name.
-      foreach ($dataset_relationships as $dataset_relationship) {
-        $dataset_relationship_dataset = CMRFDataset::load($dataset_relationship->referenced_dataset);
-        $views_fields += $this->getFields(
-          $dataset_relationship_dataset->toArray(),
-          $prefixes + [$dataset_relationship->id()]
-        );
       }
 
       return $views_fields;
