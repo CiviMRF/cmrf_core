@@ -83,6 +83,13 @@ class CMRFDatasetForm extends EntityForm {
       '#required'      => TRUE,
     ];
 
+    $form['getfields'] = [
+      '#type'          => 'textfield',
+      '#title'         => t('Getfields api action'),
+      '#default_value' => empty($entity->getfields) ? 'getfields' : $entity->getfields,
+      '#required'      => TRUE,
+    ];
+
     $form['params'] = [
       '#type'          => 'textarea',
       '#title'         => t('API Parameters'),

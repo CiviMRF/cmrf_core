@@ -1,0 +1,17 @@
+<?php
+
+use Drupal\Core\Config\Entity\ConfigEntityUpdater;
+
+/**
+ * Add new configuration option "Getfields api action" for Views Datasets.
+ */
+function cmrf_views_update_8001(&$sandbox) {
+  // Update the configuration entity type "cmrf_dataset".
+  \Drupal::classResolver(ConfigEntityUpdater::class)
+    ->update($sandbox, 'cmrf_dataset', function ($entity) {
+      // Set default value for all existing datasets.
+      $entity->set('getfields', 'getfields');
+      // Return TRUE for saving the entity.
+      return TRUE;
+  });
+}
