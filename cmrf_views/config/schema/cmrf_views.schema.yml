@@ -53,3 +53,7 @@ views.filter.cmrf_views_filter_optionlist:
             type: views.filter.group_item.cmrf_views_filter_optionlist
             label: 'Group item'
 
+
+views.filter_value.cmrf_views_filter_date:
+  type: views.filter_value.date
+  label: 'Date'
