@@ -22,6 +22,9 @@ cmrf_views.cmrf_dataset.*:
     getcount:
       type: string
       label: 'Getcount api action'
+    getfields:
+      type: string
+      label: 'Getfields api action'
     params:
       type: string
       label: 'API Parameters'

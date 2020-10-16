@@ -107,7 +107,13 @@ class CMRFViews {
     if ((!empty($dataset['connector'])) && (!empty($dataset['entity'])) && (!empty($dataset['action']))) {
 
       // API Call to retrieve the fields.
-      $call = $this->core->createCall($dataset['connector'], $dataset['entity'], 'getfields', ['api_action' => $dataset['action']], ['limit' => 0]);
+      $call = $this->core->createCall(
+        $dataset['connector'],
+        $dataset['entity'],
+        $dataset['getfields'],
+        ['api_action' => $dataset['action']],
+        ['limit' => 0]
+      );
       $this->core->executeCall($call);
       if ($call->getStatus() != Call::STATUS_DONE) {
         return [];
@@ -379,7 +385,7 @@ class CMRFViews {
     $call = $this->core->createCall(
       $connector,
       $api_entity,
-      'getfields',
+      'getfields', // TODO: Use "getfields" property of the Dataset?
       ['api_action' => $api_action],
       ['limit' => 0]
     );
