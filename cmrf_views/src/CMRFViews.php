@@ -131,6 +131,7 @@ class CMRFViews {
       // Loop through each field to create the appropriate structure for views data.
       $views_fields = [];
       foreach ($fields['values'] as $field_name => $field_prop) {
+        $field_name = str_replace('.', '__', $field_name);
 
         // If we don't have a field type, set it to 0.
         if (!isset($field_prop['type'])) {
