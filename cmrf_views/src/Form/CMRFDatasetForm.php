@@ -91,6 +91,11 @@ class CMRFDatasetForm extends EntityForm {
       '#required'      => FALSE,
     ];
 
+    // Provide a token browser.
+    $form['token_tree'] = [
+      '#theme' => 'token_tree_link',
+    ];
+
     return $form;
   }
 

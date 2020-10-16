@@ -215,7 +215,7 @@ class API extends QueryPluginBase {
       // Set the parameters from the dataset params options.
       if (!empty($dataset_params)) {
         foreach ($dataset_params as $key => $value) {
-          $parameters[$key] = $value;
+          $parameters[$key] = \Drupal::token()->replace($value);
         }
       }
 
