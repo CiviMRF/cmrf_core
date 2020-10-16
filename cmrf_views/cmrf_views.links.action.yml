@@ -9,3 +9,9 @@ cmrf_views.clear_cache:
   title: 'Clear cache'
   appears_on:
     - entity.cmrf_dataset.collection
+
+entity.cmrf_dataset_relationship.add_form:
+  route_name: entity.cmrf_dataset_relationship.add_form
+  title: 'Add relationship'
+  appears_on:
+    - entity.cmrf_dataset_relationship.collection

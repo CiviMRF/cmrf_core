@@ -3,6 +3,7 @@
 use Drupal\cmrf_core\Call;
 use Drupal\cmrf_core\Core;
 use Drupal\cmrf_views\Entity\CMRFDataset;
+use Drupal\cmrf_views\Entity\CMRFDatasetRelationship;
 
 class CMRFViews {
 
@@ -34,6 +35,7 @@ class CMRFViews {
     if (!empty($datasets)) {
       foreach ($datasets as $dataset_id => $dataset_prop) {
         if ((!empty($dataset_prop['connector'])) && (!empty($dataset_prop['entity']) && (!empty($dataset_prop['action'])))) {
+          $dataset_prop['id'] = $dataset_id;
           $fields = $this->getFields($dataset_prop);
           // Unique identifier for this group.
           $uid = 'cmrf_views_' . $dataset_id;
@@ -117,6 +119,9 @@ class CMRFViews {
         return [];
       }
 
+      // Retrieve available relationships available for the current dataset.
+      $dataset_relationships = CMRFDatasetRelationship::loadByDataset($dataset['id']);
+
       // Loop through each field to create the appropriate structure for views data.
       $views_fields = [];
       foreach ($fields['values'] as $field_name => $field_prop) {
@@ -151,11 +156,25 @@ class CMRFViews {
         // Set field basic information.
         $views_fields[$field_name]['title'] = empty($field_prop['title']) ? '' : $field_prop['title'];
         $views_fields[$field_name]['help']  = empty($field_prop['description']) ? '' : $field_prop['description'];
-        $views_fields[$field_name]['help']  = empty($field_prop['description']) ? '' : $field_prop['description'];
+        $views_fields[$field_name]['group'] = $dataset['label'];
 
         // Set click sortable to 'true' by default.
         $views_fields[$field_name]['field']['click sortable'] = TRUE;
 
+        // Add relationship properties when configured for this field.
+        foreach ($dataset_relationships as $dataset_relationship) {
+          if ($dataset_relationship->referencing_key == $field_name) {
+            $views_fields[$field_name]['relationship'] = [
+              'base' => 'cmrf_views_' . $dataset_relationship->referenced_dataset,
+              'base field' => $dataset_relationship->referenced_key,
+              'id' => 'cmrf_dataset_relationship',
+              'label' => $dataset_relationship->label,
+              'cmrf_dataset_relationship' => $dataset_relationship->id,
+              'relationship table' => 'cmrf_views_' . $dataset_relationship->referenced_dataset,
+              'relationship field' => $dataset_relationship->referenced_key,
+            ];
+          }
+        }
       }
 
       return $views_fields;

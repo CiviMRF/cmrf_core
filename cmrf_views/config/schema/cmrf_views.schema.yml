@@ -25,6 +25,44 @@ cmrf_views.cmrf_dataset.*:
     params:
       type: string
       label: 'API Parameters'
+    relationships:
+      type: sequence
+      label: 'Relationships'
+      sequence:
+        type: mapping
+        label: 'Relationship settings'
+        mapping:
+          id:
+            type: string
+          label:
+            type: label
+            label: 'Label'
+          relationship_settings:
+            type: cmrf_views.cmrf_dataset_relationship
+
+cmrf_views.cmrf_dataset_relationship.*:
+  type: config_entity
+  label: 'Relationship Settings'
+  mapping:
+    id:
+      type: string
+      label: 'Machine Name'
+    label:
+      type: label
+      label: 'Label'
+    uuid:
+      type: string
+    referenced_dataset:
+      type: cmrf_views.cmrf_dataset
+      label: 'Referenced Dataset'
+    referenced_key:
+      type: string
+      label: 'Referenced Dataset Key'
+    referencing_dataset:
+      type: cmrf_views.cmrf_dataset
+    referencing_key:
+      type: string
+      label: 'Referencing Dataset foreign key'
 
 views.filter.cmrf_views_filter_optionlist:
   type: views_filter
@@ -53,3 +91,6 @@ views.filter.cmrf_views_filter_optionlist:
             type: views.filter.group_item.cmrf_views_filter_optionlist
             label: 'Group item'
 
+views.relationship.cmrf_dataset_relationship:
+  type: views_relationship
+  label: 'CiviMRF Dataset Relationship'
