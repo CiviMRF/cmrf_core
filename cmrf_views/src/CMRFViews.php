@@ -137,6 +137,11 @@ class CMRFViews {
           $field_prop['type'] = 0;
         }
 
+        // Set default for "api.filter".
+        if (!isset($field_prop['api.filter'])) {
+          $field_prop['api.filter'] = 1;
+        }
+
         // Set field handler, filter, sort, etc.
         switch ($field_prop['type']) {
           case 1: // Integer field.
