@@ -169,6 +169,7 @@ class CMRFViews {
         $views_fields[$field_name]['title'] = empty($field_prop['title']) ? '' : $field_prop['title'];
         $views_fields[$field_name]['help']  = empty($field_prop['description']) ? '' : $field_prop['description'];
         $views_fields[$field_name]['group'] = $dataset['label'];
+        $views_fields[$field_name]['cmrf_original_definition'] = $field_prop;
 
         // Set click sortable to 'true' by default.
         $views_fields[$field_name]['field']['click sortable'] = TRUE;
