@@ -131,6 +131,7 @@ class CMRFViews {
       // Loop through each field to create the appropriate structure for views data.
       $views_fields = [];
       foreach ($fields['values'] as $field_name => $field_prop) {
+        $original_field_name = $field_name;
         $field_name = str_replace('.', '__', $field_name);
 
         // If we don't have a field type, set it to 0.
@@ -170,6 +171,11 @@ class CMRFViews {
         $views_fields[$field_name]['help']  = empty($field_prop['description']) ? '' : $field_prop['description'];
         $views_fields[$field_name]['group'] = $dataset['label'];
         $views_fields[$field_name]['cmrf_original_definition'] = $field_prop;
+
+        // Make sorting use the correct field names, i.e. without dots replaced.
+        if (!empty($views_fields[$field_name]['sort'])) {
+          $views_fields[$field_name]['sort']['field'] = $original_field_name;
+        }
 
         // Set click sortable to 'true' by default.
         $views_fields[$field_name]['field']['click sortable'] = TRUE;

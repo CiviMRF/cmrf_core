@@ -491,7 +491,8 @@ class API extends QueryPluginBase {
     }
 
     $this->orderby[] = [
-      'field'     => $as,
+//      'field'     => $as, // We need the real field name for sorting via API.
+      'field' => $field,
       'direction' => strtoupper($order),
     ];
   }
