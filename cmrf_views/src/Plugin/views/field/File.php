@@ -141,10 +141,6 @@ class File extends FieldPluginBase {
     parent::buildOptionsForm($form, $form_state);
   }
 
-  protected function allowAdvancedRender() {
-    return FALSE;
-  }
-
   /**
    * {@inheritdoc}
    */

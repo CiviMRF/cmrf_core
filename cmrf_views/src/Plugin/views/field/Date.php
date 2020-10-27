@@ -24,8 +24,4 @@ class Date extends \Drupal\views\Plugin\views\field\Date {
     return NULL;
   }
 
-  protected function allowAdvancedRender() {
-    return FALSE;
-  }
-
 }
