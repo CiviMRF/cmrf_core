@@ -22,17 +22,21 @@ class Date extends \Drupal\views\Plugin\views\filter\Date {
   }
 
   protected function opSimple($field) {
-    $value = intval(strtotime($this->value['value'], 0));
-    if (!empty($this->value['type']) && $this->value['type'] == 'offset') {
-      // Keep sign.
-      $value = REQUEST_TIME . sprintf('%+d', $value);
-      $math  = new StdMathParser();
-      $value = (string) $math->parse($value);
-    }
-    // Convert timestamp to 'YmdHis' date.
-    $value = date('YmdHis', $value);
+    // Convert time string (absolute or relative) to 'YmdHis' date.
+    $value = date('YmdHis', strtotime($this->value['value']));
     // Add field values to the query.
     $this->query->addWhere($this->options['group'], $field, $value, $this->operator);
+  }
+
+  protected function opBetween($field) {
+    // Convert time strings (absolute or relative) to 'YmdHis' date.
+    $value = [
+      $a = date('YmdHis', strtotime($this->value['min'])),
+      $b = date('YmdHis', strtotime($this->value['max'])),
+    ];
+
+    $operator = strtoupper($this->operator);
+    $this->query->addWhere($this->options['group'], $field, $value, $operator);
   }
 
 }
