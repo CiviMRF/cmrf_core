@@ -2,4 +2,5 @@ name: CMRF Core
 type: module
 description: CMRF CiviCRM REST Connection
 core: 8.x
+version 1.0
 package: CiviCRM
