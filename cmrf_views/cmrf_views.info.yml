@@ -2,6 +2,8 @@ name: CMRF Views
 type: module
 description: CMRF CiviCRM Integration with views
 core: 8.x
+core_version_requirement: ^8 || ^9
+version: 1.0
 package: CiviCRM
 dependencies:
   - cmrf_core
