@@ -3,7 +3,6 @@ type: module
 description: Sample Module to do demonstrate Civi Calls
 core: 8.x
 core_version_requirement: ^8 || ^9
-version: 1.0
 package: CiviCRM
 dependencies:
   - cmrf_core
