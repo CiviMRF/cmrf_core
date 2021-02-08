@@ -7,3 +7,5 @@ package: CiviCRM
 dependencies:
   - drupal:webform
   - drupal:cmrf_core
+
+version: 1.x-dev
