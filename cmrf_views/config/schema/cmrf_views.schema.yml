@@ -98,6 +98,9 @@ views.relationship.cmrf_dataset_relationship:
   type: views_relationship
   label: 'CiviMRF Dataset Relationship'
 
+views.filter_value.cmrf_views_filter_numeric:
+  type: views.filter_value.numeric
+  label: 'Numeric'
 views.filter_value.cmrf_views_filter_date:
   type: views.filter_value.date
   label: 'Date'
