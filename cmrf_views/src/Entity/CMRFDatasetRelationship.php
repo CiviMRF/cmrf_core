@@ -11,7 +11,6 @@ use Drupal\Core\Config\Entity\ConfigEntityBase;
  *   handlers = {
  *     "view_builder" = "Drupal\Core\Entity\EntityViewBuilder",
  *     "list_builder" = "Drupal\cmrf_views\CMRFDatasetRelationshipListBuilder",
- *     "views_data" = "Drupal\cmrf_views\CMRFEntityViewsData",
  *     "route_provider" = {
  *       "html" = "Drupal\cmrf_views\CMRFDatasetHtmlRouteProvider",
  *     },
