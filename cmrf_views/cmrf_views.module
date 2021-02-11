@@ -1,1 +1,26 @@
 <?php
+
+/**
+ * Implements hook_theme().
+ */
+function cmrf_views_theme($existing, $type, $theme, $path) {
+  return [
+    'cmrf_views_field_json_item' => [
+      'variables' => [
+        'field' => NULL,
+        'count' => 0,
+        'item' => [],
+        'item_list' =>NULL,
+      ],
+    ],
+  ];
+}
+
+/**
+ * Implements hook_theme_suggestions_HOOK().
+ */
+function cmrf_views_theme_suggestions_cmrf_views_field_json_item(array $variables) {
+  $suggestions = array();
+  $suggestions[] = 'cmrf_views_field_json_item__' . $variables['field']->table . '__' . $variables['field']->field;
+  return $suggestions;
+}

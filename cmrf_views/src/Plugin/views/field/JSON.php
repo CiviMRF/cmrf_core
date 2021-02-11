@@ -59,19 +59,29 @@ class JSON extends \Drupal\views\Plugin\views\field\Standard implements MultiIte
    * @inheritDoc
    */
   public function render_item($count, $item) {
-    // TODO: Provide a separate (overrideable) template?
+    $render = [
+      // Use a special overrideable template for each top-level JSON item.
+      '#theme' => 'cmrf_views_field_json_item',
+      '#field' => $this,
+      '#count' => $count,
+      '#item' => $item,
+      // Render an item list from the JSON structure as default markup.
+      '#item_list' => $this->render_item_item_list($item),
+    ];
+    return render($render);
+  }
+
+  public function render_item_item_list($item) {
     $render = [
       '#theme' => 'item_list',
     ];
-    $i = 0;
     foreach ($item as $attribute => $value) {
       if (is_array($value)) {
-        $value = $this->render_item($i, $value);
+        $value = $this->render_item_item_list($value);
       }
       $render['#items'][] = $value ;
-      $i++;
     }
-    return render($render);
+    return $render;
   }
 
   /**
