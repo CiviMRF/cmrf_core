@@ -7,6 +7,6 @@ project = "cmrf_core"
 version = "7.x-0.12-dev"
 
 dependencies[] = cmrf_core
-dependencies[] = webform
+dependencies[] = webform (4.x)
 
 configure = admin/config/civimrf/webform
