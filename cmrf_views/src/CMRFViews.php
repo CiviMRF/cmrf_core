@@ -161,6 +161,12 @@ class CMRFViews {
           case 32: // Markup field.
             $views_fields[$field_name] = $this->getMarkupField($field_prop);
             break;
+          case 2: // String field
+            if ($field_prop['format'] == 'json') {
+              $views_fields[$field_name] = $this->getJSONField($field_prop);
+              break;
+            }
+            // No "break" statement for other string types falling through.
           default: // Fallback standard field.
             $views_fields[$field_name] = $this->getStandardField($field_prop);
             break;
@@ -320,6 +326,17 @@ class CMRFViews {
         $field['filter']['options'] = $prop['options'];
       }
     }
+
+    return $field;
+  }
+
+  /**
+   * Generates JSON field for views data.
+   *
+   * @param $prop
+   */
+  private function getJSONField($prop) {
+    $field['field']['id']    = 'cmrf_views_json';
 
     return $field;
   }
