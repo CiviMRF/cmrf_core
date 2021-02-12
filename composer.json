@@ -1,24 +1,37 @@
 {
-"repositories": [
-    {
-        "type": "package",
-        "package": {
-            "name": "CiviMRF/CMRF_Abstract_Core",
-            "version": "0.5",
-            "source": {
-                "url": "https://github.com/CiviMRF/CMRF_Abstract_Core.git",
-                "type": "git",
-                "reference": "0.5"
-            },
-            "autoload": {
-                "psr-0": {
-                    "CMRF": ""
+    "name": "drupal/cmrf_core",
+    "type": "drupal-module",
+    "description": "CiviCRM Modular Remote Framework",
+    "keywords": [
+        "Drupal"
+    ],
+    "license": "GPL-2.0+",
+    "homepage": "https://github.com/CiviMRF/cmrf_core",
+    "minimum-stability": "dev",
+    "support": {
+        "issues": "https://github.com/CiviMRF/cmrf_core/issues",
+        "source": "https://github.com/CiviMRF/cmrf_core"
+    },
+    "repositories": [
+        {
+            "type": "package",
+            "package": {
+                "name": "CiviMRF/CMRF_Abstract_Core",
+                "version": "0.5",
+                "source": {
+                    "url": "https://github.com/CiviMRF/CMRF_Abstract_Core.git",
+                    "type": "git",
+                    "reference": "0.5"
+                },
+                "autoload": {
+                    "psr-0": {
+                        "CMRF": ""
+                    }
                 }
             }
         }
-    }],
+    ],
     "require": {
         "civimrf/cmrf_abstract_core": "0.5"
     }
-
 }
