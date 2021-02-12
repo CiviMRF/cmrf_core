@@ -187,7 +187,8 @@ function _cmrf_views_civicrm_fields($api_entity, $api_action) {
   }
   $fields = $call->getReply();
   if (isset($fields['values']) && is_array($fields['values'])) {
-    foreach($fields['values'] as $field_name => $field) {
+    foreach($fields['values'] as $field) {
+      $field_name = $field['name'];
       $fieldOtions = false; 
       $filterField = true;
       $returnField = true;
