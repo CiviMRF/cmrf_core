@@ -1,16 +1,16 @@
 {
     "name": "drupal/cmrf_core",
     "type": "drupal-module",
-    "description": "CMRF CiviCRM REST Connection",
+    "description": "CiviCRM Modular Remote Framework",
     "keywords": [
         "Drupal"
     ],
     "license": "GPL-2.0+",
-    "homepage": "https://www.drupal.org/project/cmrf_core",
+    "homepage": "https://github.com/CiviMRF/cmrf_core",
     "minimum-stability": "dev",
     "support": {
-        "issues": "https://www.drupal.org/project/issues/cmrf_core",
-        "source": "http://cgit.drupalcode.org/cmrf_core"
+        "issues": "https://github.com/CiviMRF/cmrf_core/issues",
+        "source": "https://github.com/CiviMRF/cmrf_core"
     },
     "repositories": [
         {
