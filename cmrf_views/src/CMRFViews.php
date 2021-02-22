@@ -106,12 +106,19 @@ class CMRFViews {
 
     if ((!empty($dataset['connector'])) && (!empty($dataset['entity'])) && (!empty($dataset['action']))) {
 
+      // Set the parameters from the dataset params options.
+      if (!empty($dataset['params'])) {
+        foreach ($dataset['params'] as $key => $value) {
+          $dataset['params'][$key] = \Drupal::token()->replace($value);
+        }
+      }
+
       // API Call to retrieve the fields.
       $call = $this->core->createCall(
         $dataset['connector'],
         $dataset['entity'],
         $dataset['getfields'],
-        ['api_action' => $dataset['action']],
+        ['api_action' => $dataset['action']] + $dataset['params'],
         ['limit' => 0]
       );
       $this->core->executeCall($call);
