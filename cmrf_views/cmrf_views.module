@@ -122,7 +122,7 @@ function cmrf_views_entity_list($reset=FALSE) {
     $entities = cmrf_views_default_entity_list();
     drupal_alter('cmrf_views_entity_list', $entities);
     foreach($entities as $entity_name => $entity_definition) {
-      $fields = _cmrf_views_civicrm_fields($entity_definition['entity'], $entity_definition['action']);
+      $fields = _cmrf_views_civicrm_fields($entity_definition['entity'], $entity_definition['action'], $entity_definition['params']);
       if (count($fields)) {
         $entity_definition['params'] = isset($entity_definition['params']) ? $entity_definition['params'] : '';
         $data['cmrf:'.$entity_definition['profile'].'_'.$entity_name] = $fields;
@@ -175,13 +175,11 @@ function cmrf_views_default_entity_list() {
 /**
  * Retrieve all the fields for an entity in the formal of Drupal views.
  */
-function _cmrf_views_civicrm_fields($api_entity, $api_action) {
+function _cmrf_views_civicrm_fields($api_entity, $api_action, $api_params) {
   $return = array();
-  $parameters = array(
-    'api_action' => $api_action
-  );
+  $api_params['api_action'] = $api_action;
   $options['limit'] = 0;
-  $call = cmrf_views_sendCall($api_entity, 'getfields', $parameters, $options);
+  $call = cmrf_views_sendCall($api_entity, 'getfields', $api_params, $options);
   if ($call->getStatus() != \CMRF\Core\Call::STATUS_DONE) {
     return;
   }
