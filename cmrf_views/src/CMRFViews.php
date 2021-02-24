@@ -150,6 +150,10 @@ class CMRFViews {
         if (!isset($field_prop['api.filter'])) {
           $field_prop['api.filter'] = 1;
         }
+        // Set default for "api.sort".
+        if (!isset($field_prop['api.sort'])) {
+          $field_prop['api.sort'] = 1;
+        }
 
         // Set field handler, filter, sort, etc.
         switch ($field_prop['type']) {
@@ -230,8 +234,9 @@ class CMRFViews {
     } else {
       $field['field']['id'] = 'numeric';
     }
-    $field['sort']['id']     = 'standard';
-    $field['argument']['id'] = 'cmrf_views_argument_standard';
+    if (!empty($prop['api.sort'])) {
+      $field['sort']['id'] = 'standard';
+    }
 
     // If 'type' is 1024 (Money).
     if ((!empty($prop['data_type'])) && ($prop['type'] == 1024)) {
@@ -240,6 +245,7 @@ class CMRFViews {
 
     // Add filter to the field.
     if (!empty($prop['api.filter'])) {
+      $field['argument']['id'] = 'cmrf_views_argument_standard';
       if (!empty($prop['options'])) {
         $field['filter']['id'] = 'cmrf_views_filter_optionlist';
         $field['filter']['options'] = $prop['options'];
@@ -267,11 +273,13 @@ class CMRFViews {
 
     // Default.
     $field['field']['id']    = 'cmrf_views_date';
-    $field['sort']['id']     = 'standard';
-    $field['argument']['id'] = 'date';
+    if (!empty($prop['api.sort'])) {
+      $field['sort']['id'] = 'standard';
+    }
 
     // Add filter to the field.
     if (!empty($prop['api.filter'])) {
+      $field['argument']['id'] = 'date';
       $field['filter']['id'] = 'cmrf_views_filter_date';
       if (!empty($prop['options'])) {
         $field['filter']['id']      = 'cmrf_views_filter_optionlist';
@@ -293,11 +301,13 @@ class CMRFViews {
 
     // Default.
     $field['field']['id']    = 'boolean';
-    $field['sort']['id']     = 'standard';
-    $field['argument']['id'] = 'date';
+    if (!empty($prop['api.sort'])) {
+      $field['sort']['id'] = 'standard';
+    }
 
     // Add filter to the field.
     if (!empty($prop['api.filter'])) {
+      $field['argument']['id'] = 'date';
       $field['filter']['id'] = 'cmrf_views_filter_boolean';
     }
 
@@ -322,11 +332,13 @@ class CMRFViews {
 
     // Default.
     $field['field']['id']    = 'cmrf_views_markup';
-    $field['sort']['id']     = 'standard';
-    $field['argument']['id'] = 'cmrf_views_argument_standard';
+    if (!empty($prop['api.sort'])) {
+      $field['sort']['id'] = 'standard';
+    }
 
     // Add filter to the field.
     if (!empty($prop['api.filter'])) {
+      $field['argument']['id'] = 'cmrf_views_argument_standard';
       $field['filter']['id'] = 'cmrf_views_filter_text';
       if (!empty($prop['options'])) {
         $field['filter']['id']      = 'cmrf_views_filter_optionlist';
@@ -364,14 +376,17 @@ class CMRFViews {
     } else {
       $field['field']['id'] = 'cmrf_views_standard';
     }
-    $field['sort']['id']     = 'standard';
-    $field['argument']['id'] = 'cmrf_views_argument_standard';
+
+    if (!empty($prop['api.sort'])) {
+      $field['sort']['id'] = 'standard';
+    }
     if (!empty($prop['options'])){
       $field['field']['options'] = $prop['options'];
     }
 
     // Add filter to the field.
     if (!empty($prop['api.filter'])) {
+      $field['argument']['id'] = 'cmrf_views_argument_standard';
       $field['filter']['id'] = 'cmrf_views_filter_text';
       if (!empty($prop['options'])) {
         $field['filter']['id']      = 'cmrf_views_filter_optionlist';
