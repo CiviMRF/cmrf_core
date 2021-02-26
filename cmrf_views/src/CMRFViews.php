@@ -197,6 +197,12 @@ class CMRFViews {
         // Set click sortable to 'true' by default.
         $views_fields[$field_name]['field']['click sortable'] = TRUE;
 
+        // Set whether the field contains multiple items.
+        if (!empty($field_prop['serialize'])) {
+          $views_fields[$field_name]['field']['multiple'] = 1;
+          $views_fields[$field_name]['field']['click sortable'] = FALSE;
+        }
+
         // Add relationship properties when configured for this field.
         foreach ($dataset_relationships as $dataset_relationship) {
           if ($dataset_relationship->referencing_key == $field_name) {
@@ -355,7 +361,8 @@ class CMRFViews {
    * @param $prop
    */
   private function getJSONField($prop) {
-    $field['field']['id']    = 'cmrf_views_json';
+    $field['field']['id'] = 'cmrf_views_json';
+    $field['field']['multiple'] = 1;
 
     return $field;
   }
