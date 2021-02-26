@@ -140,6 +140,7 @@ class API extends QueryPluginBase {
    * @see \Drupal\cmrf_views\Plugin\views\query\API::addField()
    */
   protected function getFieldAlias($table_alias, $field) {
+    $field = str_replace('.', '__', $field);
     return isset($this->fieldAliases[$table_alias][$field]) ? $this->fieldAliases[$table_alias][$field] : FALSE;
   }
 
