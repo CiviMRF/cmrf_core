@@ -3,7 +3,7 @@ core = 7.x
 
 package = "CiviMRF"
 project = "cmrf_core"
-version = "7.x-0.x-dev"
+version = "7.x-0.13"
 
 dependencies[] = cmrf_core
 dependencies[] = views
