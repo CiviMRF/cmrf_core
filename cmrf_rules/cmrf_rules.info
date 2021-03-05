@@ -4,7 +4,7 @@ core = 7.x
 
 package = "CiviMRF"
 project = "cmrf_core"
-version = "7.x-0.13"
+version = "7.x-dev"
 
 dependencies[] = cmrf_core
 dependencies[] = rules
