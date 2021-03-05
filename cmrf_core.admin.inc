@@ -111,6 +111,14 @@ function cmrf_core_profile_form($form, &$form_state, $profile=null) {
     ),
   );
 
+  $form['cache_expire_days'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Expire cache after days'),
+    '#default_value' => isset($profile['cache_expire_days']) ? $profile['cache_expire_days'] : 0,
+    '#description' => t("Clear the cache after n days (Set to 0 to disable). Successful calls will be removed as soon as they have been executed. This is about the failed calls."),
+    '#required' => true,
+  );
+
   $form['default']['#type'] = 'checkbox';
   $form['default']['#title'] = t('Default profile');
   $form['default']['#default_value'] = isset($profile['default']) && $profile['default'] ? 1 : 0;

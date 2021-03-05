@@ -167,6 +167,18 @@ class SQLPersistingCallFactory extends CallFactory {
 
   public function purgeCachedCalls() {
     db_query("delete from {$this->table_name} where status = 'DONE' and (cached_until < NOW() or cached_until is NULL)");
+
+    $core = cmrf_core_get_core();
+    $connectors = $core->getRegisteredConnectors();
+    foreach($connectors as $connector) {
+      $profile = $core->getConnectionProfile($connector['id']);
+      if ($profile['cache_expire_days'] > 0) {
+        $today = new \DateTime();
+        $today->modify('-'.$profile['cache_expire_days'].' days');
+        db_query("delete from {$this->table_name} where DATE(`create_date`) < '".$today->format('Y-m-d')."' AND `connector_id` = '".$connector['id']."'");
+      }
+    }
+
   }
 
   /**
@@ -178,9 +190,9 @@ class SQLPersistingCallFactory extends CallFactory {
   public function getQueuedCallIds() {
     $call_ids = array();
     $result = db_query("
-      select cid from {$this->table_name} 
-      where (status = 'INIT' OR status = 'RETRY') 
-      and (DATE(scheduled_date) < NOW() or scheduled_date is NULL) 
+      select cid from {$this->table_name}
+      where (status = 'INIT' OR status = 'RETRY')
+      and (DATE(scheduled_date) < NOW() or scheduled_date is NULL)
       ORDER BY scheduled_date ASC");
     if ($result) {
       while ($dataset = $result->fetchAssoc()) {
