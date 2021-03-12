@@ -2,7 +2,6 @@
 
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\views\Plugin\views\display\DisplayPluginBase;
-use Drupal\views\Plugin\views\field\MultiItemsFieldHandlerInterface;
 use Drupal\views\ResultRow;
 use Drupal\views\ViewExecutable;
 
@@ -13,7 +12,7 @@ use Drupal\views\ViewExecutable;
  *
  * @ViewsField("cmrf_views_standard")
  */
-class Standard extends \Drupal\views\Plugin\views\field\Standard implements MultiItemsFieldHandlerInterface {
+class Standard extends \Drupal\views\Plugin\views\field\Standard {
 
   use MultiItemsFieldHandler;
 
