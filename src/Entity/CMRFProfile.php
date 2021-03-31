@@ -27,6 +27,13 @@ use Drupal\Core\Config\Entity\ConfigEntityBase;
  *     "label" = "label",
  *     "uuid" = "uuid"
  *   },
+ *   config_export = {
+ *     "id",
+ *     "label",
+ *     "url",
+ *     "site_key",
+ *     "api_key"
+ *   },
  *   links = {
  *     "canonical" = "/admin/config/cmrf_profile/{cmrf_profile}",
  *     "add-form" = "/admin/config/cmrf_profile/add",
