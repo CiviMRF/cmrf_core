@@ -39,7 +39,7 @@ class CMRFCallreportController extends ControllerBase {
     if($call) {
 
       $date = new \DateTime($call->create_date);
-      $date = format_date($date->getTimestamp());
+      $date = \Drupal::service('date.formatter')->format($date->getTimestamp());
       $status = $call->status;
       $profile = "";//$core->getConnectionProfile($call->connector_id);
       $request = nl2br(json_encode(json_decode($call->request, true), JSON_PRETTY_PRINT));
@@ -53,7 +53,7 @@ class CMRFCallreportController extends ControllerBase {
       $caching_until = '';
       if (!empty($call->cached_until)) {
         $caching_until = new \DateTime($call->cached_until);
-        $caching_until = format_date($caching_until->getTimestamp());
+        $caching_until = \Drupal::service('date.formatter')->format($caching_until->getTimestamp());
       }
       $retry_count = $call->retry_count;
 
