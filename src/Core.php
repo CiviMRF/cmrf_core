@@ -11,7 +11,7 @@ class Core extends AbstractCore {
 
   public function __construct() {
     $db         = \Drupal::database()->getConnectionOptions();
-    $table_name = \Drupal::database()->prefixTables("{civicrm_api_call}");
+    $table_name = trim(\Drupal::database()->prefixTables("{civicrm_api_call}"), '"');
     $conn       = new \mysqli($db['host'], $db['username'], $db['password'], $db['database'], empty($db['port']) ? NULL : $db['port']);
     $factory    = new SQLPersistingCallFactory($conn, $table_name, ['\Drupal\cmrf_core\Call', 'createNew'], ['\Drupal\cmrf_core\Call', 'createWithRecord']);
     parent::__construct($factory);
