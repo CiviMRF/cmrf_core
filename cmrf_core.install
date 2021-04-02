@@ -1,5 +1,7 @@
 <?php
-require_once dirname(__FILE__).'/vendor/autoload.php';
+if (!class_exists('\CMRF\PersistenceLayer\SQLPersistingCallFactory')) {
+  require_once dirname(__FILE__) . '/vendor/autoload.php';
+}
 
 function cmrf_core_schema() {
   $array=array();
