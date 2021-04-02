@@ -12,25 +12,6 @@
         "issues": "https://github.com/CiviMRF/cmrf_core/issues",
         "source": "https://github.com/CiviMRF/cmrf_core"
     },
-    "repositories": [
-        {
-            "type": "package",
-            "package": {
-                "name": "CiviMRF/CMRF_Abstract_Core",
-                "version": "dev-master",
-                "source": {
-                    "url": "https://github.com/CiviMRF/CMRF_Abstract_Core.git",
-                    "type": "git",
-                    "reference": "master"
-                },
-                "autoload": {
-                    "psr-0": {
-                        "CMRF": ""
-                    }
-                }
-            }
-        }
-    ],
     "require": {
         "civimrf/cmrf_abstract_core": "dev-master",
         "mossadal/math-parser": "dev-master"
