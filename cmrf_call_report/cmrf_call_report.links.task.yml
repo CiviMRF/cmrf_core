@@ -1,0 +1,9 @@
+cmrf_call_repeort.view_calls:
+  title: 'View'
+  route_name: view.cmrf_calls.page_1
+  base_route: view.cmrf_calls.page_1
+cmrf_call_repeort.purge_calls:
+  title: 'Delete'
+  route_name: cmrf_call_report.purge
+  base_route: view.cmrf_calls.page_1
+

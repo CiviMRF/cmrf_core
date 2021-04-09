@@ -1,8 +1,14 @@
-
 cmrf_call_report.view_call:
   path: '/admin/reports/cmrfcalls/{cid}'
   defaults:
     _controller: '\Drupal\cmrf_call_report\Controller\CMRFCallreportController::viewCall'
     _title: 'viewCall'
+  requirements:
+    _permission: 'access site reports'
+cmrf_call_report.purge:
+  path: '/admin/reports/cmrfcalls/purge'
+  defaults:
+    _form: '\Drupal\cmrf_call_report\Form\CMRFCallreportPurgeForm'
+    _title: 'Purge the CMRF Call history'
   requirements:
     _permission: 'access site reports'
