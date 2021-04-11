@@ -32,7 +32,8 @@ use Drupal\Core\Config\Entity\ConfigEntityBase;
  *     "label",
  *     "url",
  *     "site_key",
- *     "api_key"
+ *     "api_key",
+ *     "cache_expire_days",
  *   },
  *   links = {
  *     "canonical" = "/admin/config/cmrf_profile/{cmrf_profile}",
@@ -81,5 +82,12 @@ class CMRFProfile extends ConfigEntityBase implements CMRFProfileInterface {
    * @var string
    */
   public $api_key;
+  /**
+   * The time that the messages in the call log are stored before they are
+   * deleted.
+   *
+   * @var string
+   */
+  public $cache_expire_days;
 
 }

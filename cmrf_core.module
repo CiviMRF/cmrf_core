@@ -16,3 +16,9 @@ function cmrf_core_cache_flush() {
   $core = Drupal::service('cmrf_core.core');
   $core->getFactory()->purgeCachedCalls();
 }
+
+function cmrf_core_cron() {
+  /** @var \Drupal\cmrf_core\Core $core */
+  $core = Drupal::service('cmrf_core.core');
+  $core->getFactory()->purgeCachedCalls();
+}

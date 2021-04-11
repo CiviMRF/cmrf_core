@@ -1,7 +1,6 @@
 <?php namespace Drupal\cmrf_core;
 
 use CMRF\Core\Core as AbstractCore;
-use CMRF\PersistenceLayer\SQLPersistingCallFactory;
 use Drupal\cmrf_core\Entity\CMRFConnector;
 use Drupal\cmrf_core\Entity\CMRFProfile;
 
@@ -13,7 +12,8 @@ class Core extends AbstractCore {
     $db         = \Drupal::database()->getConnectionOptions();
     $table_name = trim(\Drupal::database()->prefixTables("{civicrm_api_call}"), '"');
     $conn       = new \mysqli($db['host'], $db['username'], $db['password'], $db['database'], empty($db['port']) ? NULL : $db['port']);
-    $factory    = new SQLPersistingCallFactory($conn, $table_name, ['\Drupal\cmrf_core\Call', 'createNew'], ['\Drupal\cmrf_core\Call', 'createWithRecord']);
+    $factory    = new CallFactory($conn, $table_name, ['\Drupal\cmrf_core\Call', 'createNew'], ['\Drupal\cmrf_core\Call', 'createWithRecord']);
+    $factory->setCore($this);
     parent::__construct($factory);
   }
 
@@ -46,6 +46,7 @@ class Core extends AbstractCore {
         'url'      => $entity->url,
         'api_key'  => $entity->api_key,
         'site_key' => $entity->site_key,
+        'cache_expire_days' => $entity->cache_expire_days,
       ];
     }
     return $return;
