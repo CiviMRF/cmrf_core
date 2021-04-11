@@ -1,6 +1,9 @@
-# Version 1.3-dev
+# Version 1.4-dev
 
 * added CHANGELOG.md file
+* Cron deletes all calls after a number of days (configure this on the profile)
+* Cron deletes the calls that are DONE
+* Added a delete option to the CRMR Calls report 
 * Drupal 9 compatibility - replace deprecated \Drupal::url 
 * documented composer only installation in the README.md
 * made local autoload conditional, enabling using the global autoload
