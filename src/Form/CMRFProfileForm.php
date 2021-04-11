@@ -3,7 +3,6 @@
 use Drupal\cmrf_core\Entity\CMRFProfile;
 use Drupal\Core\Entity\EntityForm;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\Core\Messenger\Messenger;
 
 /**
  * Class CMRFProfileForm.
@@ -60,6 +59,14 @@ class CMRFProfileForm extends EntityForm {
       '#default_value' => $cmrf_profile->api_key,
       '#maxlength'     => 255,
       '#description'   => $this->t('The api key of your civicrm installation.'),
+      '#required'      => TRUE,
+    ];
+
+    $form['cache_expire_days'] = [
+      '#type'          => 'textfield',
+      '#title'         => $this->t('Cache Expire'),
+      '#default_value' => $cmrf_profile->cache_expire_days ?? 0,
+      '#description'   => $this->t('Days that must be passed after wich the call log is purged.'),
       '#required'      => TRUE,
     ];
 
