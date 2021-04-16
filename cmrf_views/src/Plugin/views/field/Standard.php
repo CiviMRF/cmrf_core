@@ -2,6 +2,7 @@
 
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\views\Plugin\views\display\DisplayPluginBase;
+use Drupal\views\Plugin\views\field\MultiItemsFieldHandlerInterface;
 use Drupal\views\ResultRow;
 use Drupal\views\ViewExecutable;
 
@@ -12,9 +13,11 @@ use Drupal\views\ViewExecutable;
  *
  * @ViewsField("cmrf_views_standard")
  */
-class Standard extends \Drupal\views\Plugin\views\field\Standard {
+class Standard extends \Drupal\views\Plugin\views\field\Standard implements MultiItemsFieldHandlerInterface {
 
-  use MultiItemsFieldHandler;
+  use MultiItemsFieldHandler {
+    getItems as MultiItemsFieldHandler_getItems;
+  }
 
   /**
    * @inheritDoc
@@ -37,6 +40,16 @@ class Standard extends \Drupal\views\Plugin\views\field\Standard {
    */
   public function defineOptions() {
     return parent::defineOptions() + $this->defineMultipleOptions();
+  }
+
+  /**
+   * @inheritDoc
+   */
+  public function getItems(ResultRow $values) {
+    if (!is_array($values->{$this->field_alias})) {
+      $values->{$this->field_alias} = [$values->{$this->field_alias}];
+    }
+    return $this->MultiItemsFieldHandler_getItems($values);
   }
 
   /**

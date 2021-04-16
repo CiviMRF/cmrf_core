@@ -15,7 +15,9 @@ use Drupal\views\ViewExecutable;
  */
 class OptionList extends \Drupal\views\Plugin\views\field\Standard implements MultiItemsFieldHandlerInterface {
 
-  use MultiItemsFieldHandler;
+  use MultiItemsFieldHandler {
+    getItems as MultiItemsFieldHandler_getItems;
+  }
 
   /**
    * @inheritDoc
@@ -38,6 +40,16 @@ class OptionList extends \Drupal\views\Plugin\views\field\Standard implements Mu
    */
   public function defineOptions() {
     return parent::defineOptions() + $this->defineMultipleOptions();
+  }
+
+  /**
+   * @inheritDoc
+   */
+  public function getItems(ResultRow $values) {
+    if (!is_array($values->{$this->field_alias})) {
+      $values->{$this->field_alias} = [$values->{$this->field_alias}];
+    }
+    return $this->MultiItemsFieldHandler_getItems($values);
   }
 
   public function getValue(ResultRow $values, $field = NULL) {
