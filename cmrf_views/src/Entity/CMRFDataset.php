@@ -41,9 +41,6 @@ class CMRFDataset extends ConfigEntityBase implements CMRFDatasetInterface {
 
   public function __construct(array $values, $entity_type) {
     parent::__construct($values, $entity_type);
-    if (($this->params = json_decode($values['params'], TRUE)) === FALSE) {
-      $this->params = [];
-    }
   }
 
 }
