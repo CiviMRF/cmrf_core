@@ -462,6 +462,10 @@ class CMRFViews {
     $return = [];
     foreach (CMRFDataset::loadMultiple() as $dataset_id => $dataset) {
       $return[$dataset_id] = $dataset->toArray();
+      $return[$dataset_id]['params'] = json_decode($return[$dataset_id]['params'], TRUE);
+      if ($return[$dataset_id]['params'] === FALSE) {
+        $return[$dataset_id]['params'] = [];
+      }
     }
     return $return;
   }
