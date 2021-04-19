@@ -24,7 +24,7 @@ class CallFactory extends SQLPersistingCallFactory {
       if ($profile['cache_expire_days'] > 0) {
         $today = new \DateTime();
         $today->modify('-'.$profile['cache_expire_days'].' days');
-        $sql = "delete from {$this->table_name} where DATE(`create_date`) < '".$today->format('Y-m-d')."' AND `connector_id` = '".$connector."'";
+        $sql = "delete from {$this->table_name} where DATE(`create_date`) < '".$today->format('Y-m-d')."' AND `connector_id` = '".$connector_id."'";
         \Drupal::database()->query($sql);
       }
     }
