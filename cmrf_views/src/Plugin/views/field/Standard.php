@@ -1,6 +1,10 @@
 <?php namespace Drupal\cmrf_views\Plugin\views\field;
 
+use Drupal\Core\Form\FormStateInterface;
+use Drupal\views\Plugin\views\display\DisplayPluginBase;
+use Drupal\views\Plugin\views\field\MultiItemsFieldHandlerInterface;
 use Drupal\views\ResultRow;
+use Drupal\views\ViewExecutable;
 
 /**
  * Default implementation of the base field plugin.
@@ -9,7 +13,44 @@ use Drupal\views\ResultRow;
  *
  * @ViewsField("cmrf_views_standard")
  */
-class Standard extends \Drupal\views\Plugin\views\field\Standard {
+class Standard extends \Drupal\views\Plugin\views\field\Standard implements MultiItemsFieldHandlerInterface {
+
+  use MultiItemsFieldHandler {
+    getItems as MultiItemsFieldHandler_getItems;
+  }
+
+  /**
+   * @inheritDoc
+   */
+  public function init(ViewExecutable $view, DisplayPluginBase $display, array &$options = NULL) {
+    parent::init($view, $display, $options);
+    $this->initMultiple($view, $display, $options);
+  }
+
+  /**
+   * @inheritDoc
+   */
+  public function buildOptionsForm(&$form, FormStateInterface $form_state) {
+    parent::buildOptionsForm($form, $form_state);
+    $this->buildMultipleOptionsForm($form, $form_state);
+  }
+
+  /**
+   * @inheritDoc
+   */
+  public function defineOptions() {
+    return parent::defineOptions() + $this->defineMultipleOptions();
+  }
+
+  /**
+   * @inheritDoc
+   */
+  public function getItems(ResultRow $values) {
+    if (!is_array($values->{$this->field_alias})) {
+      $values->{$this->field_alias} = [$values->{$this->field_alias}];
+    }
+    return $this->MultiItemsFieldHandler_getItems($values);
+  }
 
   /**
    * {@inheritdoc}
