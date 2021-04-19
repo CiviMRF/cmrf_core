@@ -94,7 +94,7 @@ class CMRFDatasetForm extends EntityForm {
       '#type'          => 'textarea',
       '#title'         => t('API Parameters'),
       '#description'   => t('Enter the api parameters in JSON format. E.g. {"contact_sub_type": "Student", "is_deleted": "0", "is_deceased": "0"}'),
-      '#default_value' => empty($entity->params) ? NULL : json_encode($entity->params, JSON_PRETTY_PRINT),
+      '#default_value' => empty($entity->params) ? NULL : $entity->params,
       '#required'      => FALSE,
     ];
 
