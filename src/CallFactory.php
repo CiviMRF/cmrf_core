@@ -11,20 +11,23 @@ class CallFactory extends SQLPersistingCallFactory {
    * @var \Drupal\cmrf_core\Core;
    */
   private $core;
+
   protected $table_name;
 
   public function __construct($sql_connection, $table_name, $constructor, $loader) {
-    parent::__construct($sql_connection, $table_name,$constructor,$loader);
+    parent::__construct($sql_connection, $table_name, $constructor, $loader);
   }
 
   public function purgeCachedCalls() {
     parent::purgeCachedCalls();
-    foreach($this->core->getConnectors() as $connector){
-      $profile = $this->core->getConnectionProfile($connector);
+    foreach ($this->core->getConnectors() as $connector_id => $connector) {
+      $profile = $this->core->getConnectionProfile($connector_id);
       if ($profile['cache_expire_days'] > 0) {
         $today = new \DateTime();
-        $today->modify('-'.$profile['cache_expire_days'].' days');
-        $sql = "delete from {$this->table_name} where DATE(`create_date`) < '".$today->format('Y-m-d')."' AND `connector_id` = '".$connector."'";
+        $today->modify('-' . $profile['cache_expire_days'] . ' days');
+        $sql = "DELETE from {$this->table_name}"
+          . " WHERE DATE(`create_date`) < '" . $today->format('Y-m-d') . "'"
+          . " AND `connector_id` = '" . $connector_id . "'";
         \Drupal::database()->query($sql);
       }
     }
