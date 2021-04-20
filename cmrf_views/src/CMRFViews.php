@@ -1,5 +1,6 @@
 <?php namespace Drupal\cmrf_views;
 
+use Drupal;
 use Drupal\cmrf_core\Call;
 use Drupal\cmrf_core\Core;
 use Drupal\cmrf_views\Entity\CMRFDataset;
@@ -108,9 +109,7 @@ class CMRFViews {
 
       // Set the parameters from the dataset params options.
       if (!empty($dataset['params'])) {
-        foreach ($dataset['params'] as $key => $value) {
-          $dataset['params'][$key] = \Drupal::token()->replace($value);
-        }
+        array_walk_recursive($dataset['params'], ['Drupal\cmrf_views\CMRFViews', 'tokenReplace']);
       }
 
       // API Call to retrieve the fields.
@@ -475,6 +474,19 @@ class CMRFViews {
       }
     }
     return $return;
+  }
+
+  /**
+   * Replace tokens in a given value.
+   *
+   * @param string $value
+   *   The value wich to replace tokens in.
+   *
+   * @param string
+   *   The value with tokens replaced.
+   */
+  public static function tokenReplace(&$value) {
+    $value = Drupal::token()->replace($value);
   }
 
 }
