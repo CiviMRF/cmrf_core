@@ -172,7 +172,7 @@ class CMRFViews {
             $views_fields[$field_name] = $this->getMarkupField($field_prop);
             break;
           case 2: // String field
-            if ($field_prop['format'] == 'json') {
+            if (!empty($field_prop['format']) && $field_prop['format'] == 'json') {
               $views_fields[$field_name] = $this->getJSONField($field_prop);
               break;
             }
