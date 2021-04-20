@@ -46,6 +46,9 @@ class Standard extends \Drupal\views\Plugin\views\field\Standard implements Mult
    * @inheritDoc
    */
   public function getItems(ResultRow $values) {
+    if (!isset($values->{$this->field_alias})) {
+      $values->{$this->field_alias} = [];
+    }
     if (!is_array($values->{$this->field_alias})) {
       $values->{$this->field_alias} = [$values->{$this->field_alias}];
     }
