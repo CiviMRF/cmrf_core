@@ -1,5 +1,6 @@
 <?php namespace Drupal\cmrf_views\Plugin\views\query;
 
+use Drupal;
 use Drupal\cmrf_core\Call;
 use Drupal\cmrf_core\Core;
 use Drupal\cmrf_views\CMRFViewsResultRow;
@@ -215,9 +216,9 @@ class API extends QueryPluginBase {
 
       // Set the parameters from the dataset params options.
       if (!empty($dataset_params)) {
-        foreach ($dataset_params as $key => $value) {
-          $parameters[$key] = \Drupal::token()->replace($value);
-        }
+        // Replace tokens recursively.
+        array_walk_recursive($dataset_params, ['self', 'tokenReplace']);
+        $parameters = array_merge($parameters, $dataset_params);
       }
 
       // Count options.
@@ -512,6 +513,10 @@ class API extends QueryPluginBase {
     //   This might become a generic helper method for preparing API parameters
     //   from a view's filters and sorts.
     return $parameters;
+  }
+
+  public static function tokenReplace(&$value) {
+    $value = Drupal::token()->replace($value);
   }
 
 }
