@@ -177,6 +177,7 @@ class API extends QueryPluginBase {
             continue;
           }
           foreach ($where_group['conditions'] as $condition) {
+            $original_field_name = $table_data[$condition['field']]['cmrf_original_definition']['name'];
             switch ($condition['operator']) {
               case '>':
               case '>=':
@@ -187,16 +188,16 @@ class API extends QueryPluginBase {
               case 'NOT BETWEEN':
               case 'LIKE':
               case 'NOT LIKE':
-                $parameters[$condition['field']] = [$condition['operator'] => $condition['value']];
+                $parameters[$original_field_name] = [$condition['operator'] => $condition['value']];
                 break;
               case 'in':
-                $parameters[$condition['field']] = ['IN' => $condition['value']];
+                $parameters[$original_field_name] = ['IN' => $condition['value']];
                 break;
               case 'not in':
-                $parameters[$condition['field']] = ['NOT IN' => $condition['value']];
+                $parameters[$original_field_name] = ['NOT IN' => $condition['value']];
                 break;
               default:
-                $parameters[$condition['field']] = $condition['value'];
+                $parameters[$original_field_name] = $condition['value'];
                 break;
             }
           }
