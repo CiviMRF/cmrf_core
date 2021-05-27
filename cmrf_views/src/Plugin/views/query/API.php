@@ -5,6 +5,7 @@ use Drupal\cmrf_core\Call;
 use Drupal\cmrf_core\Core;
 use Drupal\cmrf_views\CMRFViewsResultRow;
 use Drupal\cmrf_views\Entity\CMRFDataset;
+use Drupal\views\Plugin\views\field\FieldPluginBase;
 use Drupal\views\Plugin\views\query\QueryPluginBase;
 use Drupal\views\ResultRow;
 use Drupal\views\ViewExecutable;
@@ -169,7 +170,7 @@ class API extends QueryPluginBase {
 
       // Set the return fields
       $parameters['return'] = array_unique(array_map(
-        function(Drupal\views\Plugin\views\field\FieldPluginBase $field) {
+        function(FieldPluginBase $field) {
           return $field->realField;
         },
         $view->field
