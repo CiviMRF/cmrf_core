@@ -168,7 +168,12 @@ class API extends QueryPluginBase {
       $start      = microtime(TRUE);
 
       // Set the return fields
-      $parameters['return'] = [];
+      $parameters['return'] = array_unique(array_map(
+        function(Drupal\views\Plugin\views\field\FieldPluginBase $field) {
+          return $field->realField;
+        },
+        $view->field
+      ));
 
       // Set the query parameters.
       if (!empty($this->where)) {
