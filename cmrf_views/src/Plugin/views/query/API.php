@@ -5,7 +5,6 @@ use Drupal\cmrf_core\Call;
 use Drupal\cmrf_core\Core;
 use Drupal\cmrf_views\CMRFViewsResultRow;
 use Drupal\cmrf_views\Entity\CMRFDataset;
-use Drupal\views\Plugin\views\field\FieldPluginBase;
 use Drupal\views\Plugin\views\query\QueryPluginBase;
 use Drupal\views\ResultRow;
 use Drupal\views\ViewExecutable;
@@ -169,12 +168,13 @@ class API extends QueryPluginBase {
       $start      = microtime(TRUE);
 
       // Set the return fields
-      $parameters['return'] = array_unique(array_map(
-        function(FieldPluginBase $field) {
-          return $field->realField;
-        },
-        $view->field
-      ));
+      $parameters['return'] = [];
+      foreach ($view->field as $field) {
+        $original_field_name = $table_data[$field->field]['cmrf_original_definition']['name'];
+        if ($original_field_name && !in_array($original_field_name, $parameters['return'])) {
+          $parameters['return'][] = $original_field_name;
+        }
+      }
 
       // Set the query parameters.
       if (!empty($this->where)) {
