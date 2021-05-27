@@ -170,9 +170,11 @@ class API extends QueryPluginBase {
       // Set the return fields
       $parameters['return'] = [];
       foreach ($view->field as $field) {
-        $original_field_name = $table_data[$field->field]['cmrf_original_definition']['name'];
-        if ($original_field_name && !in_array($original_field_name, $parameters['return'])) {
-          $parameters['return'][] = $original_field_name;
+        if (!empty($table_data[$field->field]['cmrf_original_definition']['name'])) {
+          $original_field_name = $table_data[$field->field]['cmrf_original_definition']['name'];
+          if (!in_array($original_field_name, $parameters['return'])) {
+            $parameters['return'][] = $original_field_name;
+          }
         }
       }
 
