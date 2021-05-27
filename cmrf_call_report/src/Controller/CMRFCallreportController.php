@@ -42,9 +42,9 @@ class CMRFCallreportController extends ControllerBase {
       $date = \Drupal::service('date.formatter')->format($date->getTimestamp());
       $status = $call->status;
       $profile = "";//$core->getConnectionProfile($call->connector_id);
-      $request = nl2br(json_encode(json_decode($call->request, true), JSON_PRETTY_PRINT));
-      $reply = nl2br(json_encode(json_decode($call->reply,true), JSON_PRETTY_PRINT));
-      $metadata = nl2br(json_encode(json_decode($call->metadata,true), JSON_PRETTY_PRINT));
+      $request = json_encode(json_decode($call->request, true), JSON_PRETTY_PRINT);
+      $reply = json_encode(json_decode($call->reply,true), JSON_PRETTY_PRINT);
+      $metadata = json_encode(json_decode($call->metadata,true), JSON_PRETTY_PRINT);
       $scheduled_date = '';
       if (!empty($call->scheduled_date)) {
         $scheduled_date = new \DateTime($call->scheduled_date);
@@ -77,11 +77,11 @@ class CMRFCallreportController extends ControllerBase {
         ],
         [
           ['data' => t('Request'), 'header' => TRUE],
-          ['data' => ['#markup' => $request]],
+          ['data' => ['#markup' => '<pre>' . $request . '</pre>']],
         ],
         [
           ['data' => t('Reply'), 'header' => TRUE],
-          ['data' => ['#markup' => $reply]],
+          ['data' => ['#markup' => '<pre>' . $reply . '</pre>']],
         ],
         [
           ['data' => t('Scheduled date'), 'header' => TRUE],
@@ -97,7 +97,7 @@ class CMRFCallreportController extends ControllerBase {
         ],
         [
           ['data' => t('Metadata'), 'header' => TRUE],
-          ['data' => [ '#markup' => $metadata]],
+          ['data' => [ '#markup' => '<pre>' . $metadata . '</pre>']],
         ],
       ];
 
