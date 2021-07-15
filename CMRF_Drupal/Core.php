@@ -22,7 +22,7 @@ class Core extends AbstractCore {
   protected $connections = array();
 
   public function __construct() {
-    $table_name = \Database::getConnection()->prefixTables("{cmrf_core_call}");
+    $table_name = 'cmrf_core_call';
     $factory = new SQLPersistingCallFactory($table_name, array('\CMRF\Drupal\Call','createNew'), array('\CMRF\Drupal\Call','createWithRecord'));
     parent::__construct($factory);
   }
