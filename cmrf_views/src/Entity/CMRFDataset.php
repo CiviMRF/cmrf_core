@@ -34,6 +34,11 @@ use Drupal\Core\Config\Entity\ConfigEntityBase;
  *     "edit-form" = "/admin/config/cmrf/dataset/{cmrf_dataset}/edit",
  *     "delete-form" = "/admin/config/cmrf/dataset/{cmrf_dataset}/delete",
  *     "collection" = "/admin/config/cmrf/dataset",
+ *   },
+ *   config_export = {
+ *     "id",
+ *     "label",
+ *     "uuid"
  *   }
  * )
  */
