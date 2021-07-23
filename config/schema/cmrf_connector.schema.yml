@@ -1,6 +1,6 @@
 cmrf_core.cmrf_connector.*:
   type: config_entity
-  label: 'CMRF connector config'
+  label: 'CiviMRF Connector'
   mapping:
     id:
       type: string

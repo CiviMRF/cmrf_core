@@ -1,6 +1,6 @@
-name: CMRF Core
+name: CiviMRF Core
 type: module
-description: CMRF CiviCRM REST Connection
+description: CiviMRF CiviCRM REST Connection
 core: 8.x
 core_version_requirement: ^8 || ^9
 package: CiviCRM

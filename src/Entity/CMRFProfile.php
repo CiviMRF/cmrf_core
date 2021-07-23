@@ -3,11 +3,11 @@
 use Drupal\Core\Config\Entity\ConfigEntityBase;
 
 /**
- * Defines the CMRF entity.
+ * Defines the CiviMRF Profile entity.
  *
  * @ConfigEntityType(
  *   id = "cmrf_profile",
- *   label = @Translation("CMRF profile"),
+ *   label = @Translation("CiviMRF Profile"),
  *   handlers = {
  *     "view_builder" = "Drupal\Core\Entity\EntityViewBuilder",
  *     "list_builder" = "Drupal\cmrf_core\CMRFProfileListBuilder",
@@ -36,11 +36,11 @@ use Drupal\Core\Config\Entity\ConfigEntityBase;
  *     "cache_expire_days",
  *   },
  *   links = {
- *     "canonical" = "/admin/config/cmrf_profile/{cmrf_profile}",
- *     "add-form" = "/admin/config/cmrf_profile/add",
- *     "edit-form" = "/admin/config/cmrf_profile/{cmrf_profile}/edit",
- *     "delete-form" = "/admin/config/cmrf_profile/{cmrf_profile}/delete",
- *     "collection" = "/admin/config/cmrf_profile"
+ *     "canonical" = "/admin/config/cmrf/profiles/manage/{cmrf_profile}",
+ *     "add-form" = "/admin/config/cmrf/profiles/add",
+ *     "edit-form" = "/admin/config/cmrf/profiles/manage/{cmrf_profile}/edit",
+ *     "delete-form" = "/admin/config/cmrf/profiles/manage/{cmrf_profile}/delete",
+ *     "collection" = "/admin/config/cmrf/profiles"
  *   }
  * )
  */
@@ -49,14 +49,14 @@ class CMRFProfile extends ConfigEntityBase implements CMRFProfileInterface {
   //TODO: we need to add the connection type (remote, local) to the entity
 
   /**
-   * The CMRF ID.
+   * The CiviMRF Profile ID.
    *
    * @var string
    */
   protected $id;
 
   /**
-   * The CMRF label.
+   * The CiviMRF Profile label.
    *
    * @var string
    */

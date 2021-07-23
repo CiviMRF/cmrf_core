@@ -81,13 +81,13 @@ class CMRFProfileForm extends EntityForm {
     $status       = $cmrf_profile->save();
     switch ($status) {
       case SAVED_NEW:
-        $this->messenger()->addMessage($this->t('Created the %label CMRF.', [
+        $this->messenger()->addMessage($this->t('Created the %label CiviMRF Profile.', [
           '%label' => $cmrf_profile->label(),
         ]));
         break;
 
       default:
-        $this->messenger()->addMessage($this->t('Saved the %label CMRF.', [
+        $this->messenger()->addMessage($this->t('Saved the %label CiviMRF Profile.', [
           '%label' => $cmrf_profile->label(),
         ]));
     }

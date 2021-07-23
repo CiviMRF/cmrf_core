@@ -3,11 +3,11 @@
 use Drupal\Core\Config\Entity\ConfigEntityBase;
 
 /**
- * Defines the CMRF dataset entity.
+ * Defines the CiviMRF Views Dataset entity.
  *
  * @ConfigEntityType(
  *   id = "cmrf_dataset",
- *   label = @Translation("CMRF Datasets for Views"),
+ *   label = @Translation("CiviMRF Views Dataset"),
  *   handlers = {
  *     "view_builder" = "Drupal\Core\Entity\EntityViewBuilder",
  *     "list_builder" = "Drupal\cmrf_views\CMRFDatasetListBuilder",
@@ -35,11 +35,11 @@ use Drupal\Core\Config\Entity\ConfigEntityBase;
  *     "params" = "params"
  *   },
  *   links = {
- *     "canonical" = "/admin/config/cmrf/dataset/{cmrf_dataset}",
- *     "add-form" = "/admin/config/cmrf/dataset/add",
- *     "edit-form" = "/admin/config/cmrf/dataset/{cmrf_dataset}/edit",
- *     "delete-form" = "/admin/config/cmrf/dataset/{cmrf_dataset}/delete",
- *     "collection" = "/admin/config/cmrf/dataset",
+ *     "canonical" = "/admin/config/cmrf/cmrf_views/datasets/manage/{cmrf_dataset}",
+ *     "add-form" = "/admin/config/cmrf/cmrf_views/datasets/add",
+ *     "edit-form" = "/admin/config/cmrf/cmrf_views/datasets/manage/{cmrf_dataset}/edit",
+ *     "delete-form" = "/admin/config/cmrf/cmrf_views/datasets/manage/{cmrf_dataset}/delete",
+ *     "collection" = "/admin/config/cmrf/cmrf_views/datasets",
  *   },
  *   config_export = {
  *     "id",

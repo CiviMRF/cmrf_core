@@ -10,11 +10,11 @@ use Drupal\cmrf_core\Entity\CMRFConnector;
 use RuntimeException;
 
 /**
- * Defines the Submission entity.
+ * Defines the CiviMRF Webform Submission entity.
  *
  * @ConfigEntityType(
  *   id = "cmrf_webform_submission",
- *   label = @Translation("CiviCRM Webform integration submission handler"),
+ *   label = @Translation("CiviMRF Webform Submission Handler"),
  *   handlers = {
  *     "list_builder" = "Drupal\cmrf_webform\Controller\CMRFWebformListBuilder",
  *     "form" = {
@@ -46,8 +46,8 @@ use RuntimeException;
  *     "action",
  *   },
  *   links = {
- *     "edit-form" = "/admin/config/system/cmrf_webform_submission/{cmrf_webform_submission}",
- *     "delete-form" = "/admin/config/system/cmrf_webform_submission/{cmrf_webform_submission}/delete",
+ *     "edit-form" = "/admin/config/cmrf/cmrf_webform/submissions/manage/{cmrf_webform_submission}",
+ *     "delete-form" = "/admin/config/cmrf/cmrf_webform/submissions/manage/{cmrf_webform_submission}/delete",
  *   }
  * )
  */

@@ -1,6 +1,7 @@
 system.civi_mrf:
-  path: '/admin/config/civi_mrf'
+  path: '/admin/config/cmrf'
   defaults:
-    _title: 'CiviMRF configuration options'
+    _title: 'CiviMRF configuration'
+    _controller: '\Drupal\system\Controller\SystemController::systemAdminMenuBlockPage'
   requirements:
     _permission: 'administer site configuration'

@@ -3,11 +3,11 @@
 use Drupal\Core\Config\Entity\ConfigEntityBase;
 
 /**
- * Defines the CMRF dataset relationship entity.
+ * Defines the CiviMRF Views Dataset Relationship entity.
  *
  * @ConfigEntityType(
  *   id = "cmrf_dataset_relationship",
- *   label = @Translation("CMRF Dataset Relationships for Views"),
+ *   label = @Translation("CiviMRF Views Dataset Relationship"),
  *   handlers = {
  *     "view_builder" = "Drupal\Core\Entity\EntityViewBuilder",
  *     "list_builder" = "Drupal\cmrf_views\CMRFDatasetRelationshipListBuilder",
@@ -32,11 +32,11 @@ use Drupal\Core\Config\Entity\ConfigEntityBase;
  *     "referencing_key" = "referencing_key",
  *   },
  *   links = {
- *     "canonical" = "/admin/config/cmrf/dataset/{cmrf_dataset}/relationship/{cmrf_dataset_relationship}",
- *     "add-form" = "/admin/config/cmrf/dataset/{cmrf_dataset}/relationship/add",
- *     "edit-form" = "/admin/config/cmrf/dataset/{cmrf_dataset}/relationship/{cmrf_dataset_relationship}/edit",
- *     "delete-form" = "/admin/config/cmrf/dataset/{cmrf_dataset}/relationship/{cmrf_dataset_relationship}/delete",
- *     "collection" = "/admin/config/cmrf/dataset/{cmrf_dataset}/relationship"
+ *     "canonical" = "/admin/config/cmrf/cmrf_views/datasets/manage/{cmrf_dataset}/relationships/manage/{cmrf_dataset_relationship}",
+ *     "add-form" =  "/admin/config/cmrf/cmrf_views/datasets/manage/{cmrf_dataset}/relationships/add",
+ *     "edit-form" = "/admin/config/cmrf/cmrf_views/datasets/manage/{cmrf_dataset}/relationships/manage/{cmrf_dataset_relationship}/edit",
+ *     "delete-form" = "/admin/config/cmrf/cmrf_views/datasets/manage/{cmrf_dataset}/relationships/manage/{cmrf_dataset_relationship}/delete",
+ *     "collection" = "/admin/config/cmrf/cmrf_views/datasets/manage/{cmrf_dataset}/relationships"
  *   },
  *   config_export = {
  *     "id",

@@ -22,21 +22,21 @@ abstract class CMRFManagerBase {
       $reply = $call->getReply();
 
       if (!empty($reply['is_error'])) {
-        throw new RuntimeException('CMRF API call returned error.' . $call->getStatus()  . ' - Meta: ' . json_encode($call->getMetadata()) . ' - Reply: ' . json_encode($call->getReply()));
+        throw new RuntimeException('CiviMRF API call returned error.' . $call->getStatus()  . ' - Meta: ' . json_encode($call->getMetadata()) . ' - Reply: ' . json_encode($call->getReply()));
       }
       if ($get === NULL) {
         return $reply;
       }
       else {
         if (!isset($reply[$get]) || !is_array($reply[$get])) {
-          throw new RuntimeException('Malformed CMRF API call response.' . $call->getStatus()  . ' - Meta: ' . json_encode($call->getMetadata()) . ' - Reply: ' . json_encode($call->getReply()));
+          throw new RuntimeException('Malformed CiviMRF API call response.' . $call->getStatus()  . ' - Meta: ' . json_encode($call->getMetadata()) . ' - Reply: ' . json_encode($call->getReply()));
         }
 
         return $reply[$get];
       }
     }
     else {
-      throw new RuntimeException("CMRF Api call was unsuccessful ($api_entity/$api_action) - " . $call->getStatus()  . ' - Meta: ' . json_encode($call->getMetadata()) . ' - Reply: ' . json_encode($call->getReply()) );
+      throw new RuntimeException("CiviMRF API call was unsuccessful ($api_entity/$api_action) - " . $call->getStatus()  . ' - Meta: ' . json_encode($call->getMetadata()) . ' - Reply: ' . json_encode($call->getReply()) );
     }
   }
 }

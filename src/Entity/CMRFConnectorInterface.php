@@ -3,7 +3,7 @@
 use Drupal\Core\Config\Entity\ConfigEntityInterface;
 
 /**
- * Provides an interface for defining CMRF connector entities.
+ * Provides an interface for defining CiviMRF Connector entities.
  */
 interface CMRFConnectorInterface extends ConfigEntityInterface {
 

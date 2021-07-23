@@ -1,6 +1,6 @@
-name: CMRF Webform
+name: CiviMRF Webform
 type: module
-description: CiviMRF webform integration module. Allows to submit a webform to the CiviCRM api.
+description: CiviMRF Webform integration module. Allows to submit a Webform to the CiviCRM API.
 core: 8.x
 core_version_requirement: ^8 || ^9
 package: CiviCRM

@@ -10,11 +10,11 @@ use Drupal\cmrf_core\Entity\CMRFConnector;
 use RuntimeException;
 
 /**
- * Defines the DefaultValue entity.
+ * Defines the CiviMRF Webform DefaultValue entity.
  *
  * @ConfigEntityType(
  *   id = "cmrf_webform_default_value",
- *   label = @Translation("CiviCRM Webform integration default value"),
+ *   label = @Translation("CiviMRF Webform Default Values"),
  *   handlers = {
  *     "list_builder" = "Drupal\cmrf_webform\Controller\CMRFWebformListBuilder",
  *     "form" = {
@@ -48,8 +48,8 @@ use RuntimeException;
  *     "options",
  *   },
  *   links = {
- *     "edit-form" = "/admin/config/system/cmrf_webform_default_value/{cmrf_webform_default_value}",
- *     "delete-form" = "/admin/config/system/cmrf_webform_default_value/{cmrf_webform_default_value}/delete",
+ *     "edit-form" = "/admin/config/cmrf/cmrf_webform/default_values/manage/{cmrf_webform_default_value}",
+ *     "delete-form" = "/admin/config/cmrf/cmrf_webform/default_values/manage/{cmrf_webform_default_value}/delete",
  *   }
  * )
  */

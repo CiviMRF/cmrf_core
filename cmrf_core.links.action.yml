@@ -1,11 +1,11 @@
 entity.cmrf_profile.add_form:
   route_name: entity.cmrf_profile.add_form
-  title: 'Add CMRF profile'
+  title: 'Add CiviMRF profile'
   appears_on:
     - entity.cmrf_profile.collection
 
 entity.cmrf_connector.add_form:
   route_name: entity.cmrf_connector.add_form
-  title: 'Add CMRF connector'
+  title: 'Add CiviMRF connector'
   appears_on:
     - entity.cmrf_connector.collection
