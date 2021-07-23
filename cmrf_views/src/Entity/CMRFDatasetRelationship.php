@@ -37,7 +37,16 @@ use Drupal\Core\Config\Entity\ConfigEntityBase;
  *     "edit-form" = "/admin/config/cmrf/dataset/{cmrf_dataset}/relationship/{cmrf_dataset_relationship}/edit",
  *     "delete-form" = "/admin/config/cmrf/dataset/{cmrf_dataset}/relationship/{cmrf_dataset_relationship}/delete",
  *     "collection" = "/admin/config/cmrf/dataset/{cmrf_dataset}/relationship"
- *   }
+ *   },
+ *   config_export = {
+ *     "id",
+ *     "label",
+ *     "uuid",
+ *     "referenced_dataset",
+ *     "referenced_key",
+ *     "referencing_dataset",
+ *     "referencing_key",
+ *   },
  * )
  */
 class CMRFDatasetRelationship extends ConfigEntityBase implements CMRFDatasetRelationshipInterface {
