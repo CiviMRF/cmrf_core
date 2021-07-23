@@ -2,6 +2,7 @@
 
 use Drupal\cmrf_core\Core;
 use Drupal\Component\Utility\Crypt;
+use Drupal\Core\File\FileSystemInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Link;
 use Drupal\Core\Site\Settings;
@@ -211,7 +212,7 @@ class File extends FieldPluginBase {
           $file_uri_path  = $uri_path . '/' . $attachment['id'] . '.' . $file['extension'];
           $file_real_path = $real_path . '/' . $attachment['id'] . '.' . $file['extension'];
           if (!file_exists($file_real_path)) {
-            system_retrieve_file($attachment['url'], $file_uri_path, FALSE, FILE_EXISTS_REPLACE);
+            system_retrieve_file($attachment['url'], $file_uri_path, FALSE, FileSystemInterface::EXISTS_REPLACE);
           }
           if (file_exists($file_real_path)) {
             // Load the image style.

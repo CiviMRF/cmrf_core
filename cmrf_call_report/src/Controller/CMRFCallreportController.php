@@ -2,6 +2,7 @@
 
 namespace Drupal\cmrf_call_report\Controller;
 
+use Drupal;
 use Drupal\Core\Controller\ControllerBase;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
@@ -48,7 +49,7 @@ class CMRFCallreportController extends ControllerBase {
       $scheduled_date = '';
       if (!empty($call->scheduled_date)) {
         $scheduled_date = new \DateTime($call->scheduled_date);
-        $scheduled_date = format_date($scheduled_date->getTimestamp());
+        $scheduled_date = Drupal::service('date.formatter')->format($scheduled_date->getTimestamp());
       }
       $caching_until = '';
       if (!empty($call->cached_until)) {
