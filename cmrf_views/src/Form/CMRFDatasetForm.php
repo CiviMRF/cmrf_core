@@ -99,9 +99,11 @@ class CMRFDatasetForm extends EntityForm {
     ];
 
     // Provide a token browser.
-    $form['token_tree'] = [
-      '#theme' => 'token_tree_link',
-    ];
+    if (\Drupal::moduleHandler()->moduleExists('token')) {
+      $form['token_tree'] = [
+        '#theme' => 'token_tree_link',
+      ];
+    }
 
     return $form;
   }
