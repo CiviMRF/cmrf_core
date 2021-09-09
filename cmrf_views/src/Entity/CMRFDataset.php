@@ -26,7 +26,13 @@ use Drupal\Core\Config\Entity\ConfigEntityBase;
  *   entity_keys = {
  *     "id" = "id",
  *     "label" = "label",
- *     "uuid" = "uuid"
+ *     "uuid" = "uuid",
+ *     "connector" = "connector",
+ *     "entity" = "entity",
+ *     "action" = "action",
+ *     "getcount" = "getcount",
+ *     "getfields" = "getfields",
+ *     "params" = "params"
  *   },
  *   links = {
  *     "canonical" = "/admin/config/cmrf/dataset/{cmrf_dataset}",
@@ -38,7 +44,13 @@ use Drupal\Core\Config\Entity\ConfigEntityBase;
  *   config_export = {
  *     "id",
  *     "label",
- *     "uuid"
+ *     "uuid",
+ *     "connector" = "connector",
+ *     "entity" = "entity",
+ *     "action" = "action",
+ *     "getcount" = "getcount",
+ *     "getfields" = "getfields",
+ *     "params" = "params"
  *   }
  * )
  */
