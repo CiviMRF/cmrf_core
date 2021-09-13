@@ -111,6 +111,15 @@ class CMRFDatasetForm extends EntityForm {
   /**
    * {@inheritdoc}
    */
+  public function validateForm(array &$form, FormStateInterface $form_state) {
+    if (json_decode($form_state->getValue('params')) === NULL) {
+      $form_state->setErrorByName('params', $this->t('Please enter valid JSON.'));
+    }
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function save(array $form, FormStateInterface $form_state) {
     $saved   = parent::save($form, $form_state);
     $context = ['@type'  => $this->entity->bundle(),
