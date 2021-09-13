@@ -5,7 +5,7 @@ use Drupal\Core\Config\Entity\ConfigEntityListBuilder;
 use Drupal\Core\Entity\EntityInterface;
 
 /**
- * Provides a listing of CMRF connector entities.
+ * Provides a listing of CiviMRF Connector entities.
  */
 class CMRFConnectorListBuilder extends ConfigEntityListBuilder {
 
@@ -13,9 +13,9 @@ class CMRFConnectorListBuilder extends ConfigEntityListBuilder {
    * {@inheritdoc}
    */
   public function buildHeader() {
-    $header['label']   = $this->t('CMRF connector');
+    $header['label']   = $this->t('CiviMRF Connector');
     $header['id']      = $this->t('Machine name');
-    $header['profile'] = $this->t('CMRF profile');
+    $header['profile'] = $this->t('CiviMRF Profile');
     $header['type']    = $this->t('Connecting module');
     return $header + parent::buildHeader();
   }

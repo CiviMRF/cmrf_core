@@ -12,12 +12,12 @@ use Drupal\views\ViewsData;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
- * CMRF CiviCRM views query plugin which wraps calls to the API in order to
+ * CiviMRF CiviCRM Views query plugin which wraps calls to the API in order to
  * expose the results to views.
  *
  * @ViewsQuery(
  *   id = "civicrm_api",
- *   title = @Translation("CMRF Views API"),
+ *   title = @Translation("CiviMRF CiviCRM API"),
  *   help = @Translation("Query against the CiviCRM API.")
  * )
  */

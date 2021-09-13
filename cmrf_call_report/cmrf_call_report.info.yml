@@ -1,6 +1,6 @@
-name: 'CMRF Call Report'
+name: 'CiviMRF Call Report'
 type: module
-description: 'Shows the CiviCRM Api calls in a report.'
+description: 'Shows the CiviCRM API calls in a report.'
 core: 8.x
 core_version_requirement: ^8 || ^9
 package: CiviCRM

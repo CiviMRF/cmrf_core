@@ -5,7 +5,7 @@ use Drupal\Core\Entity\EntityInterface;
 use Drupal\cmrf_views\Entity\CMRFDatasetRelationship;
 
 /**
- * Provides a listing of CMRF connector entities.
+ * Provides a listing of CiviMRF Connector entities.
  */
 class CMRFDatasetRelationshipListBuilder extends ConfigEntityListBuilder {
 

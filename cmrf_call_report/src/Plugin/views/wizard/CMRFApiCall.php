@@ -11,7 +11,7 @@ use Drupal\views\Plugin\views\wizard\WizardPluginBase;
  *   id = "civicrm_api_call",
  *   module = "cmrf_core",
  *   base_table = "civicrm_api_call",
- *   title = @Translation("CMRF Calls")
+ *   title = @Translation("CiviMRF Calls")
  * )
  */
 class CMRFApiCall extends WizardPluginBase {

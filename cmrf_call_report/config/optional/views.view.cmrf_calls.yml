@@ -687,8 +687,8 @@ display:
       path: admin/reports/cmrfcalls
       menu:
         type: normal
-        title: 'CMRF Calls'
-        description: 'CiviCRM Api Calls'
+        title: 'CiviMRF Calls'
+        description: 'CiviMRF API Calls'
         expanded: false
         parent: system.admin_reports
         weight: 0

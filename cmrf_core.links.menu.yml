@@ -5,16 +5,16 @@ system.civi_mrf:
   parent: system.admin_config
 
 entity.cmrf_profile.collection:
-  title: 'CMRF profiles'
+  title: 'CiviMRF Profiles'
   route_name: entity.cmrf_profile.collection
-  description: 'List and edit CMRF profiles'
+  description: 'List and edit CiviMRF Profiles'
   parent: system.civi_mrf
   weight: 98
 
 entity.cmrf_connector.collection:
-  title: 'CMRF connector'
+  title: 'CiviMRF Connectors'
   route_name: entity.cmrf_connector.collection
-  description: 'List and edit CMRF connectors'
+  description: 'List and edit CiviMRF Connectors'
   parent: system.civi_mrf
   weight: 99
 

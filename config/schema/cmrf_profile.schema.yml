@@ -1,6 +1,6 @@
 cmrf_core.cmrf_profile.*:
   type: config_entity
-  label: 'CMRF config'
+  label: 'CiviMRF Profile'
   mapping:
     id:
       type: string

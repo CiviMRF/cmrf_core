@@ -7,7 +7,7 @@ use \Drupal\Core\Url;
 use Drupal\cmrf_views\Entity\CMRFDataset;
 
 /**
- * Provides a listing of CMRF connector entities.
+ * Provides a listing of CiviMRF Connector entities.
  */
 class CMRFDatasetListBuilder extends ConfigEntityListBuilder {
 
@@ -15,7 +15,7 @@ class CMRFDatasetListBuilder extends ConfigEntityListBuilder {
    * {@inheritdoc}
    */
   public function buildHeader() {
-    $header['label'] = $this->t('CMRF Dataset');
+    $header['label'] = $this->t('CiviMRF Views Dataset');
     $header['id'] = $this->t('Machine name');
     $header['connector'] = $this->t('Connector');
     $header['entity'] = $this->t('Entity');

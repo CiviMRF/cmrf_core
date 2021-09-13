@@ -9,6 +9,6 @@ cmrf_call_report.purge:
   path: '/admin/reports/cmrfcalls/purge'
   defaults:
     _form: '\Drupal\cmrf_call_report\Form\CMRFCallreportPurgeForm'
-    _title: 'Purge the CMRF Call history'
+    _title: 'Purge the CiviMRF Call history'
   requirements:
     _permission: 'access site reports'

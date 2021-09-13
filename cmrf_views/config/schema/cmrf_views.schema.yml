@@ -1,6 +1,6 @@
 cmrf_views.cmrf_dataset.*:
   type: config_entity
-  label: 'CMRF dataset'
+  label: 'CiviMRF Views dataset'
   mapping:
     id:
       type: string
@@ -69,7 +69,7 @@ cmrf_views.cmrf_dataset_relationship.*:
 
 views.filter.cmrf_views_filter_optionlist:
   type: views_filter
-  label: 'CMRF Filter list'
+  label: 'CiviMRF Filter list'
   mapping:
     operator:
       type: string

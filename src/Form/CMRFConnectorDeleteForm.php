@@ -6,7 +6,7 @@ use Drupal\Core\Messenger\Messenger;
 use Drupal\Core\Url;
 
 /**
- * Builds the form to delete CMRF connector entities.
+ * Builds the form to delete CiviMRF Connector entities.
  */
 class CMRFConnectorDeleteForm extends EntityConfirmFormBase {
 

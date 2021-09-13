@@ -3,11 +3,11 @@
 use Drupal\Core\Config\Entity\ConfigEntityBase;
 
 /**
- * Defines the CMRF connector entity.
+ * Defines the CiviMRF Connector entity.
  *
  * @ConfigEntityType(
  *   id = "cmrf_connector",
- *   label = @Translation("CMRF connector"),
+ *   label = @Translation("CiviMRF Connector"),
  *   handlers = {
  *     "view_builder" = "Drupal\Core\Entity\EntityViewBuilder",
  *     "list_builder" = "Drupal\cmrf_core\CMRFConnectorListBuilder",
@@ -34,32 +34,32 @@ use Drupal\Core\Config\Entity\ConfigEntityBase;
  *     "profile"
  *   },
  *   links = {
- *     "canonical" = "/admin/config/cmrf_connector/{cmrf_connector}",
- *     "add-form" = "/admin/config/cmrf_connector/add",
- *     "edit-form" = "/admin/config/cmrf_connector/{cmrf_connector}/edit",
- *     "delete-form" = "/admin/config/cmrf_connector/{cmrf_connector}/delete",
- *     "collection" = "/admin/config/cmrf_connector"
+ *     "canonical" = "/admin/config/cmrf/connectors/manage/{cmrf_connector}",
+ *     "add-form" = "/admin/config/cmrf/connectors/add",
+ *     "edit-form" = "/admin/config/cmrf/connectors/manage/{cmrf_connector}/edit",
+ *     "delete-form" = "/admin/config/cmrf/connectors/manage/{cmrf_connector}/delete",
+ *     "collection" = "/admin/config/cmrf/connectors"
  *   }
  * )
  */
 class CMRFConnector extends ConfigEntityBase implements CMRFConnectorInterface {
 
   /**
-   * The CMRF connector ID.
+   * The CiviMRF Connector ID.
    *
    * @var string
    */
   protected $id;
 
   /**
-   * The CMRF connector label.
+   * The CiviMRF Connector label.
    *
    * @var string
    */
   protected $label;
 
   /**
-   * The referenced CMRF profile.
+   * The referenced CiviMRF Profile.
    *
    * @var string
    */

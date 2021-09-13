@@ -1,5 +1,5 @@
-# CMRF (Proof-of-Concept)
-CMRF is a CiviCRM remote integration toolkit. This repository is a **Drupal module** wrapping the core.
+# CiviMRF (Proof-of-Concept)
+CiviMRF is a CiviCRM remote integration toolkit. This repository is a **Drupal module** wrapping the core.
 
 # Install
 

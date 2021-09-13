@@ -1,8 +1,8 @@
 cmrf_views.clear_cache:
-  path: '/admin/config/cmrf/dataset/clear_cache'
+  path: '/admin/config/cmrf/cmrf_views/datasets/clear-cache'
   defaults:
     _controller: 'Drupal\cmrf_views\Controller\CMRFViewsController::invalidateViewsCache'
-    _title: 'Clear views cache'
+    _title: 'Clear Views data cache'
   options:
     _admin_route: TRUE
   requirements:

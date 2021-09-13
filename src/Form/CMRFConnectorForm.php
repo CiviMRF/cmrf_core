@@ -24,7 +24,7 @@ class CMRFConnectorForm extends EntityForm {
       '#title'         => $this->t('Label'),
       '#maxlength'     => 255,
       '#default_value' => $cmrf_connector->label(),
-      '#description'   => $this->t("Label for the CMRF connector."),
+      '#description'   => $this->t("Label for the CiviMRF Connector."),
       '#required'      => TRUE,
     ];
 
@@ -51,7 +51,7 @@ class CMRFConnectorForm extends EntityForm {
       '#options'       => $cmrf_connector->getAvailableProfiles(),
       '#title'         => $this->t('Profile'),
       '#default_value' => $cmrf_connector->profile,
-      '#description'   => $this->t('Name of the refrenced CMRF profile.'),
+      '#description'   => $this->t('Name of the referenced CiviMRF Profile.'),
       '#required'      => TRUE,
     ];
 
@@ -67,12 +67,12 @@ class CMRFConnectorForm extends EntityForm {
 
     switch ($status) {
       case SAVED_NEW:
-        $this->messenger()->addMessage($this->t('Created the %label CMRF connector.', [
+        $this->messenger()->addMessage($this->t('Created the %label CiviMRF Connector.', [
           '%label' => $cmrf_connector->label(),
         ]));
         break;
       default:
-        $this->messenger()->addMessage($this->t('Saved the %label CMRF connector.', [
+        $this->messenger()->addMessage($this->t('Saved the %label CiviMRF Connector.', [
           '%label' => $cmrf_connector->label(),
         ]));
     }

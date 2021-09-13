@@ -86,7 +86,7 @@ class CMRFDatasetRelationshipForm extends EntityForm {
       '%label' => $this->entity->label(),
       'link' => $this->entity->toLink($this->t('View'))->toString(),
     ];
-    $logger = $this->logger('CMRF Views');
+    $logger = $this->logger('cmrf_views');
     $t_args = [
       '@type' => $this->entity->label(),
       '%label' => $this->entity->toLink($this->entity->label())

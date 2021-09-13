@@ -18,7 +18,7 @@ function cmrf_webform_webform_options_alter(array &$options, array &$element, $o
     $id = substr($options_id, 5);
     $entity = OptionSet::load($id);
     if ($entity === NULL) {
-      Drupal::logger('cmrf_webform')->alert('CMRF webform OptionSet entity %id was not found', [
+      Drupal::logger('cmrf_webform')->alert('CiviMRF Webform OptionSet entity %id was not found', [
         '%id' => $id,
       ]);
     }
@@ -31,7 +31,7 @@ function cmrf_webform_webform_options_alter(array &$options, array &$element, $o
         }
       }
       catch (RuntimeException $e) {
-        Drupal::logger('cmrf_webform')->warning('CMRF webform update procedure was unsuccessful: %msg', [
+        Drupal::logger('cmrf_webform')->warning('CiviMRF Webform update procedure was unsuccessful: %msg', [
           '%msg' => $e->getMessage()
         ]);
       }
@@ -48,12 +48,12 @@ function cmrf_webform_webform_submission_insert(WebformSubmissionInterface $enti
     $service->executeSubmissionHandlers($entity);
   }
   catch (SubmissionException $e) {
-    Drupal::logger('cmrf_webform')->alert('CMRF Submission error: %msg', [
+    Drupal::logger('cmrf_webform')->alert('CiviMRF Webform Submission error: %msg', [
       '%msg' => $e->getMessage()
     ]);
   }
   catch (QueueException $e) {
-    Drupal::logger('cmrf_webform')->alert('CMRF Submission queueing error: %msg', [
+    Drupal::logger('cmrf_webform')->alert('CiviMRF Webform Submission queueing error: %msg', [
       '%msg' => $e->getMessage()
     ]);
   }
@@ -68,12 +68,12 @@ function cmrf_webform_cron() {
     $count = $service->executeQueuedSubmissionHandlers();
   }
   catch (SubmissionException $e) {
-    Drupal::logger('cmrf_webform')->alert('CMRF Submission error: %msg', [
+    Drupal::logger('cmrf_webform')->alert('CiviMRF Webform Submission error: %msg', [
       '%msg' => $e->getMessage()
     ]);
   }
   catch (QueueException $e) {
-    Drupal::logger('cmrf_webform')->alert('CMRF Submission queueing error: %msg', [
+    Drupal::logger('cmrf_webform')->alert('CiviMRF Webform Submission queueing error: %msg', [
       '%msg' => $e->getMessage()
     ]);
   }

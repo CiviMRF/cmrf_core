@@ -9,11 +9,11 @@ use Drupal\cmrf_core\Entity\CMRFConnector;
 use RuntimeException;
 
 /**
- * Defines the OptionSet entity.
+ * Defines the CiviMRF Webform OptionSet entity.
  *
  * @ConfigEntityType(
  *   id = "cmrf_webform_option_set",
- *   label = @Translation("CiviCRM Webform integration option set"),
+ *   label = @Translation("CiviMRF Webform Option Set"),
  *   handlers = {
  *     "list_builder" = "Drupal\cmrf_webform\Controller\CMRFWebformListBuilder",
  *     "form" = {
@@ -49,8 +49,8 @@ use RuntimeException;
  *     "last_cached",
  *   },
  *   links = {
- *     "edit-form" = "/admin/config/system/cmrf_webform_option_set/{cmrf_webform_option_set}",
- *     "delete-form" = "/admin/config/system/cmrf_webform_option_set/{cmrf_webform_option_set}/delete",
+ *     "edit-form" = "/admin/config/cmrf/cmrf_webform/option_sets/manage/{cmrf_webform_option_set}",
+ *     "delete-form" = "/admin/config/cmrf/cmrf_webform/option_sets/manage/{cmrf_webform_option_set}/delete",
  *   }
  * )
  */

@@ -29,7 +29,7 @@ class CMRFSubmissionsManager extends CMRFManagerBase {
   protected function queueApiQuery(WebformSubmissionInterface $submission, SubmissionInterface $entity) {
     $queue = $this->getQueue();
     if (!$queue->createItem(['submission' => $submission, 'handler' => $entity])) {
-      throw new QueueException("Couldn't add CMRF submission task to a queue");
+      throw new QueueException("Couldn't add CiviMRF Webform Submission task to a queue");
     }
   }
 

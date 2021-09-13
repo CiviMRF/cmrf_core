@@ -16,8 +16,8 @@ function cmrf_call_report_views_data() {
 
   $data['civicrm_api_call']['table']['base'] = [
     'field' => 'cid',
-    'title' => t('CMRF Calls'),
-    'help' => t('All the logged CMRF Api Calls'),
+    'title' => t('CiviMRF Calls'),
+    'help' => t('All the logged CiviMRF API Calls'),
   ];
   $data['civicrm_api_call']['cid'] = [
     'title' => t('CID'),
