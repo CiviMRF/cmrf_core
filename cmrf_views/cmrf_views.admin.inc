@@ -94,6 +94,12 @@ function cmrf_views_dataset_name_exists($value) {
   return $exists;
 }
 
+function cmrf_views_dataset_form_validate($form, &$form_state) {
+  if (json_decode($form_state['values']['params']) === NULL) {
+    form_set_error('params', t('Please enter valid JSON.'));
+  }
+}
+
 function cmrf_views_dataset_form_submit($form, &$form_state) {
   form_state_values_clean($form_state);
   $dataset = $form_state['values'];
