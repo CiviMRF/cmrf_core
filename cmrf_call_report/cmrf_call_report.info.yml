@@ -7,5 +7,3 @@ package: CiviCRM
 dependencies:
   - cmrf_core
   - cmrf_views
-
-version: 1.x-dev
