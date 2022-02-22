@@ -62,6 +62,9 @@ class OptionList extends \Drupal\views\Plugin\views\field\Standard implements Mu
     if (key_exists($key, $options)) {
       return $options[$key];
     }
+    elseif (in_array($key, $options)) {
+      return $key;
+    }
     else {
       // if the is not found show nothing
       return FALSE;
