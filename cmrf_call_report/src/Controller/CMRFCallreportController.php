@@ -19,11 +19,17 @@ class CMRFCallreportController extends ControllerBase {
   protected $database;
 
   /**
+   * @var \Drupal\cmrf_core\Core
+   */
+  protected $core;
+
+  /**
    * {@inheritdoc}
    */
   public static function create(ContainerInterface $container) {
     $instance = parent::create($container);
     $instance->database = $container->get('database');
+    $instance->core = $container->get('cmrf_core.core');
     return $instance;
   }
 
@@ -42,7 +48,7 @@ class CMRFCallreportController extends ControllerBase {
       $date = new \DateTime($call->create_date);
       $date = \Drupal::service('date.formatter')->format($date->getTimestamp());
       $status = $call->status;
-      $profile = "";//$core->getConnectionProfile($call->connector_id);
+      $profile = $this->core->getConnectionProfile($call->connector_id);
       $request = json_encode(json_decode($call->request, true), JSON_PRETTY_PRINT);
       $reply = json_encode(json_decode($call->reply,true), JSON_PRETTY_PRINT);
       $metadata = json_encode(json_decode($call->metadata,true), JSON_PRETTY_PRINT);
