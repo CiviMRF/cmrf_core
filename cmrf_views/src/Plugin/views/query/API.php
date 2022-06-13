@@ -159,7 +159,7 @@ class API extends QueryPluginBase {
       $api_action       = $table_data['table']['base']['action'];
       $api_count_action = $table_data['table']['base']['getcount'];
       $connector        = $table_data['table']['base']['connector'];
-      $dataset_params   = $table_data['table']['base']['params'];
+      $dataset_params   = $table_data['table']['base']['params'] ?? [];
       if (!is_array($dataset_params)) {
         $dataset_params = [];
       }
