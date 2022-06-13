@@ -36,6 +36,7 @@ class Call extends AbstractCall {
     if (isset($options['retry_interval'])) {
       $call->metadata['retry_interval'] = $options['retry_interval'];
     }
+    $options=$options ?? [];
     foreach ($options as $key => $val) {
       $call->metadata[$key] = $val;
     }
