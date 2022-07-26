@@ -5,6 +5,13 @@ cmrf_call_report.view_call:
     _title: 'viewCall'
   requirements:
     _permission: 'access site reports'
+cmrf_call_report.resubmit_call:
+  path: '/admin/reports/cmrfcalls/resubmit/{cid}'
+  defaults:
+    _controller: '\Drupal\cmrf_call_report\Controller\CMRFCallreportController::resubmit'
+    _title: 'resubmit'
+  requirements:
+    _permission: 'access site reports'
 cmrf_call_report.purge:
   path: '/admin/reports/cmrfcalls/purge'
   defaults:

@@ -4,7 +4,10 @@ namespace Drupal\cmrf_call_report\Controller;
 
 use Drupal;
 use Drupal\Core\Controller\ControllerBase;
+use Drupal\Core\Link;
+use Drupal\Core\Url;
 use Symfony\Component\DependencyInjection\ContainerInterface;
+use Symfony\Component\HttpFoundation\RedirectResponse;
 
 /**
  * Class CMRFCallreportController.
@@ -118,6 +121,30 @@ class CMRFCallreportController extends ControllerBase {
         ],
       ];
     }
+    $resubmitLink = new Link('Resubmit', Url::fromRoute('cmrf_call_report.resubmit_call',['cid' => $cid]));
+    $build['link'] = $resubmitLink->toRenderable();
+    $build['link']['#attributes'] = ['class' => ['button']];
     return $build;
   }
+
+  /**
+   * Resubmits an existing request (usefull of testing and failed messages)
+   * @param $cid
+   *
+   * @return \Symfony\Component\HttpFoundation\RedirectResponse
+   */
+  public function resubmit($cid){
+    $resubmitCall = $this->database->query('select * from {civicrm_api_call} where cid = :cid',[':cid' => $cid])->fetchObject();
+    if($resubmitCall) {
+      $request = json_decode($resubmitCall->request,true);
+      $entity = $request['entity']; unset($request['entity']);
+      $action = $request['action']; unset($request['action']);
+      $options = $request['options']; unset($request['options']);
+      $call = $this->core->createCall($resubmitCall->connector_id,$entity,$action,$request,$options);
+      $this->core->executeCall($call);
+    }
+    // and go to the newly created call
+    return new RedirectResponse(Url::fromRoute('cmrf_call_report.view_call',['cid' => $call->getID()])->toString());
+  }
+
 }
