@@ -12,7 +12,10 @@ cmrf_core.cmrf_profile.*:
       type: string
     url:
       type: string
-      label: 'URL'
+      label: 'URL APIv3'
+    urlV4:
+      type: string
+      label: 'URL APIv4'
     site_key:
       type: string
       label: 'Site key'

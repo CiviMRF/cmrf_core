@@ -1,6 +1,7 @@
 dependencies: {  }
 id: default
 label: default
-url: 'http://path/to/civicrm'
+url: 'https://example.org/civicrm/ajax/rest'
+urlV4: 'https://example.org/civicrm/ajax/api4'
 site_key: SITE_KEY
 api_key: API_KEY

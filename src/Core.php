@@ -44,6 +44,7 @@ class Core extends AbstractCore {
       $return[$entity->id()] = [
         'label'    => $entity->label(),
         'url'      => $entity->url,
+        'urlV4'    => $entity->urlV4,
         'api_key'  => $entity->api_key,
         'site_key' => $entity->site_key,
         'cache_expire_days' => $entity->cache_expire_days,
@@ -56,6 +57,7 @@ class Core extends AbstractCore {
     $entity = CMRFProfile::load('default');
     return [
       'url'      => $entity->url,
+      'urlV4'    => $entity->urlV4,
       'api_key'  => $entity->api_key,
       'site_key' => $entity->site_key,
     ];

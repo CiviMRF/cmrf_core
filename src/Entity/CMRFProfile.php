@@ -31,6 +31,7 @@ use Drupal\Core\Config\Entity\ConfigEntityBase;
  *     "id",
  *     "label",
  *     "url",
+ *     "urlV4",
  *     "site_key",
  *     "api_key",
  *     "cache_expire_days",
@@ -63,11 +64,18 @@ class CMRFProfile extends ConfigEntityBase implements CMRFProfileInterface {
   protected $label;
 
   /**
-   * The URL of the CiviCRM installation
+   * The URL of the CiviCRM APIv3 endpoint.
    *
    * @var string
    */
   public $url;
+
+  /**
+   * The URL of the CiviCRM APIv4 endpoint.
+   *
+   * @var string
+   */
+  public ?string $urlV4;
 
   /**
    * The site key for the CiviCRM installation
