@@ -38,9 +38,17 @@ class CMRFProfileForm extends EntityForm {
 
     $form['url'] = [
       '#type'          => 'url',
-      '#title'         => $this->t('URL'),
+      '#title'         => $this->t('URL APIv3'),
       '#default_value' => $cmrf_profile->url,
-      '#description'   => $this->t('The URL to your CiviCRM installation e.g. https://civi.my.site/sites/all/modules/civicrm/extern/rest.php.'),
+      '#description'   => $this->t('The URL to your CiviCRM APIv3 endpoint e.g. https://example.org/civicrm/ajax/rest'),
+      '#required'      => TRUE,
+    ];
+
+    $form['urlV4'] = [
+      '#type'          => 'url',
+      '#title'         => $this->t('URL APIv4'),
+      '#default_value' => $cmrf_profile->urlV4,
+      '#description'   => $this->t('The URL to your CiviCRM APIv4 endpoint e.g. https://example.org/civicrm/ajax/api4'),
       '#required'      => TRUE,
     ];
 
