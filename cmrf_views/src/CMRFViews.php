@@ -92,6 +92,10 @@ class CMRFViews {
       $base_data['table']['base']['params'] = $dataset['params'];
     }
 
+    if (!empty($dataset['api_version'])) {
+      $base_data['table']['base']['api_version'] = $dataset['api_version'];
+    }
+
     return $base_data;
   }
 
@@ -118,7 +122,9 @@ class CMRFViews {
         $dataset['entity'],
         $dataset['getfields'],
         ['api_action' => $dataset['action']] + $dataset['params'],
-        ['limit' => 0]
+        ['limit' => 0],
+        NULL,
+        $dataset['api_version']
       );
       $this->core->executeCall($call);
       if ($call->getStatus() != Call::STATUS_DONE) {
@@ -417,6 +423,8 @@ class CMRFViews {
    * @param $field_name
    *
    * @return array
+   *
+   * TODO: Method does not seem to be called from anywhere. Deprecate or remove?
    */
   private function fetchOptions($connector, $api_entity, $api_action, $field_name) {
 
@@ -427,6 +435,7 @@ class CMRFViews {
       'getoptions',
       ['field' => $field_name],
       ['limit' => 0, 'cache' => '5 minutes']
+      // TODO: API version from Dataset configuration.
     );
 
     // Execute call.
@@ -446,6 +455,7 @@ class CMRFViews {
       'getfields', // TODO: Use "getfields" property of the Dataset?
       ['api_action' => $api_action],
       ['limit' => 0]
+      // TODO: API version from Dataset configuration.
     );
 
     // Execute call.

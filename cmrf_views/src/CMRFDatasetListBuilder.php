@@ -20,6 +20,7 @@ class CMRFDatasetListBuilder extends ConfigEntityListBuilder {
     $header['connector'] = $this->t('Connector');
     $header['entity'] = $this->t('Entity');
     $header['action'] = $this->t('Action');
+    $header['api_version'] = $this->t('API version');
     return $header + parent::buildHeader();
   }
 
@@ -33,6 +34,7 @@ class CMRFDatasetListBuilder extends ConfigEntityListBuilder {
     $row['connector'] = $entity->connector;
     $row['entity'] = $entity->entity;
     $row['action'] = $entity->action;
+    $row['api_version'] = $entity->api_version;
     return $row + parent::buildRow($entity);
   }
 
