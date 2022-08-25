@@ -98,6 +98,15 @@ class CMRFDatasetForm extends EntityForm {
       '#required'      => FALSE,
     ];
 
+    $form['api_version'] = [
+      '#type'          => 'select',
+      '#title'         => t('API version'),
+      '#description'   => t('The API version the call should be made with.'),
+      '#options'       => [3 => '3', 4 => '4'],
+      '#default_value' => empty($entity->api_version) ? NULL : $entity->api_version,
+      '#required'      => TRUE,
+    ];
+
     // Provide a token browser.
     if (\Drupal::moduleHandler()->moduleExists('token')) {
       $form['token_tree'] = [

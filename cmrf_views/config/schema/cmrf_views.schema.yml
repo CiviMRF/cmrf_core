@@ -28,6 +28,9 @@ cmrf_views.cmrf_dataset.*:
     params:
       type: string
       label: 'API Parameters'
+    api_version:
+      type: integer
+      label: 'API version'
     relationships:
       type: sequence
       label: 'Relationships'

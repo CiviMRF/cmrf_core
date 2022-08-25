@@ -15,3 +15,17 @@ function cmrf_views_update_8001(&$sandbox) {
       return TRUE;
   });
 }
+
+/**
+ * Add new configuration option "API version" for Views Datasets.
+ */
+function cmrf_views_update_8002(&$sandbox) {
+  // Update the configuration entity type "cmrf_dataset".
+  \Drupal::classResolver(ConfigEntityUpdater::class)
+    ->update($sandbox, 'cmrf_dataset', function ($entity) {
+      // Set default value for all existing datasets.
+      $entity->set('api_version', 3);
+      // Return TRUE for saving the entity.
+      return TRUE;
+  });
+}

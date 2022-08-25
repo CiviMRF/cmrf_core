@@ -157,6 +157,7 @@ class API extends QueryPluginBase {
     if (!empty($table_data)) {
       $api_entity       = $table_data['table']['base']['entity'];
       $api_action       = $table_data['table']['base']['action'];
+      $api_version      = $table_data['table']['base']['api_version'];
       $api_count_action = $table_data['table']['base']['getcount'];
       $connector        = $table_data['table']['base']['connector'];
       $dataset_params   = $table_data['table']['base']['params'] ?? [];
@@ -235,7 +236,7 @@ class API extends QueryPluginBase {
       $options['limit'] = 0;
 
       // Count API call.
-      $call = $this->core->createCall($connector, $api_entity, $api_count_action, $parameters, $options);
+      $call = $this->core->createCall($connector, $api_entity, $api_count_action, $parameters, $options, NULL, $api_version);
       $this->core->executeCall($call);
       if ($call->getStatus() == Call::STATUS_DONE) {
         $result = $call->getReply();
@@ -261,7 +262,7 @@ class API extends QueryPluginBase {
       );
 
       // Data API call.
-      $call = $this->core->createCall($connector, $api_entity, $api_action, $parameters, $options);
+      $call = $this->core->createCall($connector, $api_entity, $api_action, $parameters, $options, NULL, $api_version);
       $this->core->executeCall($call);
       if ($call->getStatus() == Call::STATUS_DONE) {
         $result = $call->getReply();
@@ -317,7 +318,9 @@ class API extends QueryPluginBase {
             $referenced_dataset->entity,
             $referenced_dataset->action,
             $parameters,
-            $options
+            $options,
+            NULL,
+            $referenced_dataset->api_version
           );
           $this->core->executeCall($call);
           if ($call->getStatus() == Call::STATUS_DONE) {

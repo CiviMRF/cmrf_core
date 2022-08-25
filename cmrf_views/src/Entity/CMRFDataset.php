@@ -32,7 +32,8 @@ use Drupal\Core\Config\Entity\ConfigEntityBase;
  *     "action" = "action",
  *     "getcount" = "getcount",
  *     "getfields" = "getfields",
- *     "params" = "params"
+ *     "params" = "params",
+ *     "api_version" = "api_version"
  *   },
  *   links = {
  *     "canonical" = "/admin/config/cmrf/cmrf_views/datasets/manage/{cmrf_dataset}",
@@ -50,7 +51,8 @@ use Drupal\Core\Config\Entity\ConfigEntityBase;
  *     "action" = "action",
  *     "getcount" = "getcount",
  *     "getfields" = "getfields",
- *     "params" = "params"
+ *     "params" = "params",
+ *     "api_version" = "api_version"
  *   }
  * )
  */
