@@ -7,6 +7,10 @@ use CMRF\Core\Call as CallInterface;
 
 class Call extends AbstractCall {
 
+  protected string $request_entity;
+
+  protected string $request_action;
+
   protected array $request;
 
   protected ?array $reply = NULL;
@@ -76,16 +80,18 @@ class Call extends AbstractCall {
     // compile request
     if ('3' === $api_version) {
       $call->request = $call->compileRequest($parameters, $options);
+      $call->request['entity']     = $entity;
+      $call->request['action']     = $action;
     }
     else {
       $call->request = $parameters;
     }
-    $call->request['entity']     = $entity;
-    $call->request['action']     = $action;
+    $call->request_entity        = $entity;
+    $call->request_action        = $action;
     $call->request['version']    = $api_version;
     $call->status                = CallInterface::STATUS_INIT;
     $call->metadata['callbacks'] = $callbacks;
-    $call->callbacks = $callbacks;
+    $call->callbacks             = $callbacks;
 
     $call->initOptions($options);
 
@@ -135,11 +141,11 @@ class Call extends AbstractCall {
   }
 
   public function getEntity() {
-    return $this->request['entity'];
+    return $this->request_entity;
   }
 
   public function getAction() {
-    return $this->request['action'];
+    return $this->request_action;
   }
 
   public function getParameters() {
