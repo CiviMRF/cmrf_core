@@ -121,7 +121,7 @@ class CMRFViews {
         $dataset['connector'],
         $dataset['entity'],
         $dataset['getfields'],
-        ['api_action' => $dataset['action']] + $dataset['params'],
+        [($dataset['api_version'] == 4 ? 'action' : 'api_action') => $dataset['action']] + $dataset['params'],
         ['limit' => 0],
         NULL,
         $dataset['api_version']
