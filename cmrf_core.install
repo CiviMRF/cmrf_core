@@ -11,3 +11,26 @@ function cmrf_core_schema() {
   $array['civicrm_api_call'] = CallFactory::schema();
   return $array;
 }
+
+/**
+ * Add columns "entity" and "action" to the "civicrm_api_call" database table.
+ */
+function cmrf_core_update_8201(&$sandbox) {
+  $entity_field = array(
+    'description' => 'The CiviCRM API entity',
+    'type' => 'varchar',
+    'length' => 255,
+    'not null' => TRUE,
+    'default' => '',
+  );
+  \Drupal::database()->schema()->addField('civicrm_api_call', 'entity', $entity_field);
+
+  $action_field = array(
+    'description' => 'The CiviCRM API action',
+    'type' => 'varchar',
+    'length' => 255,
+    'not null' => TRUE,
+    'default' => '',
+  );
+  \Drupal::database()->schema()->addField('civicrm_api_call', 'action', $action_field);
+}
