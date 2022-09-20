@@ -117,11 +117,22 @@ class CMRFViews {
       }
 
       // API Call to retrieve the fields.
+      if ($dataset['api_version'] == 4) {
+        $parameters = [
+          'action' => $dataset['action'],
+          'loadOptions' => TRUE,
+        ];
+      }
+      else {
+        $parameters = [
+          'api_action' => $dataset['action'],
+        ];
+      }
       $call = $this->core->createCall(
         $dataset['connector'],
         $dataset['entity'],
         $dataset['getfields'],
-        [($dataset['api_version'] == 4 ? 'action' : 'api_action') => $dataset['action']] + $dataset['params'],
+        $parameters + $dataset['params'],
         ['limit' => 0],
         NULL,
         $dataset['api_version']
