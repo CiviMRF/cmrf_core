@@ -84,7 +84,7 @@ class Call extends AbstractCall {
       $call->request['action']     = $action;
     }
     elseif ('4' === $api_version) {
-      $call->request = $call->compileRequestApi4($parameters, $options);
+      $call->request = $parameters;
     }
     $call->request_entity        = $entity;
     $call->request_action        = $action;

@@ -16,12 +16,12 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  * expose the results to views.
  *
  * @ViewsQuery(
- *   id = "civicrm_api",
- *   title = @Translation("CiviMRF CiviCRM API"),
- *   help = @Translation("Query against the CiviCRM API.")
+ *   id = "civicrm_api4",
+ *   title = @Translation("CiviMRF CiviCRM APIv4"),
+ *   help = @Translation("Query against the CiviCRM APIv4.")
  * )
  */
-class API extends QueryPluginBase {
+class API4 extends QueryPluginBase {
 
   /**
    * @var \Drupal\cmrf_core\Core
@@ -158,7 +158,6 @@ class API extends QueryPluginBase {
       $api_entity       = $table_data['table']['base']['entity'];
       $api_action       = $table_data['table']['base']['action'];
       $api_version      = $table_data['table']['base']['api_version'];
-      $api_count_action = $table_data['table']['base']['getcount'];
       $connector        = $table_data['table']['base']['connector'];
       $dataset_params   = $table_data['table']['base']['params'] ?? [];
       if (!is_array($dataset_params)) {
@@ -169,12 +168,12 @@ class API extends QueryPluginBase {
       $start      = microtime(TRUE);
 
       // Set the return fields
-      $parameters['return'] = [];
+      $parameters['select'] = [];
       foreach ($view->field as $field) {
         if (!empty($table_data[$field->field]['cmrf_original_definition']['name'])) {
           $original_field_name = $table_data[$field->field]['cmrf_original_definition']['name'];
           if (!in_array($original_field_name, $parameters['return'])) {
-            $parameters['return'][] = $original_field_name;
+            $parameters['select'][] = $original_field_name;
           }
         }
       }
@@ -197,16 +196,16 @@ class API extends QueryPluginBase {
               case 'NOT BETWEEN':
               case 'LIKE':
               case 'NOT LIKE':
-                $parameters[$original_field_name] = [$condition['operator'] => $condition['value']];
+                $parameters['where'][] = [$original_field_name, $condition['operator'], $condition['value']];
                 break;
               case 'in':
-                $parameters[$original_field_name] = ['IN' => $condition['value']];
+                $parameters['where'][] = [$original_field_name, 'IN', $condition['value']];
                 break;
               case 'not in':
-                $parameters[$original_field_name] = ['NOT IN' => $condition['value']];
+                $parameters['where'][] = [$original_field_name, 'NOT IN', $condition['value']];
                 break;
               default:
-                $parameters[$original_field_name] = $condition['value'];
+                $parameters['where'][] = [$original_field_name, '=', $condition['value']];
                 break;
             }
           }
@@ -215,12 +214,8 @@ class API extends QueryPluginBase {
 
       // Do sorting
       if (!empty($this->orderby)) {
-        $options['sort'] = '';
         foreach ($this->orderby as $orderby) {
-          if (strlen($options['sort'])) {
-            $options['sort'] .= ', ';
-          }
-          $options['sort'] .= $orderby['field'] . ' ' . $orderby['direction'];
+          $parameters['orderBy'][$orderby['field']] = $orderby['direction'];
         }
       }
 
@@ -233,25 +228,24 @@ class API extends QueryPluginBase {
 
       // Count options.
       $options['cache'] = empty($view->query->options['cache']) ? NULL : $view->query->options['cache'];
-      $options['limit'] = 0;
 
       // Count API call.
-      $call = $this->core->createCall($connector, $api_entity, $api_count_action, $parameters, $options, NULL, $api_version);
+      $count_parameters = $parameters;
+      $count_parameters['select'] = ['row_count'];
+      $call = $this->core->createCall($connector, $api_entity, $api_action, $count_parameters, $options, NULL, $api_version);
       $this->core->executeCall($call);
       if ($call->getStatus() == Call::STATUS_DONE) {
         $result = $call->getReply();
-        if (!empty($result['result'])) {
-          $view->getPager()->total_items = $result['result'];
-          $view->total_rows              = $result['result'];
-        }
+        $view->getPager()->total_items = $result['countMatched'] ?? $result['count'];
+        $view->total_rows              = $result['countMatched'] ?? $result['count'];
       }
 
       // Update pager.
       $view->getPager()->updatePageInfo();
 
       // TODO: verify views cache.
-      $options['limit']  = $view->getPager()->getItemsPerPage();
-      $options['offset'] = $view->getCurrentPage() * $view->getPager()->getItemsPerPage();
+      $parameters['limit']  = $view->getPager()->getItemsPerPage();
+      $parameters['offset'] = $view->getCurrentPage() * $view->getPager()->getItemsPerPage();
 
       // View result init.
       $view->result = [];
@@ -288,6 +282,7 @@ class API extends QueryPluginBase {
         }
       }
 
+      // TODO: Adjust relationships for APIv4.
       foreach ($view->relationship as $field_name => $relationship) {
         $field_name = self::getFieldAlias($view->storage->get('base_table'), $field_name);
         $referenced_keys = [];
