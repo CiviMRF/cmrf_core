@@ -236,13 +236,24 @@ class API extends QueryPluginBase {
       $options['limit'] = 0;
 
       // Count API call.
-      $call = $this->core->createCall($connector, $api_entity, $api_count_action, $parameters, $options, NULL, $api_version);
+      $count_parameters = $parameters;
+      if ($api_version == 4) {
+        $count_parameters['return'] = ['row_count'];
+        $api_count_action = $api_action;
+      }
+      $call = $this->core->createCall($connector, $api_entity, $api_count_action, $count_parameters, $options, NULL, $api_version);
       $this->core->executeCall($call);
       if ($call->getStatus() == Call::STATUS_DONE) {
         $result = $call->getReply();
-        if (!empty($result['result'])) {
-          $view->getPager()->total_items = $result['result'];
-          $view->total_rows              = $result['result'];
+        switch ($api_version) {
+          case 3:
+            $view->getPager()->total_items = $result['result'] ?? NULL;
+            $view->total_rows              = $result['result'] ?? NULL;
+            break;
+          case 4:
+            $view->getPager()->total_items = $result['countMatched'] ?? $result['count'];
+            $view->total_rows              = $result['countMatched'] ?? $result['count'];
+            break;
         }
       }
 
