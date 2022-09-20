@@ -68,7 +68,7 @@ class CMRFViews {
       $base_data['table']['base']  = [
         'title'    => $dataset['label'],
         'help'     => $dataset['label'] . ' provided by CiviCRM API',
-        'query_id' => 'civicrm_api',
+        'query_id' => $dataset['api_version'] == 4 ? 'civicrm_api4' : 'civicrm_api',
       ];
     }
 
