@@ -231,6 +231,7 @@ class CMRFViews {
                 $views_fields[$field_name] = $this->getJSONField($field_prop);
                 break;
               }
+            // TODO: case 'Array'?
             // No "break" statement for other string types falling through.
             default: // Fallback standard field.
               $views_fields[$field_name] = $this->getStandardField($field_prop);
