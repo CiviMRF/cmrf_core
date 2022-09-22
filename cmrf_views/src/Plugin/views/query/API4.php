@@ -1,4 +1,6 @@
-<?php namespace Drupal\cmrf_views\Plugin\views\query;
+<?php
+
+namespace Drupal\cmrf_views\Plugin\views\query;
 
 use Drupal;
 use Drupal\cmrf_core\Call;
@@ -138,7 +140,7 @@ class API4 extends QueryPluginBase {
    *
    * @access protected
    *
-   * @see \Drupal\cmrf_views\Plugin\views\query\API::addField()
+   * @see \Drupal\cmrf_views\Plugin\views\query\API4::addField()
    */
   protected function getFieldAlias($table_alias, $field) {
     $field = str_replace('.', '__', $field);
@@ -250,11 +252,6 @@ class API4 extends QueryPluginBase {
       // View result init.
       $view->result = [];
 
-      $field_id_alias_mapping = array_combine(
-        array_keys($view->field),
-        array_column($view->field, 'field_alias')
-      );
-
       // Data API call.
       $call = $this->core->createCall($connector, $api_entity, $api_action, $parameters, $options, NULL, $api_version);
       $this->core->executeCall($call);
@@ -286,7 +283,7 @@ class API4 extends QueryPluginBase {
       foreach ($view->relationship as $field_name => $relationship) {
         $field_name = self::getFieldAlias($view->storage->get('base_table'), $field_name);
         $referenced_keys = [];
-        foreach ($view->result as $row_key => &$row) {
+        foreach ($view->result as $row) {
           if (isset($row->{$field_name})) {
             $referenced_keys[] = $row->{$field_name};
           }
@@ -330,7 +327,7 @@ class API4 extends QueryPluginBase {
                   }
                 }
                 // Add values to corresponding base rows.
-                foreach ($view->result as $row_key => &$row) {
+                foreach ($view->result as &$row) {
                   if (
                     isset($row->{$field_name})
                     && $row->{$field_name} == $relationship_result[$base_field_alias]
