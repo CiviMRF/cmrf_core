@@ -212,6 +212,7 @@ class CMRFViews {
           switch ($field_prop['data_type']) {
             case 'Int':
             case 'Integer':
+            case 'Float':
             case 'Money':
               $views_fields[$field_name] = $this->getNumericField($field_prop);
               break;
