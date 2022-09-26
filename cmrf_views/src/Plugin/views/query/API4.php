@@ -36,9 +36,9 @@ class API4 extends QueryPluginBase {
   private array $fields = [];
 
   /**
-   * @phpstan-var array{field: string, orderby: 'ASC'|'DESC'}
+   * @phpstan-var array<array{field: string, orderby: 'ASC'|'DESC'}>
    */
-  private array $orderby = [];
+  public array $orderby = [];
 
   /**
    * @var \Drupal\cmrf_core\Core
@@ -473,7 +473,7 @@ class API4 extends QueryPluginBase {
   }
 
   /**
-   * PHPDoc copied from \Drupal\views\Plugin\views\query\Sql
+   * PHPDoc copied from \Drupal\views\Plugin\views\query\Sql.
    *
    * Add an ORDER BY clause to the query.
    *
