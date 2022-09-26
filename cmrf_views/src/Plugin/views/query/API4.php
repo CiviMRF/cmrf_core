@@ -189,7 +189,7 @@ class API4 extends QueryPluginBase {
       foreach ($view->field as $field) {
         if (!empty($table_data[$field->field]['cmrf_original_definition']['name'])) {
           $original_field_name = $table_data[$field->field]['cmrf_original_definition']['name'];
-          if (!in_array($original_field_name, $parameters['return'])) {
+          if (!in_array($original_field_name, $parameters['select'])) {
             $parameters['select'][] = $original_field_name;
           }
         }
