@@ -161,6 +161,7 @@ class CMRFViews {
       foreach ($fields['values'] as $field_name => $field_prop) {
         $original_field_name = $field_name;
         $field_name = str_replace('.', '__', $field_name);
+        $field_prop['api.version'] = $apiVersion;
 
         // If we don't have a field type, set it to 0.
         if ($apiVersion == 3 && !isset($field_prop['type'])) {
@@ -301,7 +302,10 @@ class CMRFViews {
     }
 
     // If 'type' is 1024 (Money).
-    if ((!empty($prop['data_type'])) && ($prop['type'] == 1024)) {
+    if (
+      ($prop['api.version'] == 3 && !empty($prop['data_type']) && ($prop['type'] == 1024))
+      || ($prop['api.version'] == 4 && ($prop['data_type'] == 'Money' || $prop['data_type'] == 'Float'))
+    ) {
       $field['field']['float'] = TRUE;
     }
 
@@ -312,11 +316,20 @@ class CMRFViews {
         $field['filter']['id'] = 'cmrf_views_filter_optionlist';
         $field['filter']['options'] = $prop['options'];
       } else {
-        $field['filter']['id'] = ($prop['type'] == 1024) ? 'cmrf_views_filter_text' : 'cmrf_views_filter_numeric';
+        if (
+          ($prop['api.version'] == 3 && $prop['type'] == 1024)
+          || ($prop['api.version'] == 4 && ($prop['data_type'] == 'Money' || $prop['data_type'] == 'Float'))
+        ) {
+          $field['filter']['id'] = 'cmrf_views_filter_text';
+        }
+        else {
+          $field['filter']['id'] = 'cmrf_views_filter_numeric';
+        }
       }
     }
 
     // If 'data_type' is file.
+    // TODO: Adapt for APIv4
     if ((!empty($prop['data_type'])) && ($prop['data_type'] == 'File')) {
       $field['field']['id'] = 'cmrf_views_file';
     }
@@ -458,6 +471,7 @@ class CMRFViews {
     }
 
     // If 'data_type' is file.
+    // TODO: Adapt for APIv4
     if ((!empty($prop['data_type'])) && ($prop['data_type'] == 'File')) {
       $field['field']['id'] = 'cmrf_views_file';
     }
