@@ -26,6 +26,21 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 class API4 extends QueryPluginBase {
 
   /**
+   * @phpstan-var array<string, array<string, mixed>&array{
+   *   field: string,
+   *   table: string,
+   *   alias: string,
+   * }>
+   * Key is the field's alias.
+   */
+  private array $fields = [];
+
+  /**
+   * @phpstan-var array{field: string, orderby: 'ASC'|'DESC'}
+   */
+  private array $orderby = [];
+
+  /**
    * @var \Drupal\cmrf_core\Core
    */
   protected $core;
@@ -215,7 +230,7 @@ class API4 extends QueryPluginBase {
       }
 
       // Do sorting
-      if (!empty($this->orderby)) {
+      if ([] !== $this->orderby) {
         foreach ($this->orderby as $orderby) {
           $parameters['orderBy'][$orderby['field']] = $orderby['direction'];
         }
@@ -458,46 +473,42 @@ class API4 extends QueryPluginBase {
   }
 
   /**
+   * PHPDoc copied from \Drupal\views\Plugin\views\query\Sql
+   *
    * Add an ORDER BY clause to the query.
    *
-   * @param $table
+   * @param string|null $table
    *   The table this field is part of. If a formula, enter NULL.
-   *   If you want to orderby random use "rand" as table and nothing else.
-   * @param $field
+   *   If you want to order by random use "rand" as table and nothing else.
+   * @param string|null $field
    *   The field or formula to sort on. If already a field, enter NULL
    *   and put in the alias.
-   * @param $order
+   * @param string $order
    *   Either ASC or DESC.
-   * @param $alias
+   * @param string $alias
    *   The alias to add the field as. In SQL, all fields in the order by
    *   must also be in the SELECT portion. If an $alias isn't specified
    *   one will be generated for from the $field; however, if the
    *   $field is a formula, this alias will likely fail.
-   * @param $params
+   * @param array $params
    *   Any params that should be passed through to the addField.
    */
-  public function addOrderBy($table, $field = NULL, $order = 'ASC', $alias = '', $params = []) {
-    // Only ensure the table if it's not the special random key.
-    // @todo: Maybe it would make sense to just add an addOrderByRand or something similar.
-    if ($table && $table != 'rand') {
-      $this->ensureTable($table);
-    }
-
-    // Only fill out this aliasing if there is a table;
-    // otherwise we assume it is a formula.
-    if (!$alias && $table) {
-      $as = $table . '_' . $field;
-    }
-    else {
-      $as = $alias;
-    }
-
-    if ($field) {
-      $as = $this->addField($table, $field, $as, $params);
+  public function addOrderBy(
+    ?string $table,
+    ?string $field = NULL,
+    string $order = 'ASC',
+    string $alias = '',
+    array $params = []
+  ): void {
+    if (NULL === $field) {
+      $field = $this->getFieldByAlias($alias);
+      if (NULL === $field) {
+        // @todo is this a valid state or should we throw an exception?
+        return;
+      }
     }
 
     $this->orderby[] = [
-//      'field'     => $as, // We need the real field name for sorting via API.
       'field' => $field,
       'direction' => strtoupper($order),
     ];
@@ -517,6 +528,10 @@ class API4 extends QueryPluginBase {
     //   This might become a generic helper method for preparing API parameters
     //   from a view's filters and sorts.
     return $parameters;
+  }
+
+  protected function getFieldByAlias(string $alias): ?string {
+    return $this->fields[$alias]['field'] ?? NULL;
   }
 
 }
