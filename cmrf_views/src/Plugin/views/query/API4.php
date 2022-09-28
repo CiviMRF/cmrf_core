@@ -295,6 +295,8 @@ class API4 extends QueryPluginBase {
       }
 
       // TODO: Adjust relationships for APIv4.
+      //       This might use a different approach now that JOINs are possible
+      //       with APIv4.
       foreach ($view->relationship as $field_name => $relationship) {
         $field_name = self::getFieldAlias($view->storage->get('base_table'), $field_name);
         $referenced_keys = [];
