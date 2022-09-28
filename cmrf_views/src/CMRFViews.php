@@ -328,9 +328,11 @@ class CMRFViews {
       }
     }
 
-    // If 'data_type' is file.
-    // TODO: Adapt for APIv4
-    if ((!empty($prop['data_type'])) && ($prop['data_type'] == 'File')) {
+    // If 'input_type' is file.
+    if (
+      ($prop['api.version'] == 3 && !empty($prop['data_type']) && $prop['data_type'] == 'File')
+      || ($prop['api.version'] == 4 && !empty($prop['input_type']) && $prop['input_type'] == 'File')
+    ) {
       $field['field']['id'] = 'cmrf_views_file';
     }
 
@@ -421,6 +423,14 @@ class CMRFViews {
       }
     }
 
+    // If 'input_type' is file.
+    if (
+      ($prop['api.version'] == 3 && !empty($prop['data_type']) && $prop['data_type'] == 'File')
+      || ($prop['api.version'] == 4 && !empty($prop['input_type']) && $prop['input_type'] == 'File')
+    ) {
+      $field['field']['id'] = 'cmrf_views_file';
+    }
+
     return $field;
   }
 
@@ -470,9 +480,11 @@ class CMRFViews {
       }
     }
 
-    // If 'data_type' is file.
-    // TODO: Adapt for APIv4
-    if ((!empty($prop['data_type'])) && ($prop['data_type'] == 'File')) {
+    // If 'input_type' is file.
+    if (
+      ($prop['api.version'] == 3 && !empty($prop['data_type']) && $prop['data_type'] == 'File')
+      || ($prop['api.version'] == 4 && !empty($prop['input_type']) && $prop['input_type'] == 'File')
+    ) {
       $field['field']['id'] = 'cmrf_views_file';
     }
 
