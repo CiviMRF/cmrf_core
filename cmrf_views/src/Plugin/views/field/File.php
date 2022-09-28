@@ -172,21 +172,30 @@ class File extends FieldPluginBase {
           $this->core->executeCall($file);
           // Get reply.
           $attachment = $file->getReply();
-          // If we get an error, render fallback image.
-          if (!empty($attachment['is_error'])) {
-            return $this->renderFallbackImage();
+        }
+      }
+      elseif (is_string($value)) {
+        // The $value contains the URL.
+        $attachment = [
+          'url' => $value,
+          'id' => md5($value),
+          'name' => basename($value),
+        ];
+      }
+
+      // If we get an error, render fallback image.
+      if (!empty($attachment['is_error'])) {
+        return $this->renderFallbackImage();
+      }
+      // Check if we have necessary information to generate a link or save/show the file
+      if ((!empty($attachment['url'])) && (!empty($attachment['name']))) {
+        if (!empty($this->options['behaviour'])) {
+          // Save and show image.
+          if ($this->options['behaviour'] == 'image') {
+            return $this->getImage($attachment);
           }
-          // Check if we have necessary information to generate a link or save/show the file
-          if ((!empty($attachment['url'])) && (!empty($attachment['mime_type'])) && (!empty($attachment['name']))) {
-            if (!empty($this->options['behaviour'])) {
-              // Save and show image.
-              if ($this->options['behaviour'] == 'image') {
-                return $this->getImage($attachment);
-              }
-              // Show download link.
-              return $this->getDownloadLink($attachment);
-            }
-          }
+          // Show download link.
+          return $this->getDownloadLink($attachment);
         }
       }
     }
@@ -239,6 +248,9 @@ class File extends FieldPluginBase {
             }
             return $image_render;
           }
+          else {
+            return $this->renderFallbackImage();
+          }
         }
       }
     }
@@ -246,7 +258,7 @@ class File extends FieldPluginBase {
   }
 
   private function getDownloadLink($attachment = NULL) {
-    if ((!empty($attachment['url'])) && (!empty($attachment['mime_type'])) && (!empty($attachment['name']))) {
+    if ((!empty($attachment['url'])) && (!empty($attachment['name']))) {
       // Get drupal query string.
       $query_string = \Drupal::request()->query->all();
       // Generate salt and hash.
@@ -256,7 +268,9 @@ class File extends FieldPluginBase {
       if ((isset($query_string['civi_file_hash'])) && ($query_string['civi_file_hash'] == $hash)) {
         header('Content-Description: File Transfer');
         //header('Content-Type: application/octet-stream');
-        header('Content-Type: ' . $attachment['mime_type']);
+        if (!empty($attachment['mime_type'])) {
+          header('Content-Type: ' . $attachment['mime_type']);
+        }
         header('Content-Disposition: attachment; filename="' . $attachment['name'] . '"');
         header('Expires: 0');
         header('Cache-Control: must-revalidate');
