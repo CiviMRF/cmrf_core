@@ -36,7 +36,7 @@ class API4 extends QueryPluginBase {
   private array $fields = [];
 
   /**
-   * @phpstan-var array<array{field: string, orderby: 'ASC'|'DESC'}>
+   * @phpstan-var array<array{field: string, orderby: 'ASC'|'DESC', api: bool}>
    */
   public array $orderby = [];
 
@@ -232,7 +232,9 @@ class API4 extends QueryPluginBase {
       // Do sorting
       if ([] !== $this->orderby) {
         foreach ($this->orderby as $orderby) {
-          $parameters['orderBy'][$orderby['field']] = $orderby['direction'];
+          if ($orderby['api']) {
+            $parameters['orderBy'][$orderby['field']] = $orderby['direction'];
+          }
         }
       }
 
@@ -502,17 +504,16 @@ class API4 extends QueryPluginBase {
     string $alias = '',
     array $params = []
   ): void {
-    if (NULL === $field) {
-      $field = $this->getFieldByAlias($alias);
-      if (NULL === $field) {
-        // @todo is this a valid state or should we throw an exception?
-        return;
-      }
+    if ($table != 'rand') {
+      // The CiviCRM API requires the original field name.
+      $alias = $field ?: $this->getFieldByAlias($alias);
     }
 
     $this->orderby[] = [
-      'field' => $field,
+      'field' => $alias,
       'direction' => strtoupper($order),
+      // Whether to send the sort field to the CiviCRM API.
+      'api' => $table != 'rand',
     ];
   }
 
