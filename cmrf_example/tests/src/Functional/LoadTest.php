@@ -21,6 +21,13 @@ class LoadTest extends BrowserTestBase {
   public static $modules = ['cmrf_example'];
 
   /**
+   * Test is not does not rely on core markup, so the defaultTheme is 'stark'
+   *
+   * @var string
+   */
+  protected $defaultTheme = 'stark';
+
+  /**
    * A user with permission to administer site configuration.
    *
    * @var \Drupal\user\UserInterface
