@@ -19,3 +19,6 @@ cmrf_core.cmrf_profile.*:
     api_key:
       type: string
       label: 'API key'
+    cache_expire_days:
+      type: integer
+      label: 'Cache expire days'
