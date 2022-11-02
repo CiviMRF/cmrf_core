@@ -18,7 +18,7 @@ class LoadTest extends BrowserTestBase {
    *
    * @var array
    */
-  public static $modules = ['cmrf_example'];
+  protected static $modules = ['cmrf_example'];
 
   /**
    * Test is not does not rely on core markup, so the defaultTheme is 'stark'
@@ -37,7 +37,7 @@ class LoadTest extends BrowserTestBase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp() {
+  protected function setUp(): void {
     parent::setUp();
     $entity=CMRFProfile::load('default');
     //this test will fail until you set up those properties correctly.
