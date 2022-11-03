@@ -36,17 +36,4 @@ class CMRFDatasetListBuilder extends ConfigEntityListBuilder {
     return $row + parent::buildRow($entity);
   }
 
-  public function getOperations(EntityInterface $entity) {
-    $operations = parent::getOperations($entity);
-    $operations['relationships'] = [
-      'title' => t('Relationships'),
-      'url' => $url = Url::fromRoute(
-        'entity.cmrf_dataset_relationship.collection',
-        ['cmrf_dataset' => $entity->id()]
-      ),
-    ];
-
-    return $operations;
-  }
-
 }

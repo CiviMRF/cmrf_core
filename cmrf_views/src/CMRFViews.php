@@ -131,9 +131,6 @@ class CMRFViews {
         return [];
       }
 
-      // Retrieve available relationships available for the current dataset.
-      $dataset_relationships = CMRFDatasetRelationship::loadByDataset($dataset['id']);
-
       // Loop through each field to create the appropriate structure for views data.
       $views_fields = [];
       foreach ($fields['values'] as $field_name => $field_prop) {
@@ -202,20 +199,6 @@ class CMRFViews {
           $views_fields[$field_name]['field']['click sortable'] = FALSE;
         }
 
-        // Add relationship properties when configured for this field.
-        foreach ($dataset_relationships as $dataset_relationship) {
-          if ($dataset_relationship->referencing_key == $field_name) {
-            $views_fields[$field_name]['relationship'] = [
-              'base' => 'cmrf_views_' . $dataset_relationship->referenced_dataset,
-              'base field' => $dataset_relationship->referenced_key,
-              'id' => 'cmrf_dataset_relationship',
-              'label' => $dataset_relationship->label,
-              'cmrf_dataset_relationship' => $dataset_relationship->id,
-              'relationship table' => 'cmrf_views_' . $dataset_relationship->referenced_dataset,
-              'relationship field' => $dataset_relationship->referenced_key,
-            ];
-          }
-        }
       }
 
       return $views_fields;
