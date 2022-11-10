@@ -7,13 +7,12 @@
     ],
     "license": "GPL-2.0+",
     "homepage": "https://github.com/CiviMRF/cmrf_core",
-    "minimum-stability": "dev",
+    "minimum-stability": "stable",
     "support": {
         "issues": "https://github.com/CiviMRF/cmrf_core/issues",
         "source": "https://github.com/CiviMRF/cmrf_core"
     },
     "require": {
-        "civimrf/cmrf_abstract_core": "dev-master",
-        "mossadal/math-parser": "dev-master"
+        "civimrf/cmrf_abstract_core": "^0.9"
     }
 }

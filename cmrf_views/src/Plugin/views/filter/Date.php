@@ -1,9 +1,6 @@
 <?php namespace Drupal\cmrf_views\Plugin\views\filter;
 
-
-use MathParser\StdMathParser;
-
-/**
+ /**
  * Filter to handle dates stored as a timestamp.
  *
  * @ingroup crmf_views_filter_handlers
