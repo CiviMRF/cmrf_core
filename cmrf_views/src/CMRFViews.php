@@ -235,6 +235,7 @@ class CMRFViews {
 
     if (!empty($prop['options'])){
       $field['field']['options'] = $prop['options'];
+      $field['field']['multiple'] = TRUE;
       $field['field']['id']    = 'cmrf_views_optionlist';
     } else {
       $field['field']['id'] = 'numeric';
@@ -378,6 +379,7 @@ class CMRFViews {
     // Default.
     if (!empty($prop['options'])){
       $field['field']['options'] = $prop['options'];
+      $field['field']['multiple'] = TRUE;
       $field['field']['id']    = 'cmrf_views_optionlist';
     } else {
       $field['field']['id'] = 'cmrf_views_standard';
