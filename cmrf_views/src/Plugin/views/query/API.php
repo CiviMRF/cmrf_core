@@ -274,7 +274,8 @@ class API extends QueryPluginBase {
             $base_result = [];
             foreach ($row as $key => $value) {
               if ($field_alias = self::getFieldAlias($view->storage->get('base_table'), $key)) {
-                $base_result[$field_alias] = $value;
+                // Explicit conversion of "" (empty) values to null values to prevent type errors when rendering of numeric values.
+                $base_result[$field_alias] = !empty($value) ? $value : null;
               }
             }
             $view->result[] = new CMRFViewsResultRow($base_result);
