@@ -74,10 +74,6 @@ class File extends FieldPluginBase {
         'download' => $this->t('Link to download'),
         'image'    => $this->t('Image'),
       ],
-      '#attributes'    => [
-        'id'   => 'field_behaviour',
-        'name' => 'field_behaviour',
-      ],
       '#default_value' => isset($this->options['behaviour']) ? $this->options['behaviour'] : 'image',
     ];
 
@@ -97,7 +93,7 @@ class File extends FieldPluginBase {
       '#description'   => $this->t('Select the image style to show the image'),
       '#states'        => [
         'visible' => [
-          ':input[name="field_behaviour"]' => ['value' => 'image'],
+          ':input[name="options[behaviour]"]' => ['value' => 'image'],
         ],
       ],
       '#default_value' => isset($this->options['image_style']) ? $this->options['image_style'] : 'original',
@@ -109,7 +105,7 @@ class File extends FieldPluginBase {
       '#description'   => $this->t('Define here the path you want to save the files (inside public://)'),
       '#states'        => [
         'visible' => [
-          ':input[name="field_behaviour"]' => ['value' => 'image'],
+          ':input[name="options[behaviour]"]' => ['value' => 'image'],
         ],
       ],
       '#default_value' => isset($this->options['image_path']) ? $this->options['image_path'] : 'civicrm',
@@ -121,7 +117,7 @@ class File extends FieldPluginBase {
       '#description'   => $this->t('CSS class to be applied to the image'),
       '#states'        => [
         'visible' => [
-          ':input[name="field_behaviour"]' => ['value' => 'image'],
+          ':input[name="options[behaviour]"]' => ['value' => 'image'],
         ],
       ],
       '#default_value' => isset($this->options['image_class']) ? $this->options['image_class'] : NULL,
@@ -133,7 +129,7 @@ class File extends FieldPluginBase {
       '#description'   => $this->t("Fallback image to show when there's no image from the CRM"),
       '#states'        => [
         'visible' => [
-          ':input[name="field_behaviour"]' => ['value' => 'image'],
+          ':input[name="options[behaviour]"]' => ['value' => 'image'],
         ],
       ],
       '#default_value' => isset($this->options['image_fallback_url']) ? $this->options['image_fallback_url'] : NULL,
@@ -188,10 +184,42 @@ class File extends FieldPluginBase {
             }
           }
         }
+      } elseif (is_string($value)) {
+        if (!empty($this->options['behaviour'])) {
+          if ($this->options['behaviour'] == 'image') {
+            return $this->renderImage($value);
+          }
+        }
+        return $value;
       }
     }
 
     return NULL;
+  }
+
+  private function renderImage($imageUri) {
+    $image_style = empty($this->options['image_style']) ? 'original' : $this->options['image_style'];
+    if ($image_style == 'original') {
+      $image_render = ['#theme' => 'image', '#uri' => $imageUri];
+      if (!empty($this->options['image_class'])) {
+        $image_render['#attributes'] = ['class' => $this->options['image_class']];
+      }
+      return $image_render;
+    }
+    // Get the style.
+    $style = \Drupal::entityTypeManager()->getStorage('image_style')->load($image_style);
+    // Get the styled image derivative.
+    $style_uri_path = $style->buildUri($imageUri);
+    // If the derivative doesn't exist yet, create it.
+    if (!file_exists($style_uri_path)) {
+      $style->createDerivative($imageUri, $style_uri_path);
+    }
+    // Render the image style.
+    $image_render = ['#theme' => 'image', '#uri' => $style_uri_path];
+    if (!empty($this->options['image_class'])) {
+      $image_render['#attributes'] = ['class' => $this->options['image_class']];
+    }
+    return $image_render;
   }
 
   private function getImage($attachment = NULL) {
@@ -215,29 +243,7 @@ class File extends FieldPluginBase {
             system_retrieve_file($attachment['url'], $file_uri_path, FALSE, FileSystemInterface::EXISTS_REPLACE);
           }
           if (file_exists($file_real_path)) {
-            // Load the image style.
-            $image_style = empty($this->options['image_style']) ? 'original' : $this->options['image_style'];
-            if ($image_style == 'original') {
-              $image_render = ['#theme' => 'image', '#uri' => $file_uri_path];
-              if (!empty($this->options['image_class'])) {
-                $image_render['#attributes'] = ['class' => $this->options['image_class']];
-              }
-              return $image_render;
-            }
-            // Get the style.
-            $style = \Drupal::entityTypeManager()->getStorage('image_style')->load($image_style);
-            // Get the styled image derivative.
-            $style_uri_path = $style->buildUri($file_uri_path);
-            // If the derivative doesn't exist yet, create it.
-            if (!file_exists($style_uri_path)) {
-              $style->createDerivative($file_uri_path, $style_uri_path);
-            }
-            // Render the image style.
-            $image_render = ['#theme' => 'image', '#uri' => $style_uri_path];
-            if (!empty($this->options['image_class'])) {
-              $image_render['#attributes'] = ['class' => $this->options['image_class']];
-            }
-            return $image_render;
+            return $this->renderImage($file_real_path);
           }
         }
       }
