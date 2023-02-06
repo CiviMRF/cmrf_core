@@ -2,6 +2,7 @@
 
 use Drupal\cmrf_core\Core;
 use Drupal\Core\Entity\EntityForm;
+use Drupal\Core\Form\FormState;
 use Drupal\Core\Form\FormStateInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
@@ -154,6 +155,18 @@ class CMRFDatasetForm extends EntityForm {
     }
 
     return $saved;
+  }
+
+  /**
+   * @param $machine_name
+   * @param array $element
+   * @param \Drupal\Core\Form\FormState $form_state
+   *
+   * @return bool
+   */
+  public function exists($machine_name, array $element, FormState $form_state) {
+    $entity = $form_state->getFormObject()->getEntity();
+    return (bool) $entity::load($machine_name);
   }
 
 }
