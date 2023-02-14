@@ -42,6 +42,9 @@ class CMRFDefaultsManager extends CMRFManagerBase {
           if (!isset($hash) || $hash == '') {
             $hash = $this->getIdParameter($parameters);
           }
+          if (!empty($parameters->all())) {
+            $handler->setParameters(json_encode($parameters->all()));
+          }
           $default = $this->queryApi($handler, $hash);
           $this->setDefaultsArray($default, $defaults, $hash);
         }
@@ -55,12 +58,12 @@ class CMRFDefaultsManager extends CMRFManagerBase {
    * {
    *    'key': 'value'
    * }
-   * 
+   *
    * Default values returned from CiviCRM API response, some times include element as an array key
    * and sometimes only [values]
-   * 
+   *
    * Responses like one of the following:
-   * { 
+   * {
    *    'kid': 123456789
    *    'errors': null
    * }
@@ -69,7 +72,7 @@ class CMRFDefaultsManager extends CMRFManagerBase {
    *    'values': array(....),
    *    'count': 1
    * }
-   * 
+   *
    */
 
   public function setDefaultsArray($default, &$defaults, $hash) {
@@ -85,7 +88,7 @@ class CMRFDefaultsManager extends CMRFManagerBase {
       $defaults = array();
     }
   }
-  
+
 
   public function deleteWebformHandler(WebformInterface $webform) {
     $handler = DefaultValue::getForWebform($webform);
