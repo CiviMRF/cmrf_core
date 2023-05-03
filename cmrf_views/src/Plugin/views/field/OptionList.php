@@ -1,5 +1,6 @@
 <?php namespace Drupal\cmrf_views\Plugin\views\field;
 
+use Drupal\views\Plugin\views\field\Standard;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\views\Plugin\views\display\DisplayPluginBase;
 use Drupal\views\Plugin\views\field\MultiItemsFieldHandlerInterface;
@@ -13,7 +14,7 @@ use Drupal\views\ViewExecutable;
  *
  * @ViewsField("cmrf_views_optionlist")
  */
-class OptionList extends \Drupal\views\Plugin\views\field\Standard implements MultiItemsFieldHandlerInterface {
+class OptionList extends Standard implements MultiItemsFieldHandlerInterface {
 
   use MultiItemsFieldHandler {
     getItems as MultiItemsFieldHandler_getItems;

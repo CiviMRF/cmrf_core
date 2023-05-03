@@ -92,7 +92,7 @@ function cmrf_webform_webform_delete(WebformInterface $entity) {
 /**
  * Implements hook_form_alter.
  */
-function cmrf_webform_form_alter(&$form, \Drupal\Core\Form\FormStateInterface $form_state, $form_id) {
+function cmrf_webform_form_alter(&$form, FormStateInterface $form_state, $form_id) {
   $webform = $form_state->getFormObject();
   if ($webform instanceof EntityFormInterface) {
     $service = \Drupal::service('cmrf_webform.defaults_manager');

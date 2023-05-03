@@ -4,6 +4,7 @@
 namespace Drupal\cmrf_views\Plugin\views\field;
 
 
+use Drupal\views\Plugin\views\field\Standard;
 use Drupal\Component\Utility\Xss;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\views\Plugin\views\display\DisplayPluginBase;
@@ -18,7 +19,7 @@ use Drupal\views\ViewExecutable;
  *
  * @ViewsField("cmrf_views_json")
  */
-class JSON extends \Drupal\views\Plugin\views\field\Standard implements MultiItemsFieldHandlerInterface {
+class JSON extends Standard implements MultiItemsFieldHandlerInterface {
 
   use MultiItemsFieldHandler;
 
@@ -58,7 +59,7 @@ class JSON extends \Drupal\views\Plugin\views\field\Standard implements MultiIte
       // Render an item list from the JSON structure as default markup.
       '#item_list' => $this->render_item_item_list($item),
     ];
-    return render($render);
+    return \Drupal::service('renderer')->render($render);
   }
 
   public function render_item_item_list($item) {

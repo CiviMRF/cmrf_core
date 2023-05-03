@@ -23,9 +23,9 @@ use Drupal\Tests\UnitTestCase;
 class InstantiationTests extends KernelTestBase {
 
   protected $profile = 'minimal';
-  public static $modules = ['cmrf_core'];
+  protected static $modules = ['cmrf_core'];
 
-  protected function setUp() {
+  protected function setUp(): void {
     parent::setUp();
     $this->installConfig(['cmrf_core']);
   }
@@ -36,7 +36,7 @@ class InstantiationTests extends KernelTestBase {
     $prop=new \ReflectionProperty('\Drupal\cmrf_core\Core','callfactory');
     $prop->setAccessible(true);
     $factory=$prop->getValue($core);
-    $this->assertNotEqual($factory,null);
+    $this->assertNotEquals($factory, null);
     $prop=new \ReflectionProperty('\CMRF\PersistenceLayer\SQLPersistingCallFactory','table_name');
     $prop->setAccessible(true);
     $table=$prop->getValue($factory);
