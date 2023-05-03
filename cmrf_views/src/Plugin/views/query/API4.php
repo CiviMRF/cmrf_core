@@ -18,12 +18,27 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  * expose the results to views.
  *
  * @ViewsQuery(
- *   id = "civicrm_api",
- *   title = @Translation("CiviMRF CiviCRM API"),
- *   help = @Translation("Query against the CiviCRM API.")
+ *   id = "civicrm_api4",
+ *   title = @Translation("CiviMRF CiviCRM APIv4"),
+ *   help = @Translation("Query against the CiviCRM APIv4.")
  * )
  */
-class API extends QueryPluginBase {
+class API4 extends QueryPluginBase {
+
+  /**
+   * @phpstan-var array<string, array<string, mixed>&array{
+   *   field: string,
+   *   table: string,
+   *   alias: string,
+   * }>
+   * Key is the field's alias.
+   */
+  private array $fields = [];
+
+  /**
+   * @phpstan-var array<array{field: string, orderby: 'ASC'|'DESC', api: bool}>
+   */
+  public array $orderby = [];
 
   /**
    * @var \Drupal\cmrf_core\Core
@@ -140,7 +155,7 @@ class API extends QueryPluginBase {
    *
    * @access protected
    *
-   * @see \Drupal\cmrf_views\Plugin\views\query\API::addField()
+   * @see \Drupal\cmrf_views\Plugin\views\query\API4::addField()
    */
   protected function getFieldAlias($table_alias, $field) {
     $field = str_replace('.', '__', $field);
@@ -160,7 +175,6 @@ class API extends QueryPluginBase {
       $api_entity       = $table_data['table']['base']['entity'];
       $api_action       = $table_data['table']['base']['action'];
       $api_version      = $table_data['table']['base']['api_version'];
-      $api_count_action = $table_data['table']['base']['getcount'];
       $connector        = $table_data['table']['base']['connector'];
       $dataset_params   = $table_data['table']['base']['params'] ?? [];
       if (!is_array($dataset_params)) {
@@ -171,12 +185,12 @@ class API extends QueryPluginBase {
       $start      = microtime(TRUE);
 
       // Set the return fields
-      $parameters['return'] = [];
+      $parameters['select'] = [];
       foreach ($view->field as $field) {
         if (!empty($table_data[$field->field]['cmrf_original_definition']['name'])) {
           $original_field_name = $table_data[$field->field]['cmrf_original_definition']['name'];
-          if (!in_array($original_field_name, $parameters['return'])) {
-            $parameters['return'][] = $original_field_name;
+          if (!in_array($original_field_name, $parameters['select'])) {
+            $parameters['select'][] = $original_field_name;
           }
         }
       }
@@ -199,16 +213,16 @@ class API extends QueryPluginBase {
               case 'NOT BETWEEN':
               case 'LIKE':
               case 'NOT LIKE':
-                $parameters[$original_field_name] = [$condition['operator'] => $condition['value']];
+                $parameters['where'][] = [$original_field_name, $condition['operator'], $condition['value']];
                 break;
               case 'in':
-                $parameters[$original_field_name] = ['IN' => $condition['value']];
+                $parameters['where'][] = [$original_field_name, 'IN', $condition['value']];
                 break;
               case 'not in':
-                $parameters[$original_field_name] = ['NOT IN' => $condition['value']];
+                $parameters['where'][] = [$original_field_name, 'NOT IN', $condition['value']];
                 break;
               default:
-                $parameters[$original_field_name] = $condition['value'];
+                $parameters['where'][] = [$original_field_name, '=', $condition['value']];
                 break;
             }
           }
@@ -216,13 +230,11 @@ class API extends QueryPluginBase {
       }
 
       // Do sorting
-      if (!empty($this->orderby)) {
-        $options['sort'] = '';
+      if ([] !== $this->orderby) {
         foreach ($this->orderby as $orderby) {
-          if (strlen($options['sort'])) {
-            $options['sort'] .= ', ';
+          if ($orderby['api']) {
+            $parameters['orderBy'][$orderby['field']] = $orderby['direction'];
           }
-          $options['sort'] .= $orderby['field'] . ' ' . $orderby['direction'];
         }
       }
 
@@ -235,25 +247,24 @@ class API extends QueryPluginBase {
 
       // Count options.
       $options['cache'] = empty($view->query->options['cache']) ? NULL : $view->query->options['cache'];
-      $options['limit'] = 0;
 
       // Count API call.
-      $call = $this->core->createCall($connector, $api_entity, $api_count_action, $parameters, $options, NULL, $api_version);
+      $count_parameters = $parameters;
+      $count_parameters['select'] = ['row_count'];
+      $call = $this->core->createCall($connector, $api_entity, $api_action, $count_parameters, $options, NULL, $api_version);
       $this->core->executeCall($call);
       if ($call->getStatus() == Call::STATUS_DONE) {
         $result = $call->getReply();
-        if (!empty($result['result'])) {
-          $view->getPager()->total_items = $result['result'];
-          $view->total_rows              = $result['result'];
-        }
+        $view->getPager()->total_items = $result['countMatched'] ?? $result['count'];
+        $view->total_rows              = $result['countMatched'] ?? $result['count'];
       }
 
       // Update pager.
       $view->getPager()->updatePageInfo();
 
       // TODO: verify views cache.
-      $options['limit']  = $view->getPager()->getItemsPerPage();
-      $options['offset'] = $view->getCurrentPage() * $view->getPager()->getItemsPerPage();
+      $parameters['limit']  = $view->getPager()->getItemsPerPage();
+      $parameters['offset'] = $view->getCurrentPage() * $view->getPager()->getItemsPerPage();
 
       // View result init.
       $view->result = [];
@@ -272,8 +283,7 @@ class API extends QueryPluginBase {
             $base_result = [];
             foreach ($row as $key => $value) {
               if ($field_alias = self::getFieldAlias($view->storage->get('base_table'), $key)) {
-                // Explicit conversion of "" (empty) values to null values to prevent type errors when rendering of numeric values.
-                $base_result[$field_alias] = !empty($value) ? $value : null;
+                $base_result[$field_alias] = $value;
               }
             }
             $view->result[] = new CMRFViewsResultRow($base_result);
@@ -286,6 +296,9 @@ class API extends QueryPluginBase {
         }
       }
 
+      // TODO: Adjust relationships for APIv4.
+      //       This might use a different approach now that JOINs are possible
+      //       with APIv4.
       foreach ($view->relationship as $field_name => $relationship) {
         $field_name = self::getFieldAlias($view->storage->get('base_table'), $field_name);
         $referenced_keys = [];
@@ -464,48 +477,43 @@ class API extends QueryPluginBase {
   }
 
   /**
+   * PHPDoc copied from \Drupal\views\Plugin\views\query\Sql.
+   *
    * Add an ORDER BY clause to the query.
    *
-   * @param $table
+   * @param string|null $table
    *   The table this field is part of. If a formula, enter NULL.
-   *   If you want to orderby random use "rand" as table and nothing else.
-   * @param $field
+   *   If you want to order by random use "rand" as table and nothing else.
+   * @param string|null $field
    *   The field or formula to sort on. If already a field, enter NULL
    *   and put in the alias.
-   * @param $order
+   * @param string $order
    *   Either ASC or DESC.
-   * @param $alias
+   * @param string $alias
    *   The alias to add the field as. In SQL, all fields in the order by
    *   must also be in the SELECT portion. If an $alias isn't specified
    *   one will be generated for from the $field; however, if the
    *   $field is a formula, this alias will likely fail.
-   * @param $params
+   * @param array $params
    *   Any params that should be passed through to the addField.
    */
-  public function addOrderBy($table, $field = NULL, $order = 'ASC', $alias = '', $params = []) {
-    // Only ensure the table if it's not the special random key.
-    // @todo: Maybe it would make sense to just add an addOrderByRand or something similar.
-    if ($table && $table != 'rand') {
-      $this->ensureTable($table);
-    }
-
-    // Only fill out this aliasing if there is a table;
-    // otherwise we assume it is a formula.
-    if (!$alias && $table) {
-      $as = $table . '_' . $field;
-    }
-    else {
-      $as = $alias;
-    }
-
-    if ($field) {
-      $as = $this->addField($table, $field, $as, $params);
+  public function addOrderBy(
+    ?string $table,
+    ?string $field = NULL,
+    string $order = 'ASC',
+    string $alias = '',
+    array $params = []
+  ): void {
+    if ($table != 'rand') {
+      // The CiviCRM API requires the original field name.
+      $alias = $field ?: $this->getFieldByAlias($alias);
     }
 
     $this->orderby[] = [
-//      'field'     => $as, // We need the real field name for sorting via API.
-      'field' => $field,
+      'field' => $alias,
       'direction' => strtoupper($order),
+      // Whether to send the sort field to the CiviCRM API.
+      'api' => $table != 'rand',
     ];
   }
 
@@ -523,6 +531,10 @@ class API extends QueryPluginBase {
     //   This might become a generic helper method for preparing API parameters
     //   from a view's filters and sorts.
     return $parameters;
+  }
+
+  protected function getFieldByAlias(string $alias): ?string {
+    return $this->fields[$alias]['field'] ?? NULL;
   }
 
 }

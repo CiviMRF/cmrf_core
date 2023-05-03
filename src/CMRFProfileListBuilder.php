@@ -15,7 +15,8 @@ class CMRFProfileListBuilder extends ConfigEntityListBuilder {
   public function buildHeader() {
     $header['label'] = $this->t('CiviMRF Profile');
     $header['id']    = $this->t('Machine name');
-    $header['url']   = $this->t('URL');
+    $header['url']   = $this->t('URL APIv3');
+    $header['urlV4'] = $this->t('URL APIv4');
     return $header + parent::buildHeader();
   }
 
@@ -27,6 +28,7 @@ class CMRFProfileListBuilder extends ConfigEntityListBuilder {
     $row['label'] = $entity->label();
     $row['id']    = $entity->id();
     $row['url']   = $entity->url;
+    $row['urlV4'] = $entity->urlV4;
     return $row + parent::buildRow($entity);
   }
 

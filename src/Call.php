@@ -1,51 +1,99 @@
-<?php namespace Drupal\cmrf_core;
+<?php
+
+namespace Drupal\cmrf_core;
 
 use CMRF\Core\AbstractCall;
 use CMRF\Core\Call as CallInterface;
 
 class Call extends AbstractCall {
 
-  protected $request = NULL;
+  protected string $request_entity;
 
-  protected $reply = NULL;
+  protected string $request_action;
 
-  protected $status = CallInterface::STATUS_INIT;
+  protected array $request;
 
-  protected $metadata = '{}';
+  protected ?array $reply = NULL;
 
-  protected $cached_until = NULL;
+  protected string $status = CallInterface::STATUS_INIT;
 
-  public static function createNew($connector_id, $core, $entity, $action, $parameters, $options, $callbacks, $factory) {
+  protected array $metadata = [];
+
+  protected ?\DateTime $cached_until = NULL;
+
+  /**
+   * @param string $connector_id
+   * @param \Drupal\cmrf_core\Core $core
+   * @param string $entity
+   * @param string $action
+   * @param array $parameters
+   * @param array|null $options
+   * @param callable[]|callable|null $callbacks
+   * @param CallFactory $factory
+   * @param string $api_version
+   *
+   * @return static
+   */
+  public static function createNew($connector_id, $core, $entity, $action, $parameters, $options, $callbacks,
+    $factory, string $api_version) {
+
+    if (!is_array($callbacks)) {
+      if (NULL === $callbacks) {
+        $callbacks = [];
+      }
+      else {
+        $callbacks = [$callbacks];
+      }
+    }
+
+    return static::create($connector_id, $core, $api_version, $entity, $action, $parameters, $options ?? [], $callbacks,
+      $factory
+    );
+  }
+
+  /**
+   * @param string $connector_id
+   * @param \Drupal\cmrf_core\Core $core
+   * @param string $api_version
+   * @param string $entity
+   * @param string $action
+   * @param array $parameters
+   * @param array $options
+   * @param callable[] $callbacks
+   * @param CallFactory $factory
+   *
+   * @return static
+   */
+  protected static function create(
+    string $connector_id,
+    Core $core,
+    string $api_version,
+    string $entity,
+    string $action,
+    array $parameters,
+    array $options,
+    array $callbacks,
+    CallFactory $factory
+  ): self {
     $call = new Call($core, $connector_id, $factory);
 
     // compile request
-    $call->request               = $call->compileRequest($parameters, $options);
-    $call->request['entity']     = $entity;
-    $call->request['action']     = $action;
+    if ('3' === $api_version) {
+      $call->request = $call->compileRequest($parameters, $options);
+      $call->request['entity']     = $entity;
+      $call->request['action']     = $action;
+    }
+    elseif ('4' === $api_version) {
+      $call->request = $parameters;
+    }
+    $call->request_entity        = $entity;
+    $call->request_action        = $action;
+    $call->request['version']    = $api_version;
     $call->status                = CallInterface::STATUS_INIT;
-    $call->metadata              = [];
     $call->metadata['callbacks'] = $callbacks;
-    if (is_array($callbacks)) {
-      $call->callbacks = $callbacks;
-    }
+    $call->callbacks             = $callbacks;
 
-    // Set the retry options
-    if (isset($options['retry_count'])) {
-      $call->retry_count = $options['retry_count'];
-    }
-    if (isset($options['retry_interval'])) {
-      $call->metadata['retry_interval'] = $options['retry_interval'];
-    }
-    $options=$options ?? [];
-    foreach ($options as $key => $val) {
-      $call->metadata[$key] = $val;
-    }
-
-    // set the caching flag
-    if (!empty($options['cache'])) {
-      $call->cached_until = new \DateTime();
-      $call->cached_until->modify('+' . $options['cache']);
-    }
+    $call->initOptions($options);
 
     return $call;
   }
@@ -58,7 +106,13 @@ class Call extends AbstractCall {
     if (!empty($record->cached_until)) {
       $call->cached_until = new \DateTime($record->cached_until);
     }
+    $call->request_entity = $record->entity ?? $record->request['entity'];
+    $call->request_action = $record->action ?? $record->request['action'];
     $call->request = json_decode($record->request, TRUE);
+    if (!isset($call->request['version'])) {
+      // For backward compatibility.
+      $call->request['version'] = '3';
+    }
     $call->reply   = json_decode($record->reply, TRUE);
     $call->date    = new \DateTime($record->create_date);
     if (!empty($record->reply_date)) {
@@ -84,16 +138,16 @@ class Call extends AbstractCall {
     $this->checkAndTriggerDone();
   }
 
-  public function setID($id) {
-    parent::setID($id);
+  public function getApiVersion(): string {
+    return $this->request['version'];
   }
 
   public function getEntity() {
-    return $this->request['entity'];
+    return $this->request_entity;
   }
 
   public function getAction() {
-    return $this->request['action'];
+    return $this->request_action;
   }
 
   public function getParameters() {
@@ -145,6 +199,25 @@ class Call extends AbstractCall {
     $this->checkAndTriggerDone();
   }
 
+  protected function initOptions($options): void {
+    // Set the retry options
+    if (isset($options['retry_count'])) {
+      $this->retry_count = $options['retry_count'];
+    }
+    if (isset($options['retry_interval'])) {
+      $this->metadata['retry_interval'] = $options['retry_interval'];
+    }
+    foreach ($options as $key => $val) {
+      $this->metadata[$key] = $val;
+    }
+
+    // set the caching flag
+    if (!empty($options['cache'])) {
+      $this->cached_until = new \DateTime();
+      $this->cached_until->modify('+' . $options['cache']);
+    }
+  }
+
   protected function checkForRetry() {
     if ($this->status == \CMRF\Core\Call::STATUS_FAILED && $this->retry_count > 0) {
       $this->retry_count    = $this->retry_count - 1;
@@ -176,6 +249,5 @@ class Call extends AbstractCall {
       \Drupal::moduleHandler()->invokeAll('cmrf_core_call_done', ['call' => $this]);
     }
   }
-
 
 }

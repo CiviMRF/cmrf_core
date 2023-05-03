@@ -67,6 +67,38 @@ function cmrf_call_report_views_data() {
       'id' => 'standard',
     ],
   ];
+  $data['civicrm_api_call']['entity'] = [
+    'title' => t('Entity'),
+    'help' => t('the CiviCRM API entity.'),
+    'field' => [
+      'id' => 'standard',
+    ],
+    'argument' => [
+      'id' => 'string',
+    ],
+    'filter' => [
+      'id' => 'string',
+    ],
+    'sort' => [
+      'id' => 'standard',
+    ],
+  ];
+  $data['civicrm_api_call']['action'] = [
+    'title' => t('Action'),
+    'help' => t('The CiviCRM API action.'),
+    'field' => [
+      'id' => 'standard',
+    ],
+    'argument' => [
+      'id' => 'string',
+    ],
+    'filter' => [
+      'id' => 'string',
+    ],
+    'sort' => [
+      'id' => 'standard',
+    ],
+  ];
   $data['civicrm_api_call']['request'] = [
     'title' => t('Request'),
     'help' => t('Request'),

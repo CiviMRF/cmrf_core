@@ -52,7 +52,10 @@ class CMRFCallreportController extends ControllerBase {
       $date = \Drupal::service('date.formatter')->format($date->getTimestamp());
       $status = $call->status;
       $profile = $this->core->getConnectionProfile($call->connector_id);
-      $request = json_encode(json_decode($call->request, true), JSON_PRETTY_PRINT);
+      $request = json_decode($call->request, true);
+      $entity = $call->entity ?? $request['entity'] ?? NULL;
+      $action = $call->action ?? $request['action'] ?? NULL;
+      $request = json_encode($request, JSON_PRETTY_PRINT);
       $reply = json_encode(json_decode($call->reply,true), JSON_PRETTY_PRINT);
       $metadata = json_encode(json_decode($call->metadata,true), JSON_PRETTY_PRINT);
       $scheduled_date = '';
@@ -84,6 +87,14 @@ class CMRFCallreportController extends ControllerBase {
         [
           ['data' => t('Profile'), 'header' => TRUE],
           ['data' => $profile['label']],
+        ],
+        [
+          ['data' => t('Entity'), 'header' => TRUE],
+          ['data' => ['#markup' => '<pre>' . $entity . '</pre>']],
+        ],
+        [
+          ['data' => t('Action'), 'header' => TRUE],
+          ['data' => ['#markup' => '<pre>' . $action . '</pre>']],
         ],
         [
           ['data' => t('Request'), 'header' => TRUE],

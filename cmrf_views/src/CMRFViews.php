@@ -68,7 +68,7 @@ class CMRFViews {
       $base_data['table']['base']  = [
         'title'    => $dataset['label'],
         'help'     => $dataset['label'] . ' provided by CiviCRM API',
-        'query_id' => 'civicrm_api',
+        'query_id' => $dataset['api_version'] == 4 ? 'civicrm_api4' : 'civicrm_api',
       ];
     }
 
@@ -92,6 +92,10 @@ class CMRFViews {
       $base_data['table']['base']['params'] = $dataset['params'];
     }
 
+    if (!empty($dataset['api_version'])) {
+      $base_data['table']['base']['api_version'] = $dataset['api_version'];
+    }
+
     return $base_data;
   }
 
@@ -113,12 +117,25 @@ class CMRFViews {
       }
 
       // API Call to retrieve the fields.
+      if ($dataset['api_version'] == 4) {
+        $parameters = [
+          'action' => $dataset['action'],
+          'loadOptions' => TRUE,
+        ];
+      }
+      else {
+        $parameters = [
+          'api_action' => $dataset['action'],
+        ];
+      }
       $call = $this->core->createCall(
         $dataset['connector'],
         $dataset['entity'],
         $dataset['getfields'],
-        ['api_action' => $dataset['action']] + $dataset['params'],
-        ['limit' => 0]
+        $parameters + $dataset['params'],
+        ['limit' => 0],
+        NULL,
+        $dataset['api_version']
       );
       $this->core->executeCall($call);
       if ($call->getStatus() != Call::STATUS_DONE) {
@@ -130,6 +147,11 @@ class CMRFViews {
       if (empty($fields['values'])) {
         return [];
       }
+      $apiVersion = $call->getApiVersion();
+
+      if ($apiVersion == 4) {
+        $fields['values'] = array_combine(array_column($fields['values'], 'name'), $fields['values']);
+      }
 
       // Retrieve available relationships available for the current dataset.
       $dataset_relationships = CMRFDatasetRelationship::loadByDataset($dataset['id']);
@@ -139,10 +161,14 @@ class CMRFViews {
       foreach ($fields['values'] as $field_name => $field_prop) {
         $original_field_name = $field_name;
         $field_name = str_replace('.', '__', $field_name);
+        $field_prop['api.version'] = $apiVersion;
 
         // If we don't have a field type, set it to 0.
-        if (!isset($field_prop['type'])) {
+        if ($apiVersion == 3 && !isset($field_prop['type'])) {
           $field_prop['type'] = 0;
+        }
+        if ($apiVersion == 4 && !isset($field_prop['data_type'])) {
+          $field_prop['data_type'] = NULL;
         }
 
         // Set default for "api.filter".
@@ -155,31 +181,63 @@ class CMRFViews {
         }
 
         // Set field handler, filter, sort, etc.
-        switch ($field_prop['type']) {
-          case 1: // Integer field.
-          case 1024: // Money field.
-            $views_fields[$field_name] = $this->getNumericField($field_prop);
-            break;
-          case 4: // Date field.
-          case 12: // Date and time field.
-          case 256: // Timestamp field.
-            $views_fields[$field_name] = $this->getDateField($field_prop);
-            break;
-          case 16: // Boolean field.
-            $views_fields[$field_name] = $this->getBooleanField($field_prop);
-            break;
-          case 32: // Markup field.
-            $views_fields[$field_name] = $this->getMarkupField($field_prop);
-            break;
-          case 2: // String field
-            if (!empty($field_prop['format']) && $field_prop['format'] == 'json') {
-              $views_fields[$field_name] = $this->getJSONField($field_prop);
+        if ($apiVersion == 3) {
+          switch ($field_prop['type']) {
+            case 1: // Integer field.
+            case 1024: // Money field.
+              $views_fields[$field_name] = $this->getNumericField($field_prop);
               break;
-            }
+            case 4: // Date field.
+            case 12: // Date and time field.
+            case 256: // Timestamp field.
+              $views_fields[$field_name] = $this->getDateField($field_prop);
+              break;
+            case 16: // Boolean field.
+              $views_fields[$field_name] = $this->getBooleanField($field_prop);
+              break;
+            case 32: // Markup field.
+              $views_fields[$field_name] = $this->getMarkupField($field_prop);
+              break;
+            case 2: // String field
+              if (!empty($field_prop['format']) && $field_prop['format'] == 'json') {
+                $views_fields[$field_name] = $this->getJSONField($field_prop);
+                break;
+              }
             // No "break" statement for other string types falling through.
-          default: // Fallback standard field.
-            $views_fields[$field_name] = $this->getStandardField($field_prop);
-            break;
+            default: // Fallback standard field.
+              $views_fields[$field_name] = $this->getStandardField($field_prop);
+              break;
+          }
+        }
+        elseif ($apiVersion == 4) {
+          switch ($field_prop['data_type']) {
+            case 'Int':
+            case 'Integer':
+            case 'Float':
+            case 'Money':
+              $views_fields[$field_name] = $this->getNumericField($field_prop);
+              break;
+            case 'Date':
+            case 'Timestamp':
+              $views_fields[$field_name] = $this->getDateField($field_prop);
+              break;
+            case 'Boolean':
+              $views_fields[$field_name] = $this->getBooleanField($field_prop);
+              break;
+            case 'Text':
+              $views_fields[$field_name] = $this->getMarkupField($field_prop);
+              break;
+            case 'String':
+              if (!empty($field_prop['format']) && $field_prop['format'] == 'json') {
+                $views_fields[$field_name] = $this->getJSONField($field_prop);
+                break;
+              }
+            // TODO: case 'Array'?
+            // No "break" statement for other string types falling through.
+            default: // Fallback standard field.
+              $views_fields[$field_name] = $this->getStandardField($field_prop);
+              break;
+          }
         }
 
         // Set field basic information.
@@ -245,7 +303,10 @@ class CMRFViews {
     }
 
     // If 'type' is 1024 (Money).
-    if ((!empty($prop['data_type'])) && ($prop['type'] == 1024)) {
+    if (
+      ($prop['api.version'] == 3 && !empty($prop['data_type']) && ($prop['type'] == 1024))
+      || ($prop['api.version'] == 4 && ($prop['data_type'] == 'Money' || $prop['data_type'] == 'Float'))
+    ) {
       $field['field']['float'] = TRUE;
     }
 
@@ -256,12 +317,23 @@ class CMRFViews {
         $field['filter']['id'] = 'cmrf_views_filter_optionlist';
         $field['filter']['options'] = $prop['options'];
       } else {
-        $field['filter']['id'] = ($prop['type'] == 1024) ? 'cmrf_views_filter_text' : 'cmrf_views_filter_numeric';
+        if (
+          ($prop['api.version'] == 3 && $prop['type'] == 1024)
+          || ($prop['api.version'] == 4 && ($prop['data_type'] == 'Money' || $prop['data_type'] == 'Float'))
+        ) {
+          $field['filter']['id'] = 'cmrf_views_filter_text';
+        }
+        else {
+          $field['filter']['id'] = 'cmrf_views_filter_numeric';
+        }
       }
     }
 
-    // If 'data_type' is file.
-    if ((!empty($prop['data_type'])) && ($prop['data_type'] == 'File')) {
+    // If 'input_type' is file.
+    if (
+      ($prop['api.version'] == 3 && !empty($prop['data_type']) && $prop['data_type'] == 'File')
+      || ($prop['api.version'] == 4 && !empty($prop['input_type']) && $prop['input_type'] == 'File')
+    ) {
       $field['field']['id'] = 'cmrf_views_file';
     }
 
@@ -352,6 +424,14 @@ class CMRFViews {
       }
     }
 
+    // If 'input_type' is file.
+    if (
+      ($prop['api.version'] == 3 && !empty($prop['data_type']) && $prop['data_type'] == 'File')
+      || ($prop['api.version'] == 4 && !empty($prop['input_type']) && $prop['input_type'] == 'File')
+    ) {
+      $field['field']['id'] = 'cmrf_views_file';
+    }
+
     return $field;
   }
 
@@ -402,8 +482,11 @@ class CMRFViews {
       }
     }
 
-    // If 'data_type' is file.
-    if ((!empty($prop['data_type'])) && ($prop['data_type'] == 'File')) {
+    // If 'input_type' is file.
+    if (
+      ($prop['api.version'] == 3 && !empty($prop['data_type']) && $prop['data_type'] == 'File')
+      || ($prop['api.version'] == 4 && !empty($prop['input_type']) && $prop['input_type'] == 'File')
+    ) {
       $field['field']['id'] = 'cmrf_views_file';
     }
 
@@ -419,6 +502,8 @@ class CMRFViews {
    * @param $field_name
    *
    * @return array
+   *
+   * TODO: Method does not seem to be called from anywhere. Deprecate or remove?
    */
   private function fetchOptions($connector, $api_entity, $api_action, $field_name) {
 
@@ -429,6 +514,7 @@ class CMRFViews {
       'getoptions',
       ['field' => $field_name],
       ['limit' => 0, 'cache' => '5 minutes']
+      // TODO: API version from Dataset configuration.
     );
 
     // Execute call.
@@ -448,6 +534,7 @@ class CMRFViews {
       'getfields', // TODO: Use "getfields" property of the Dataset?
       ['api_action' => $api_action],
       ['limit' => 0]
+      // TODO: API version from Dataset configuration.
     );
 
     // Execute call.
