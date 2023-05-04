@@ -28,7 +28,7 @@ class CMRFProfileListBuilder extends ConfigEntityListBuilder {
     $row['label'] = $entity->label();
     $row['id']    = $entity->id();
     $row['url']   = $entity->url;
-    $row['urlV4'] = $entity->urlV4;
+    $row['urlV4'] = $entity->urlV4 ?? '';
     return $row + parent::buildRow($entity);
   }
 
