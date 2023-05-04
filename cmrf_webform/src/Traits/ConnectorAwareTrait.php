@@ -10,9 +10,9 @@ trait ConnectorAwareTrait {
     $connectors = CMRFConnector::loadMultiple();
     $ret = [];
     foreach ($connectors as $entity) {
-      if ($entity->getType() == $module) {
+      //if ($entity->getType() == $module) {
         $ret[$entity->id()] = $entity->label();
-      }
+      //}
     }
 
     return $ret;

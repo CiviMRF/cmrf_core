@@ -146,6 +146,23 @@ class API extends QueryPluginBase {
   }
 
   /**
+   * Builds the necessary info to execute the query.
+   *
+   * @param \Drupal\views\ViewExecutable $view
+   *   The view which is executed.
+   */
+  public function build(ViewExecutable $view) {
+    // Store the view in the object to be able to use it later.
+    $this->view = $view;
+
+    $view->initPager();
+
+    // Let the pager modify the query to add limits.
+    $view->pager->query();
+  }
+
+
+  /**
    * Executes the query and fills the associated view object with according
    * values.
    *
@@ -233,6 +250,12 @@ class API extends QueryPluginBase {
       // Count options.
       $options['cache'] = empty($view->query->options['cache']) ? NULL : $view->query->options['cache'];
       $options['limit'] = 0;
+      if (isset($this->limit)) {
+        $options['limit'] = $this->limit;
+      }
+      if (isset($this->offset)) {
+        $options['offset'] = $this->offset;
+      }
 
       // Count API call.
       $call = $this->core->createCall($connector, $api_entity, $api_count_action, $parameters, $options);
