@@ -2,7 +2,7 @@ name: CiviMRF Example
 type: module
 description: Sample Module to demonstrate CiviCRM API Calls
 core: 8.x
-core_version_requirement: ^8 || ^9
+core_version_requirement: ^8 || ^9 || ^10
 package: CiviCRM
 dependencies:
   - cmrf_core
