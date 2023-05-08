@@ -2,7 +2,7 @@ name: CiviMRF Webform
 type: module
 description: CiviMRF Webform integration module. Allows to submit a Webform to the CiviCRM API.
 core: 8.x
-core_version_requirement: ^8 || ^9
+core_version_requirement: ^8 || ^9 || ^10
 package: CiviCRM
 dependencies:
   - drupal:webform
