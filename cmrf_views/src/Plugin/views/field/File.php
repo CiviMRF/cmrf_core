@@ -272,6 +272,11 @@ class File extends FieldPluginBase {
       $hash = Crypt::hmacBase64($attachment['url'], $salt);
       // Download the file if we have a valid hash in the query string.
       if ((isset($query_string['civi_file_hash'])) && ($query_string['civi_file_hash'] == $hash)) {
+        // Close all open output buffers.
+        while (ob_get_level() > 0) {
+          ob_end_clean();
+        }
+
         header('Content-Description: File Transfer');
         //header('Content-Type: application/octet-stream');
         if (!empty($attachment['mime_type'])) {
