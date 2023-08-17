@@ -39,6 +39,7 @@ class CMRFDatasetRelationshipListBuilder extends ConfigEntityListBuilder {
    */
   protected function getEntityIds() {
     $query = $this->getStorage()->getQuery()
+      ->accessCheck(TRUE)
       ->sort($this->entityType->getKey('id'))
       // Filter for current cmrf_dataset.
       ->condition(
