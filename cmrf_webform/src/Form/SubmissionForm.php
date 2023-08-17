@@ -141,6 +141,7 @@ class SubmissionForm extends CMRFWebformFormBase {
    */
   public function exist($id) {
     $entity = $this->entityTypeManager->getStorage('cmrf_webform_submission')->getQuery()
+      ->accessCheck(TRUE)
       ->condition('id', $id)
       ->execute();
     return (bool) $entity;

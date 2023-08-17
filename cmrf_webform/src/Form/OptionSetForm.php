@@ -150,6 +150,7 @@ class OptionSetForm extends CMRFWebformFormBase {
    */
   public function exist($id) {
     $entity = $this->entityTypeManager->getStorage('cmrf_webform_option_set')->getQuery()
+      ->accessCheck(TRUE)
       ->condition('id', $id)
       ->execute();
     return (bool) $entity;
