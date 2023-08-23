@@ -1,5 +1,6 @@
 <?php namespace Drupal\cmrf_views\Plugin\views\filter;
 
+use Drupal\cmrf_views\Plugin\views\query\API;
 use Drupal\views\Plugin\views\filter\BooleanOperator;
 
 /**
@@ -16,11 +17,15 @@ class Boolean extends BooleanOperator {
    */
   public function query() {
     $this->ensureMyTable();
-    $field = $this->realField;
-    $info = $this->operators();
-    if (!empty($info[$this->operator]['method'])) {
-      call_user_func([$this, $info[$this->operator]['method']], $field, $info[$this->operator]['query_operator']);
+    if ($this->isApiv3()) {
+      $this->query->addWhere($this->options['group'], $this->realField, (int) $this->value, $this->operator);
+    } else {
+      $this->query->addWhere($this->options['group'], $this->realField, (bool) $this->value, $this->operator);
     }
+  }
+
+  private function isApiv3(): bool {
+    return $this->query instanceof API;
   }
 
 }
