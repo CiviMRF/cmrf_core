@@ -4,7 +4,7 @@ use Drupal\cmrf_views\Plugin\views\query\API;
 use Drupal\views\Plugin\views\filter\BooleanOperator;
 
 /**
- * Filter to handle dates stored as a timestamp.
+ * Filter to handle boolean values.
  *
  * @ingroup crmf_views_filter_handlers
  *
