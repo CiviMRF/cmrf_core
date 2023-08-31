@@ -776,7 +776,7 @@ display:
           tokenize: false
           content:
             value: 'Each CiviCRM Api Call is logged. Use this rapport for monitoring and debugging.'
-            format: basic_html
+            format: plain_text
           plugin_id: text
       footer: {  }
       empty: {  }
