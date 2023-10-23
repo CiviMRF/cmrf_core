@@ -30,11 +30,15 @@ class Core extends AbstractCore {
   }
 
   public function getConnectionProfile($connector_id) {
-    $entity = CMRFConnector::load($connector_id);
-    if ($entity == NULL) {
+    $connector = CMRFConnector::load($connector_id);
+    if (NULL === $connector) {
       throw new \Exception("Unregistered connector '$connector_id'.", 1);
     }
-    return $this->getConnectionProfiles()[$entity->profile] ?? NULL;
+    $profiles = $this->getConnectionProfiles();
+    if (!isset($profiles[$connector->profile])) {
+      throw new \Exception("Unregistered profile '{$connector->profile}'.", 1);
+    }
+    return $profiles[$connector->profile];
   }
 
 
