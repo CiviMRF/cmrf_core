@@ -160,6 +160,7 @@ class DefaultValueForm extends CMRFWebformFormBase {
    */
   public function exist($id) {
     $entity = $this->entityTypeManager->getStorage('cmrf_webform_default_value')->getQuery()
+      ->accessCheck(TRUE)
       ->condition('id', $id)
       ->execute();
     return (bool) $entity;
