@@ -31,23 +31,31 @@ class CMRFViews {
    *   In format which could be used by the hook_views_data.
    */
   public function getViewsData($reset = FALSE) {
-    $data     = [];
-    $datasets = $this->getDatasets();
-    if (!empty($datasets)) {
-      foreach ($datasets as $dataset_id => $dataset_prop) {
-        if ((!empty($dataset_prop['connector'])) && (!empty($dataset_prop['entity']) && (!empty($dataset_prop['action'])))) {
-          $dataset_prop['id'] = $dataset_id;
-          $fields = $this->getFields($dataset_prop);
-          // Unique identifier for this group.
-          $uid = 'cmrf_views_' . $dataset_id;
-          // Base data.
-          $data[$uid] = $this->getBaseData($dataset_prop);
-          if ((!empty($fields)) && (is_array($fields))) {
-            // Fields (from the getEntityFields function).
-            $data[$uid] = array_merge($fields, $data[$uid]);
+
+    $key = 'cmrf_views_data';
+    if (!$reset && $cache = \Drupal::cache()->get($key)) {
+      $data = $cache->data;
+    } else {
+      $datasets = $this->getDatasets();
+      if (!empty($datasets)) {
+        foreach ($datasets as $dataset_id => $dataset_prop) {
+          if ((!empty($dataset_prop['connector'])) && (!empty($dataset_prop['entity']) && (!empty($dataset_prop['action'])))) {
+            $dataset_prop['id'] = $dataset_id;
+            $fields = $this->getFields($dataset_prop);
+            // Unique identifier for this group.
+            $uid = 'cmrf_views_' . $dataset_id;
+            // Base data.
+            $data[$uid] = $this->getBaseData($dataset_prop);
+            if ((!empty($fields)) && (is_array($fields))) {
+              // Fields (from the getEntityFields function).
+              $data[$uid] = array_merge($fields, $data[$uid]);
+            }
           }
         }
+      } else {
+        $data = null;
       }
+      \Drupal::cache()->set($key, $data);
     }
 
     return $data;
