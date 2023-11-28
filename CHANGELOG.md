@@ -1,3 +1,7 @@
+# Version 2.0.8
+
+* Fixed issue with tokens.
+
 # Version 2.0.7
 
 * Cached the views definition see https://www.drupal.org/project/cmrf_core/issues/3403976 .
