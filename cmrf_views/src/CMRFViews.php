@@ -121,7 +121,7 @@ class CMRFViews {
 
       // Set the parameters from the dataset params options.
       if (!empty($dataset['params'])) {
-        array_walk_recursive($dataset['params'], ['Drupal\cmrf_views\CMRFViews', 'tokenReplace']);
+        array_walk_recursive($dataset['params'], ['Drupal\cmrf_views\CMRFViews', 'tokenReplaceWithEmptyString']);
       }
 
       // API Call to retrieve the fields.
@@ -584,6 +584,29 @@ class CMRFViews {
    */
   public static function tokenReplace(&$value) {
     $value = Drupal::token()->replace($value);
+  }
+
+  /**
+   * Replace tokens with an empty string in a given value.
+   *
+   * This function is used because sometimes the drupal token system messes with
+   * the entity type definition and making it impossible to add content
+   *
+   * @param string $value
+   *   The value wich to replace tokens in.
+   *
+   * @param string
+   *   The value with tokens replaced.
+   */
+  public static function tokenReplaceWithEmptyString(string &$string) {
+    $text_tokens = Drupal::token()->scan($string);
+    $replacements = [];
+    foreach ($text_tokens as $type => $tokens) {
+      $replacements += array_fill_keys($tokens, '');
+    }
+    $tokens = array_keys($replacements);
+    $values = array_values($replacements);
+    $string = str_replace($tokens, $values, $string);
   }
 
 }
