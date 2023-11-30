@@ -5,7 +5,8 @@ use Drupal\views\EntityViewsDataInterface;
 
 class CMRFEntityViewsData implements EntityViewsDataInterface {
 
-  public function getViewsData() {
+  public function getViewsData(): array {
+    /** @var \Drupal\cmrf_views\CMRFViews $views */
     $views = \Drupal::service('cmrf_views.views');
     return $views->getViewsData();
   }

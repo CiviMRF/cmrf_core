@@ -31,11 +31,18 @@ class CMRFViews {
    *   In format which could be used by the hook_views_data.
    */
   public function getViewsData($reset = FALSE) {
-
+    static $isAlreadyRunning = false;
+    if ($isAlreadyRunning) {
+      return [];
+    }
+    $isAlreadyRunning = true;
     $key = 'cmrf_views_data';
-    if (!$reset && $cache = \Drupal::cache()->get($key)) {
+    $data = [];
+    if ($cache = \Drupal::cache()->get($key)) {
       $data = $cache->data;
-    } else {
+    }
+
+    if (empty($data) || $reset) {
       $datasets = $this->getDatasets();
       if (!empty($datasets)) {
         foreach ($datasets as $dataset_id => $dataset_prop) {
@@ -53,11 +60,11 @@ class CMRFViews {
           }
         }
       } else {
-        $data = null;
+        $data = [];
       }
       \Drupal::cache()->set($key, $data);
     }
-
+    $isAlreadyRunning = false;
     return $data;
   }
 
@@ -117,7 +124,7 @@ class CMRFViews {
 
       // Set the parameters from the dataset params options.
       if (!empty($dataset['params'])) {
-        array_walk_recursive($dataset['params'], ['Drupal\cmrf_views\CMRFViews', 'tokenReplaceWithEmptyString']);
+        array_walk_recursive($dataset['params'], ['Drupal\cmrf_views\CMRFViews', 'tokenReplace']);
       }
 
       // API Call to retrieve the fields.
@@ -496,30 +503,7 @@ class CMRFViews {
    *   The value with tokens replaced.
    */
   public static function tokenReplace(&$value) {
-    $value = Drupal::token()->replace($value);
-  }
-
-  /**
-   * Replace tokens with an empty string in a given value.
-   *
-   * This function is used because sometimes the drupal token system messes with
-   * the entity type definition and making it impossible to add content
-   *
-   * @param string $value
-   *   The value wich to replace tokens in.
-   *
-   * @param string
-   *   The value with tokens replaced.
-   */
-  public static function tokenReplaceWithEmptyString(string &$string) {
-    $text_tokens = Drupal::token()->scan($string);
-    $replacements = [];
-    foreach ($text_tokens as $type => $tokens) {
-      $replacements += array_fill_keys($tokens, '');
-    }
-    $tokens = array_keys($replacements);
-    $values = array_values($replacements);
-    $string = str_replace($tokens, $values, $string);
+    $value = Drupal::token()->replace($value); 
   }
 
 }
