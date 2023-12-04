@@ -30,16 +30,11 @@ class CMRFViews {
    * @return array
    *   In format which could be used by the hook_views_data.
    */
-  public function getViewsData($reset = FALSE) {
-    static $isAlreadyRunning = false;
-    if ($isAlreadyRunning) {
-      return [];
-    }
-    $isAlreadyRunning = true;
+  public function getViewsData(bool $reset = false) {
     $key = 'cmrf_views_data';
     $data = [];
-    if ($cache = \Drupal::cache()->get($key)) {
-      $data = $cache->data;
+    if ($cache = \Drupal::keyValue('cmrf_views')->get($key)) {
+      $data = $cache;
     }
 
     if (empty($data) || $reset) {
@@ -62,9 +57,8 @@ class CMRFViews {
       } else {
         $data = [];
       }
-      \Drupal::cache()->set($key, $data);
+      \Drupal::keyValue('cmrf_views')->set($key, $data);
     }
-    $isAlreadyRunning = false;
     return $data;
   }
 
@@ -503,7 +497,7 @@ class CMRFViews {
    *   The value with tokens replaced.
    */
   public static function tokenReplace(&$value) {
-    $value = Drupal::token()->replace($value); 
+    $value = Drupal::token()->replace($value);
   }
 
 }
