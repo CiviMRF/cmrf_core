@@ -253,12 +253,6 @@ class API extends QueryPluginBase {
       // Count options.
       $options['cache'] = empty($view->query->options['cache']) ? NULL : $view->query->options['cache'];
       $options['limit'] = 0;
-      if (isset($this->limit)) {
-        $options['limit'] = $this->limit;
-      }
-      if (isset($this->offset)) {
-        $options['offset'] = $this->offset;
-      }
 
       // Count API call.
       $call = $this->core->createCall($connector, $api_entity, $api_count_action, $parameters, $options, NULL, $api_version);
