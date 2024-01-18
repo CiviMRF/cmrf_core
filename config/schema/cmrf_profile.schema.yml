@@ -25,3 +25,6 @@ cmrf_core.cmrf_profile.*:
     cache_expire_days:
       type: integer
       label: 'Cache expire days'
+    cache_clear_failed_api_calls:
+      type: text
+      label: 'List of Failed API Calls to remove from the cmrf call log.'

@@ -30,6 +30,20 @@ class CallFactory extends SQLPersistingCallFactory {
           . " AND `connector_id` = '" . $connector_id . "'";
         \Drupal::database()->query($sql);
       }
+      $clearFailedApiCalls = explode("\n", $profile['cache_clear_failed_api_calls']);
+      foreach ($clearFailedApiCalls as $clearFailedApiCall) {
+        if (!empty($clearFailedApiCall)) {
+          list($apiEntity, $apiAction) = explode(".", $clearFailedApiCall, 2);
+          if (!empty($apiEntity) && !empty($apiAction)) {
+            $sql = "DELETE from {$this->table_name}"
+              . " WHERE `status` = 'FAIL' "
+              . " AND `request` LIKE '%\"entity\":\"".$apiEntity."\"%'"
+              . " AND `request` LIKE '%\"action\":\"".$apiAction."\"%'"
+              . " AND `connector_id` = '" . $connector_id . "'";
+            \Drupal::database()->query($sql);
+          }
+        }
+      }
     }
   }
 

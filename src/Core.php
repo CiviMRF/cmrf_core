@@ -48,6 +48,7 @@ class Core extends AbstractCore {
         'api_key'  => $entity->api_key,
         'site_key' => $entity->site_key,
         'cache_expire_days' => $entity->cache_expire_days,
+        'cache_clear_failed_api_calls' => $entity->cache_clear_failed_api_calls,
       ];
     }
     return $return;

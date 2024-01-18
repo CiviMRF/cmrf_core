@@ -78,6 +78,14 @@ class CMRFProfileForm extends EntityForm {
       '#required'      => TRUE,
     ];
 
+    $form['cache_clear_failed_api_calls'] = [
+      '#type'          => 'textarea',
+      '#title'         => $this->t('Cache Clear Failed API Calls'),
+      '#default_value' => $cmrf_profile->cache_clear_failed_api_calls,
+      '#description'   => $this->t('Always clear the listed failed api calls from the cmrf call log. List API Calls in the format of entity.action on each line. Leave empty to clear all failed api calls.'),
+      '#required'      => FALSE,
+    ];
+
     return $form;
   }
 

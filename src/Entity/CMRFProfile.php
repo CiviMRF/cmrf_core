@@ -35,6 +35,7 @@ use Drupal\Core\Config\Entity\ConfigEntityBase;
  *     "site_key",
  *     "api_key",
  *     "cache_expire_days",
+ *     "cache_clear_failed_api_calls",
  *   },
  *   links = {
  *     "canonical" = "/admin/config/cmrf/profiles/manage/{cmrf_profile}",
@@ -97,5 +98,12 @@ class CMRFProfile extends ConfigEntityBase implements CMRFProfileInterface {
    * @var string
    */
   public $cache_expire_days;
+
+  /**
+   * List of Failed API Calls to remove from the cmrf call log.
+   *
+   * @var string
+   */
+  public $cache_clear_failed_api_calls;
 
 }
