@@ -474,6 +474,10 @@ class CMRFViews {
       $field['field']['id'] = 'cmrf_views_standard';
     }
 
+    if ($prop['api.version'] == 4 && !empty($prop['input_attrs']['multiple'])) {
+      $field['field']['multiple'] = TRUE;
+    }
+
     if (!empty($prop['api.sort'])) {
       $field['sort']['id'] = 'standard';
     }
