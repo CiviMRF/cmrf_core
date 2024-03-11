@@ -6,12 +6,13 @@ use Symfony\Component\HttpFoundation\RedirectResponse;
 class CMRFViewsController {
 
   public function invalidateViewsCache() {
+    // Clear drupal cache.
+    drupal_flush_all_caches();
+
     /** @var \Drupal\cmrf_views\CMRFViews $views */
     $views = \Drupal::service('cmrf_views.views');
     $views->getViewsData(true);
 
-    // Clear drupal cache.
-    drupal_flush_all_caches();
     \Drupal::messenger()->addStatus(t('The views cache has been cleared.'));
 
     // Redirect to dataset list.
