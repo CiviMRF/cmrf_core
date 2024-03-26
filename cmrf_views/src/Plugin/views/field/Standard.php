@@ -55,27 +55,4 @@ class Standard extends \Drupal\views\Plugin\views\field\Standard implements Mult
     return $this->MultiItemsFieldHandler_getItems($values);
   }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getValue(ResultRow $values, $field = NULL) {
-    $alias = isset($field) ? $this->aliases[$field] : $this->field_alias;
-    if (isset($values->{$alias})) {
-      // Loop through the array and merge by 'display_name' if possible.
-      if (is_array($values->{$alias})) {
-        return '';
-        $merge = '';
-        foreach ($values->{$alias} as $key => $value) {
-          if ($key == 'display_name') {
-            $merge .= $value;
-          }
-        }
-        $values->{$alias} = NULL;
-        $values->{$alias} = $merge;
-
-      }
-      return $values->{$alias};
-    }
-  }
-
 }
