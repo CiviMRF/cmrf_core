@@ -98,11 +98,27 @@ class CMRFCallreportController extends ControllerBase {
         ],
         [
           ['data' => t('Request'), 'header' => TRUE],
-          ['data' => ['#markup' => '<pre>' . $request . '</pre>']],
+          [
+            'data' => [
+              '#type' => 'inline_template',
+              '#template' => '<pre>{{ request }}</pre>',
+              '#context' => [
+                'request' => $request,
+              ],
+            ],
+          ],
         ],
         [
           ['data' => t('Reply'), 'header' => TRUE],
-          ['data' => ['#markup' => '<pre>' . $reply . '</pre>']],
+          [
+            'data' => [
+              '#type' => 'inline_template',
+              '#template' => '<pre>{{ reply }}</pre>',
+              '#context' => [
+                'reply' => $reply,
+              ],
+            ],
+          ],
         ],
         [
           ['data' => t('Scheduled date'), 'header' => TRUE],
@@ -118,7 +134,15 @@ class CMRFCallreportController extends ControllerBase {
         ],
         [
           ['data' => t('Metadata'), 'header' => TRUE],
-          ['data' => [ '#markup' => '<pre>' . $metadata . '</pre>']],
+          [
+            'data' => [
+              '#type' => 'inline_template',
+              '#template' => '<pre>{{ metadata }}</pre>',
+              '#context' => [
+                'metadata' => $metadata,
+              ],
+            ],
+          ],
         ],
       ];
 
