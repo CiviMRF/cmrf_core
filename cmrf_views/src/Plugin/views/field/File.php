@@ -158,16 +158,83 @@ class File extends FieldPluginBase {
         $views_data = $this->viewsData->get($this->table);
         if (!empty($views_data['table']['base']['connector'])) {
           // Calls the CRM API to get the attachment URL.
+          $file_api_entity = $views_data[$this->realField]['cmrf_original_definition']['file_api.entity'] ?? 'Attachment';
+          $file_api_action = $views_data[$this->realField]['cmrf_original_definition']['file_api.action'] ?? 'getsingle';
+          $file_api_version = $views_data[$this->realField]['cmrf_original_definition']['file_api.version'] ?? '3';
+          $file_api_id_param = $views_data[$this->realField]['cmrf_original_definition']['file_api.id_param'] ?? 'id';
+          $file_api_url_param = $views_data[$this->realField]['cmrf_original_definition']['file_api.url_param'] ?? 'url';
+          $file_api_name_param = $views_data[$this->realField]['cmrf_original_definition']['file_api.name_param'] ?? 'name';
+          $file_api_attached_entity_param = $views_data[$this->realField]['cmrf_original_definition']['file_api.attached_entity_param'] ?? NULL;
+          $file_api_attached_entity = $views_data[$this->realField]['cmrf_original_definition']['file_api.attached_entity']
+            ?? $views_data[$this->realField]['cmrf_original_definition']['entity']
+            ?? NULL;
+
+          if ('4' === $file_api_version) {
+            $file_api_params = [
+              'select' => [
+                $file_api_name_param,
+                $file_api_url_param,
+              ],
+              'where' => [
+                [$file_api_id_param, '=', $value],
+              ],
+            ];
+            // Join EntityFile for URL generation for File entities.
+            if (isset($file_api_attached_entity)) {
+              if ('File' === $file_api_entity) {
+                $file_api_params['join'] = [
+                  [
+                    sprintf('%s AS %s', $file_api_attached_entity, lcfirst($file_api_attached_entity)),
+                    'LEFT',
+                    'EntityFile',
+                  ],
+                ];
+              }
+              // Pass the attached entity with the corresponding API parameter.
+              elseif (isset($file_api_attached_entity_param)) {
+                $file_api_params['where'][] = [$file_api_attached_entity_param, '=', $file_api_attached_entity];
+              }
+            }
+          }
+          elseif ('3' === $file_api_version) {
+            $file_api_params = [
+              $file_api_id_param => $value,
+              'return' => [
+                $file_api_id_param,
+                $file_api_url_param,
+                $file_api_name_param,
+              ]
+            ];
+            if (isset($file_api_attached_entity) && isset($file_api_attached_entity_param)) {
+              $file_api_params[$file_api_attached_entity_param] = $file_api_attached_entity;
+            }
+          }
+
           $file = $this->core->createCall(
             $views_data['table']['base']['connector'],
-            'Attachment',
-            'getsingle',
-            ['id' => $value],
-            ['cache' => '30 minutes']
+            $file_api_entity,
+            $file_api_action,
+            $file_api_params,
+            ['cache' => '30 minutes'],
+            NULL,
+            $file_api_version
           );
           $this->core->executeCall($file);
-          // Get reply.
-          $attachment = $file->getReply();
+
+          if ($file->getStatus() === $file::STATUS_DONE) {
+            // Get reply.
+            $result = $file->getReply();
+            if (empty($result['is_error']) && $result['count'] > 0) {
+              if (!(bool) $views_data[$this->realField]['cmrf_original_definition']['file_api.is_single'] ?? TRUE) {
+                $result = $result['values'][0];
+              }
+              $attachment = [
+                'url' => $result[$file_api_url_param],
+                'id' => $result[$file_api_id_param],
+                'name' => $result[$file_api_name_param],
+              ];
+            }
+          }
         }
       }
       elseif (is_string($value)) {
@@ -180,7 +247,7 @@ class File extends FieldPluginBase {
       }
 
       // If we get an error, render fallback image.
-      if (!empty($attachment['is_error'])) {
+      if (!empty($result['is_error'])) {
         return $this->renderFallbackImage();
       }
       // Check if we have necessary information to generate a link or save/show the file
