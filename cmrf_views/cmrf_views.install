@@ -29,3 +29,12 @@ function cmrf_views_update_8002(&$sandbox) {
       return TRUE;
   });
 }
+
+/**
+ * Install configuration entity type "cmrf_dataset_relationship" schema.
+ */
+function cmrf_views_update_8003(&$sandbox) {
+  \Drupal::entityDefinitionUpdateManager()->installEntityType(
+    \Drupal::entityTypeManager()->getDefinition('cmrf_dataset_relationship')
+  );
+}
