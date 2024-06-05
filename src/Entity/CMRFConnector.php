@@ -31,6 +31,7 @@ use Drupal\Core\Config\Entity\ConfigEntityBase;
  *     "id",
  *     "label",
  *     "type",
+ *     "connectiontype",
  *     "profile"
  *   },
  *   links = {
@@ -71,6 +72,12 @@ class CMRFConnector extends ConfigEntityBase implements CMRFConnectorInterface {
    * @var string
    */
   public $type;
+  /**
+   * The CiviMRF Connection Type (Can be remote or local)
+   *
+   * @var string
+   */
+  public $connectiontype;
 
   public function getType() {
     return $this->type;

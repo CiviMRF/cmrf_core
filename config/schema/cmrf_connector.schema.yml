@@ -13,6 +13,9 @@ cmrf_core.cmrf_connector.*:
     type:
       type: string
       label: 'Type'
+    connectiontype:
+      type: string
+      label: 'Connection Type'
     profile:
       type: string
       label: 'Profile'

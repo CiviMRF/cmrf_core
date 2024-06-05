@@ -3,6 +3,9 @@ if (!class_exists('\CMRF\PersistenceLayer\SQLPersistingCallFactory')) {
   require_once dirname(__FILE__) . '/vendor/autoload.php';
 }
 
+use Drupal\Core\Entity\EntityInterface;
+use Drupal\Core\Url;
+
 /**
  * @file
  * Contains cmrf_core.module.
@@ -22,3 +25,16 @@ function cmrf_core_cron() {
   $core = Drupal::service('cmrf_core.core');
   $core->getFactory()->purgeCachedCalls();
 }
+
+function cmrf_core_entity_operation(EntityInterface $entity) {
+  $operations = [];
+  if ($entity->getEntityTypeId() === 'cmrf_connector') {
+    $operations['test'] = [
+      'title' => t('Test'),
+      'weight' => 100,
+      'url' => Url::fromRoute('entity.cmrf_connector.test', ['cmrf_connector' => $entity->id()])];
+  }
+  return $operations;
+}
+
+

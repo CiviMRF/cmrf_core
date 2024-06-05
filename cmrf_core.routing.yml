@@ -5,3 +5,11 @@ system.civi_mrf:
     _controller: '\Drupal\system\Controller\SystemController::systemAdminMenuBlockPage'
   requirements:
     _permission: 'administer site configuration'
+
+entity.cmrf_connector.test:
+  path: '/admin/config/cmrf/connectors/manage/{cmrf_connector}/test'
+  defaults:
+    _title: 'CiviMRF configuration'
+    _controller: '\Drupal\cmrf_core\Controller\CMRFConnectorTester::test'
+  requirements:
+    _permission: 'administer site configuration'

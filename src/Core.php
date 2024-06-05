@@ -18,8 +18,15 @@ class Core extends AbstractCore {
   }
 
   protected function getConnection($connector_id) {
+
     if (!isset($this->connections[$connector_id])) {
-      $this->connections[$connector_id] = new Connection($this, $connector_id);
+      $connector = CMRFConnector::load($connector_id);
+      if ($connector->connectiontype == 'local') {
+        $this->connections[$connector_id] = new LocalConnection($this, $connector_id);
+      }
+      else {
+        $this->connections[$connector_id] = new RemoteConnection($this, $connector_id);
+      }
     }
     return $this->connections[$connector_id];
   }

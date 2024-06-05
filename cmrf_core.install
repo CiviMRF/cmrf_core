@@ -1,6 +1,7 @@
 <?php
 
 use Drupal\cmrf_core\CallFactory;
+use Drupal\cmrf_core\Entity\CMRFConnector;
 
 if (!class_exists('\CMRF\PersistenceLayer\SQLPersistingCallFactory')) {
   require_once dirname(__FILE__) . '/vendor/autoload.php';
@@ -33,4 +34,19 @@ function cmrf_core_update_8201(&$sandbox) {
     'default' => '',
   );
   \Drupal::database()->schema()->addField('civicrm_api_call', 'action', $action_field);
+}
+
+/**
+ * Updates empty connection type in connector configuration to remote
+ */
+function cmrf_core_update_8202() {
+  $query   = \Drupal::entityQuery('cmrf_connector');
+  $results = $query->execute();
+  foreach($results as $result){
+    $connector = CMRFConnector::load($result);
+    if(empty($connector->connectiontype)){
+      $connector->connectiontype='remote';
+    };
+    $connector->save();
+  }
 }

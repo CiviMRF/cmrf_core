@@ -46,13 +46,33 @@ class CMRFConnectorForm extends EntityForm {
       '#required'      => TRUE,
     ];
 
+    $form['connectiontype'] = [
+      '#type'          => 'select',
+      '#title'         => $this->t('Connection Type'),
+      '#options'       => [
+        'local' => $this->t('Local'),
+        'remote'  => $this->t('Remote')
+      ],
+      '#description'   => $this->t('Use a remote CiviCRM (on another server) or the local one installed here'),
+      '#default_value' => $cmrf_connector->connectiontype ?? 'remote',
+      '#required'      => TRUE,
+    ];
+
     $form['profile'] = [
       '#type'          => 'select',
       '#options'       => $cmrf_connector->getAvailableProfiles(),
       '#title'         => $this->t('Profile'),
       '#default_value' => $cmrf_connector->profile,
       '#description'   => $this->t('Name of the referenced CiviMRF Profile.'),
-      '#required'      => TRUE,
+      '#required'      => FALSE,
+      '#states' => [
+        'visible' => [
+          ':input[name="connectiontype"]' => ['value' => 'remote'],
+        ],
+        'required' => [
+          ':input[name="connectiontype"]' => ['value' => 'remote'],
+        ]
+      ],
     ];
 
     return $form;
