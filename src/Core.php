@@ -22,6 +22,7 @@ class Core extends AbstractCore {
     if (!isset($this->connections[$connector_id])) {
       $connector = CMRFConnector::load($connector_id);
       if ($connector->connectiontype == 'local') {
+        \Drupal::service('civicrm')->initialize();
         $this->connections[$connector_id] = new LocalConnection($this, $connector_id);
       }
       else {
