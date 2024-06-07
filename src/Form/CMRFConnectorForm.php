@@ -46,34 +46,62 @@ class CMRFConnectorForm extends EntityForm {
       '#required'      => TRUE,
     ];
 
-    $form['connectiontype'] = [
-      '#type'          => 'select',
-      '#title'         => $this->t('Connection Type'),
-      '#options'       => [
-        'local' => $this->t('Local'),
-        'remote'  => $this->t('Remote')
-      ],
-      '#description'   => $this->t('Use a remote CiviCRM (on another server) or the local one installed here'),
-      '#default_value' => $cmrf_connector->connectiontype ?? 'remote',
-      '#required'      => TRUE,
-    ];
+
+    if (\Drupal::hasService('civicrm')) {
+      $form['connectiontype'] = [
+        '#type' => 'select',
+        '#title' => $this->t('Connection Type'),
+        '#options' => [
+          'local' => $this->t('Local'),
+          'remote' => $this->t('Remote'),
+        ],
+        '#description' => $this->t('<em>Remote</em> connect by REST or <em>local</em> by api call'),
+        '#default_value' => $cmrf_connector->connectiontype ?? 'remote',
+        '#required' => TRUE,
+      ];
+
+      $form['conneciontypemarkup'] = [
+        '#type' => 'markup',
+        '#markup' =>
+          $this->t('<em>Remote</em> connects to CiviCRM using the REST Api. So the calls are '.
+                   'always that the calls are always made by the same user'.
+                   '<br/>'.
+                   '<em>Local</em> uses the logged-in user using the civicrm api directly. '.
+                   'So take care that in the local situation all the users have the correct permissions')
+      ];
+    }
+    else {
+      $form['connectiontype'] = [
+        '#type' => 'hidden',
+        '#default_value' => $cmrf_connector->connectiontype ?? 'remote',
+      ];
+    }
 
     $form['profile'] = [
-      '#type'          => 'select',
-      '#options'       => $cmrf_connector->getAvailableProfiles(),
-      '#title'         => $this->t('Profile'),
+      '#type' => 'select',
+      '#options' => $cmrf_connector->getAvailableProfiles(),
+      '#title' => $this->t('Profile'),
       '#default_value' => $cmrf_connector->profile,
-      '#description'   => $this->t('Name of the referenced CiviMRF Profile.'),
-      '#required'      => FALSE,
-      '#states' => [
-        'visible' => [
-          ':input[name="connectiontype"]' => ['value' => 'remote'],
-        ],
-        'required' => [
-          ':input[name="connectiontype"]' => ['value' => 'remote'],
-        ]
-      ],
+      '#description' => $this->t('Name of the referenced CiviMRF Profile.'),
     ];
+
+    if (\Drupal::hasService('civicrm')) {
+      $form['profile'] += [
+        '#required' => FALSE,
+        '#states' => [
+          'visible' => [
+            ':input[name="connectiontype"]' => ['value' => 'remote'],
+          ],
+          'required' => [
+            ':input[name="connectiontype"]' => ['value' => 'remote'],
+          ],
+        ],
+      ];
+    }
+    else {
+      $form['profile'] += ['#required' => TRUE];
+    }
+
 
     return $form;
   }

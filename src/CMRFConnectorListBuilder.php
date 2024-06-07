@@ -15,7 +15,9 @@ class CMRFConnectorListBuilder extends ConfigEntityListBuilder {
   public function buildHeader() {
     $header['label']   = $this->t('CiviMRF Connector');
     $header['id']      = $this->t('Machine name');
-    $header['connectiontype'] = $this->t('Connection Type');
+    if (\Drupal::hasService('civicrm')) {
+      $header['connectiontype'] = $this->t('Connection Type');
+    }
     $header['profile'] = $this->t('CiviMRF Profile');
     $header['type']    = $this->t('Connecting module');
     return $header + parent::buildHeader();
@@ -32,7 +34,9 @@ class CMRFConnectorListBuilder extends ConfigEntityListBuilder {
     /** @var CMRFConnector $entity */
     $row['label']   = $entity->label();
     $row['id']      = $entity->id();
-    $row['connectiontype'] =  $connectiontypeOptions [$entity->connectiontype];
+    if (\Drupal::hasService('civicrm')) {
+      $row['connectiontype'] = $connectiontypeOptions [$entity->connectiontype];
+    }
     $row['profile'] = $entity->profile;
     $row['type']    = $entity->type;
     return $row + parent::buildRow($entity);
