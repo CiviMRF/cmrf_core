@@ -21,7 +21,7 @@ class CallFactory extends SQLPersistingCallFactory {
   public function purgeCachedCalls() {
     parent::purgeCachedCalls();
     foreach ($this->core->getConnectors() as $connector_id => $connector) {
-      $profile = $this->core->getConnectionProfile($connector_id);
+      $profile = $this->core->getConnectionProfile($connector_id)??['cache_expire_days'=>0, 'cache_clear_failed_api_calls'=>''];
       if ($profile['cache_expire_days'] > 0) {
         $today = new \DateTime();
         $today->modify('-' . $profile['cache_expire_days'] . ' days');

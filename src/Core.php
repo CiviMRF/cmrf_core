@@ -37,7 +37,7 @@ class Core extends AbstractCore {
     if ($entity == NULL) {
       throw new \Exception("Unregistered connector '$connector_id'.", 1);
     }
-    return $this->getConnectionProfiles()[$entity->profile];
+    return $this->getConnectionProfiles()[$entity->profile] ?? NULL;
   }
 
 
