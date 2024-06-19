@@ -66,8 +66,8 @@ class CMRFConnectorForm extends EntityForm {
           $this->t('<em>Remote</em> connects to CiviCRM using the REST Api. So the calls are '.
                    'always that the calls are always made by the same user'.
                    '<br/>'.
-                   '<em>Local</em> uses the logged-in user using the civicrm api directly. '.
-                   'So take care that in the local situation all the users have the correct permissions')
+                   '<em>Local</em> uses the logged-in user calling the CiviCRM api directly. '.
+                   'So be aware that in the local situation all the users have the correct permissions')
       ];
     }
     else {
