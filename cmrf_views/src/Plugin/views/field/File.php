@@ -227,15 +227,20 @@ class File extends FieldPluginBase {
           if ($file->getStatus() === $file::STATUS_DONE) {
             // Get reply.
             $result = $file->getReply();
-            if (empty($result['is_error']) && $result['count'] > 0) {
-              if (!(bool) $views_data[$this->realField]['cmrf_original_definition']['file_api.is_single'] ?? TRUE) {
-                $result = $result['values'][0];
+            if (empty($result['is_error'])) {
+              $file = null;
+              if (isset($result['count']) && isset($result['values']) && is_array($result['values']) && count($result['values']) > 0) {
+                $file = reset($result['values']);
+              } elseif (!isset($result['count']) && !isset($result['values'])) {
+                $file = $result;
               }
-              $attachment = [
-                'url' => $result[$file_api_url_param],
-                'id' => $result[$file_api_id_param],
-                'name' => $result[$file_api_name_param],
-              ];
+              if (is_array($file)) {
+                $attachment = [
+                  'url' => $result[$file_api_url_param],
+                  'id' => $result[$file_api_id_param],
+                  'name' => $result[$file_api_name_param],
+                ];
+              }
             }
           }
         }
@@ -303,42 +308,12 @@ class File extends FieldPluginBase {
 
   private function getImage($attachment = NULL) {
     if ((!empty($attachment['url'])) && (!empty($attachment['id'])) && (!empty($attachment['name']))) {
-      // Set the destination path.
-      $image_path = empty($this->options['image_path']) ? NULL : $this->options['image_path'];
-      $uri_path   = 'public://' . $image_path;
-      $real_path  = \Drupal::service('file_system')->realpath($uri_path);
-      // Create destination if it doesn't exist.
-      if (!file_exists($real_path)) {
-        mkdir($real_path, 0755, TRUE);
+      $image = $this->retrieveImage($attachment);
+      if (file_exists($image['real_path'])) {
+        return $this->renderImage($image['uri']);
       }
-      // Download the file and save in the destination.
-      if (file_exists($real_path)) {
-        // Get file extension.
-        $file = pathinfo($attachment['url']);
-        if (!empty($file['extension'])) {
-          $ext = '.' . $file['extension'];
-        }
-        $file_uri_path  = $uri_path . '/' . $attachment['id'] . $ext;
-        $file_real_path = $real_path . '/' . $attachment['id'] . $ext;
-        if (!file_exists($file_real_path)) {
-          try {
-            $data = (string) \Drupal::httpClient()->get($attachment['url'])->getBody();
-            return \Drupal::service('file_system')->saveData($data, $file_uri_path, FileSystemInterface::EXISTS_REPLACE);
-          }
-          catch (TransferException $exception) {
-            \Drupal::messenger()->addError(t('Failed to fetch file due to error "%error"', ['%error' => $exception->getMessage()]));
-          }
-          catch (FileException | InvalidStreamWrapperException $e) {
-            \Drupal::messenger()->addError(t('Failed to save file due to error "%error"', ['%error' => $e->getMessage()]));
-          }
-          //system_retrieve_file($attachment['url'], $file_uri_path, FALSE, FileSystemInterface::EXISTS_REPLACE);
-        }
-        if (file_exists($file_real_path)) {
-          return $this->renderImage($file_real_path);
-        }
-        else {
-          return $this->renderFallbackImage();
-        }
+      else {
+        return $this->renderFallbackImage();
       }
     }
     return NULL;
@@ -346,37 +321,15 @@ class File extends FieldPluginBase {
 
   private function getDownloadLink($attachment = NULL) {
     if ((!empty($attachment['url'])) && (!empty($attachment['name']))) {
-      // Get drupal query string.
-      $query_string = \Drupal::request()->query->all();
-      // Generate salt and hash.
-      $salt = $this->view->getTitle() . Settings::getHashSalt();
-      $hash = Crypt::hmacBase64($attachment['url'], $salt);
-      // Download the file if we have a valid hash in the query string.
-      if ((isset($query_string['civi_file_hash'])) && ($query_string['civi_file_hash'] == $hash)) {
-        // Close all open output buffers.
-        while (ob_get_level() > 0) {
-          ob_end_clean();
-        }
-
-        header('Content-Description: File Transfer');
-        //header('Content-Type: application/octet-stream');
-        if (!empty($attachment['mime_type'])) {
-          header('Content-Type: ' . $attachment['mime_type']);
-        }
-        header('Content-Disposition: attachment; filename="' . $attachment['name'] . '"');
-        header('Expires: 0');
-        header('Cache-Control: must-revalidate');
-        header('Pragma: public');
-        echo file_get_contents($attachment['url']);
-        exit();
+      $image = $this->retrieveImage($attachment);
+      if (file_exists($image['real_path'])) {
+        $url = \Drupal::service('file_url_generator')->generate($image['uri']);
       }
+
       // Link label.
       $link_label = empty($this->label()) ? t('Download file') : $this->label();
       // Return file link.
-      $link = Link::fromTextAndUrl(
-        $link_label,
-        Url::fromRoute('<current>', [], ['query' => ['civi_file_hash' => $hash], 'absolute' => TRUE])
-      );
+      $link = Link::fromTextAndUrl($link_label, $url);
       return $link->toRenderable();
     }
     return NULL;
@@ -389,6 +342,47 @@ class File extends FieldPluginBase {
       $image_render['#attributes'] = ['class' => $this->options['image_class']];
     }
     return $image_render;
+  }
+
+  private function retrieveImage($attachment = NULL) {
+    $image_path = empty($this->options['image_path']) ? NULL : $this->options['image_path'];
+    $uri_path   = 'public://' . $image_path;
+    $real_path  = \Drupal::service('file_system')->realpath($uri_path);
+    // Create destination if it doesn't exist.
+    if (!file_exists($real_path)) {
+      mkdir($real_path, 0755, TRUE);
+    }
+
+    // Get file extension.
+    $ext = '';
+    $file = pathinfo($attachment['url']);
+    if (!empty($file['extension'])) {
+      $ext = '.' . $file['extension'];
+    }
+    if (empty($ext) && isset($attachment['name'])) {
+      $file = pathinfo($attachment['name']);
+      if (!empty($file['extension'])) {
+        $ext = '.' . $file['extension'];
+      }
+    }
+    $file_uri_path  = $uri_path . '/' . $attachment['id'] . $ext;
+    $file_real_path = $real_path . '/' . $attachment['id'] . $ext;
+    if (!file_exists($file_real_path)) {
+      try {
+        $data = (string) \Drupal::httpClient()->get($url)->getBody();
+        $file_uri_path = \Drupal::service('file_system')->saveData($data, $file_uri_path, FileSystemInterface::EXISTS_REPLACE);
+      }
+      catch (TransferException $exception) {
+        \Drupal::messenger()->addError(t('Failed to fetch file due to error "%error"', ['%error' => $exception->getMessage()]));
+      }
+      catch (FileException | InvalidStreamWrapperException $e) {
+        \Drupal::messenger()->addError(t('Failed to save file due to error "%error"', ['%error' => $e->getMessage()]));
+      }
+    }
+    return [
+      'uri' => $file_uri_path,
+      'real_path' => $file_real_path
+    ];
   }
 
 }
