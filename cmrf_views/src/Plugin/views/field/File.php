@@ -2,6 +2,8 @@
 
 use Drupal\cmrf_core\Core;
 use Drupal\Component\Utility\Crypt;
+use Drupal\Core\File\Exception\FileException;
+use Drupal\Core\File\Exception\InvalidStreamWrapperException;
 use Drupal\Core\File\FileSystemInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Link;
@@ -10,6 +12,7 @@ use Drupal\Core\Url;
 use Drupal\image\Entity\ImageStyle;
 use Drupal\views\Plugin\views\field\FieldPluginBase;
 use Drupal\views\ResultRow;
+use GuzzleHttp\Exception\TransferException;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -311,19 +314,30 @@ class File extends FieldPluginBase {
       // Download the file and save in the destination.
       if (file_exists($real_path)) {
         // Get file extension.
-        $file = pathinfo($attachment['name']);
+        $file = pathinfo($attachment['url']);
         if (!empty($file['extension'])) {
-          $file_uri_path  = $uri_path . '/' . $attachment['id'] . '.' . $file['extension'];
-          $file_real_path = $real_path . '/' . $attachment['id'] . '.' . $file['extension'];
-          if (!file_exists($file_real_path)) {
-            system_retrieve_file($attachment['url'], $file_uri_path, FALSE, FileSystemInterface::EXISTS_REPLACE);
+          $ext = '.' . $file['extension'];
+        }
+        $file_uri_path  = $uri_path . '/' . $attachment['id'] . $ext;
+        $file_real_path = $real_path . '/' . $attachment['id'] . $ext;
+        if (!file_exists($file_real_path)) {
+          try {
+            $data = (string) \Drupal::httpClient()->get($attachment['url'])->getBody();
+            return \Drupal::service('file_system')->saveData($data, $file_uri_path, FileSystemInterface::EXISTS_REPLACE);
           }
-          if (file_exists($file_real_path)) {
-            return $this->renderImage($file_real_path);
+          catch (TransferException $exception) {
+            \Drupal::messenger()->addError(t('Failed to fetch file due to error "%error"', ['%error' => $exception->getMessage()]));
           }
-          else {
-            return $this->renderFallbackImage();
+          catch (FileException | InvalidStreamWrapperException $e) {
+            \Drupal::messenger()->addError(t('Failed to save file due to error "%error"', ['%error' => $e->getMessage()]));
           }
+          //system_retrieve_file($attachment['url'], $file_uri_path, FALSE, FileSystemInterface::EXISTS_REPLACE);
+        }
+        if (file_exists($file_real_path)) {
+          return $this->renderImage($file_real_path);
+        }
+        else {
+          return $this->renderFallbackImage();
         }
       }
     }
