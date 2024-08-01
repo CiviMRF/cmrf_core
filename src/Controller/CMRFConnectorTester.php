@@ -34,9 +34,6 @@ final class CMRFConnectorTester extends ControllerBase {
    * Builds the response.
    */
   public function test(string $cmrf_connector): array {
-
-    \Drupal::service('civicrm')->initialize();
-
     $call = $this->core->createCall($cmrf_connector, 'Entity', 'get', []);
     $this->core->executeCall($call);
     $reply = $call->getReply();
