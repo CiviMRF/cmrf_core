@@ -106,9 +106,9 @@ class Call extends AbstractCall {
     if (!empty($record->cached_until)) {
       $call->cached_until = new \DateTime($record->cached_until);
     }
-    $call->request_entity = $record->entity ?? $record->request['entity'];
-    $call->request_action = $record->action ?? $record->request['action'];
     $call->request = json_decode($record->request, TRUE);
+    $call->request_entity = $record->entity ?? $call->request['entity'];
+    $call->request_action = $record->action ?? $call->request['action'];
     if (!isset($call->request['version'])) {
       // For backward compatibility.
       $call->request['version'] = '3';
