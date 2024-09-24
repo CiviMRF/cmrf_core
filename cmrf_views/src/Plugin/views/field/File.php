@@ -369,7 +369,7 @@ class File extends FieldPluginBase {
     $file_real_path = $real_path . '/' . $attachment['id'] . $ext;
     if (!file_exists($file_real_path)) {
       try {
-        $data = (string) \Drupal::httpClient()->get($url)->getBody();
+        $data = (string) \Drupal::httpClient()->get($attachment['url'])->getBody();
         $file_uri_path = \Drupal::service('file_system')->saveData($data, $file_uri_path, FileSystemInterface::EXISTS_REPLACE);
       }
       catch (TransferException $exception) {
