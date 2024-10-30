@@ -1,4 +1,8 @@
 services:
+  cmrf_views.logger:
+    parent: logger.channel_base
+    arguments: [ 'cmrf_views' ]
+
   cmrf_views.views:
     class: Drupal\cmrf_views\CMRFViews
-    arguments: ['@cmrf_core.core']
+    arguments: ['@cmrf_core.core', '@cmrf_views.logger']
