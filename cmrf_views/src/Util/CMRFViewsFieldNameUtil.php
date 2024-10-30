@@ -3,7 +3,7 @@ declare(strict_types = 1);
 
 namespace Drupal\cmrf_views\Util;
 
-final class CMRFFieldNameUtil {
+final class CMRFViewsFieldNameUtil {
 
   public static function normalize(string $fieldName): string {
     // Field names have to be valid (Twig) variable names.

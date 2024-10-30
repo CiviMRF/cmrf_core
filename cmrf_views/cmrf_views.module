@@ -1,6 +1,6 @@
 <?php
 
-use Drupal\cmrf_views\Util\CMRFFieldNameUtil;
+use Drupal\cmrf_views\Util\CMRFViewsFieldNameUtil;
 use Drupal\views\Views;
 
 /**
@@ -53,7 +53,7 @@ function cmrf_views_update_80201(): void {
       /** @var string $fieldName */
       /** @phpstan-var array<string, mixed> $field */
       foreach ($display['display_options']['fields'] ?? [] as $fieldName => $field) {
-        $normalizedFieldName = CMRFFieldNameUtil::normalize($fieldName);
+        $normalizedFieldName = CMRFViewsFieldNameUtil::normalize($fieldName);
         if ($normalizedFieldName === $fieldName) {
           $normalizedFields[$fieldName] = $field;
         }

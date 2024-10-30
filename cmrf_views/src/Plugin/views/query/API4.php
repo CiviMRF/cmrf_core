@@ -6,7 +6,7 @@ use Drupal\cmrf_core\Call;
 use Drupal\cmrf_core\Core;
 use Drupal\cmrf_views\CMRFViewsResultRow;
 use Drupal\cmrf_views\Entity\CMRFDataset;
-use Drupal\cmrf_views\Util\CMRFFieldNameUtil;
+use Drupal\cmrf_views\Util\CMRFViewsFieldNameUtil;
 use Drupal\views\Plugin\views\query\QueryPluginBase;
 use Drupal\views\ResultRow;
 use Drupal\views\ViewExecutable;
@@ -158,7 +158,7 @@ class API4 extends QueryPluginBase {
    * @see \Drupal\cmrf_views\Plugin\views\query\API4::addField()
    */
   protected function getFieldAlias($table_alias, $field) {
-    $field = CMRFFieldNameUtil::normalize($field);
+    $field = CMRFViewsFieldNameUtil::normalize($field);
     return isset($this->fieldAliases[$table_alias][$field]) ? $this->fieldAliases[$table_alias][$field] : FALSE;
   }
 

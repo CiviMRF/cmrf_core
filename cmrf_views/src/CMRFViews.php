@@ -5,7 +5,7 @@ use Drupal\cmrf_core\Call;
 use Drupal\cmrf_core\Core;
 use Drupal\cmrf_views\Entity\CMRFDataset;
 use Drupal\cmrf_views\Entity\CMRFDatasetRelationship;
-use Drupal\cmrf_views\Util\CMRFFieldNameUtil;
+use Drupal\cmrf_views\Util\CMRFViewsFieldNameUtil;
 use Psr\Log\LoggerInterface;
 
 class CMRFViews {
@@ -171,11 +171,11 @@ class CMRFViews {
       $views_fields = [];
       foreach ($fields['values'] as $field_name => $field_prop) {
         $original_field_name = $field_name;
-        $field_name = CMRFFieldNameUtil::normalize($field_name);
+        $field_name = CMRFViewsFieldNameUtil::normalize($field_name);
         if (isset($views_fields[$field_name])) {
           $this->logger->warning(
             'The CiviCRM fields "@firstFieldName" and "@secondFieldName" of entity "@entityName" are mapped to '
-            . 'the same Views field "@normalizeFieldName". The second field won\'t be available in the View.',
+            . 'the same Views field "@normalizedFieldName". The second field won\'t be available in the View.',
             [
               '@firstFieldName' => $views_fields[$field_name]['cmrf_original_definition']['name'],
               '@secondFieldName' => $original_field_name,
