@@ -1,8 +1,5 @@
 <?php
 
-use Drupal\cmrf_views\Util\CMRFViewsFieldNameUtil;
-use Drupal\views\Views;
-
 /**
  * Implements hook_theme().
  */
@@ -26,59 +23,4 @@ function cmrf_views_theme_suggestions_cmrf_views_field_json_item(array $variable
   $suggestions = array();
   $suggestions[] = 'cmrf_views_field_json_item__' . $variables['field']->table . '__' . $variables['field']->field;
   return $suggestions;
-}
-
-/**
- * Normalize field names.
- */
-function cmrf_views_update_80201(): void {
-  // There might be Views with ":" in the field name. Now ":" is normalized to
-  // "__" so existing Views needs to be updated. (Those field names worked if
-  // evaluating assert() was disabled and they weren't used as token.)
-  /** @var \Psr\Log\LoggerInterface $logger */
-  $logger = \Drupal::service('cmrf_views.logger');
-
-  foreach (Views::getAllViews() as $viewName => $view) {
-    /** @var string $baseTable */
-    $baseTable = $view->get('base_table') ?? '';
-    if (!str_starts_with($baseTable, 'cmrf_views_')) {
-      continue;
-    }
-
-    $fieldsNormalized = FALSE;
-    /** @phpstan-var array<string, array<string, mixed>> $displays */
-    $displays = $view->get('display');
-    foreach ($displays as &$display) {
-      $normalizedFields = [];
-      /** @var string $fieldName */
-      /** @phpstan-var array<string, mixed> $field */
-      foreach ($display['display_options']['fields'] ?? [] as $fieldName => $field) {
-        $normalizedFieldName = CMRFViewsFieldNameUtil::normalize($fieldName);
-        if ($normalizedFieldName === $fieldName) {
-          $normalizedFields[$fieldName] = $field;
-        }
-        elseif (isset($normalizedFields[$normalizedFieldName])) {
-          $logger->warning(
-            'Duplicate field name "@normalizedFieldName" in View "@viewName"',
-            [
-              '@normalizedFieldName' => $normalizedFieldName,
-              '@viewName' => $viewName,
-            ]
-          );
-        }
-        else {
-          $fieldsNormalized = TRUE;
-          $field['id'] = $normalizedFieldName;
-          $field['field'] = $normalizedFieldName;
-          $normalizedFields[$normalizedFieldName] = $field;
-        }
-      }
-      $display['display_options']['fields'] = $normalizedFields;
-    }
-
-    if ($fieldsNormalized) {
-      $view->set('display', $displays);
-      $view->save();
-    }
-  }
 }
