@@ -506,7 +506,7 @@ class API4 extends QueryPluginBase {
   ): void {
     if ($table != 'rand') {
       // The CiviCRM API requires the original field name.
-      $alias = $field ?: $this->getFieldByAlias($alias);
+      $alias = CMRFViewsFieldNameUtil::normalize($field) ?: $this->getFieldByAlias($alias);
     }
 
     $this->orderby[] = [
