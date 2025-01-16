@@ -2,11 +2,11 @@
 
 namespace Drupal\cmrf_views\Plugin\views\query;
 
-use Drupal;
 use Drupal\cmrf_core\Call;
 use Drupal\cmrf_core\Core;
 use Drupal\cmrf_views\CMRFViewsResultRow;
 use Drupal\cmrf_views\Entity\CMRFDataset;
+use Drupal\cmrf_views\Util\CMRFViewsFieldNameUtil;
 use Drupal\views\Plugin\views\query\QueryPluginBase;
 use Drupal\views\ResultRow;
 use Drupal\views\ViewExecutable;
@@ -158,7 +158,7 @@ class API4 extends QueryPluginBase {
    * @see \Drupal\cmrf_views\Plugin\views\query\API4::addField()
    */
   protected function getFieldAlias($table_alias, $field) {
-    $field = str_replace('.', '__', $field);
+    $field = CMRFViewsFieldNameUtil::normalize($field);
     return isset($this->fieldAliases[$table_alias][$field]) ? $this->fieldAliases[$table_alias][$field] : FALSE;
   }
 
@@ -506,7 +506,7 @@ class API4 extends QueryPluginBase {
   ): void {
     if ($table != 'rand') {
       // The CiviCRM API requires the original field name.
-      $alias = $field ?: $this->getFieldByAlias($alias);
+      $alias = CMRFViewsFieldNameUtil::normalize($field) ?: $this->getFieldByAlias($alias);
     }
 
     $this->orderby[] = [

@@ -5,13 +5,18 @@ use Drupal\cmrf_core\Call;
 use Drupal\cmrf_core\Core;
 use Drupal\cmrf_views\Entity\CMRFDataset;
 use Drupal\cmrf_views\Entity\CMRFDatasetRelationship;
+use Drupal\cmrf_views\Util\CMRFViewsFieldNameUtil;
+use Psr\Log\LoggerInterface;
 
 class CMRFViews {
 
-  protected $core;
+  protected Core $core;
 
-  public function __construct(Core $core) {
+  private LoggerInterface $logger;
+
+  public function __construct(Core $core, LoggerInterface $logger) {
     $this->core = $core;
+    $this->logger = $logger;
   }
 
   /**
@@ -111,12 +116,9 @@ class CMRFViews {
   /**
    * Retrieve all the fields for an entity in the form of Drupal views.
    *
-   * @param $api_entity
-   * @param $api_action
-   *
-   * @return array
+   * @return array<string, mixed>
    */
-  public function getFields($dataset) {
+  public function getFields($dataset): array {
 
     if ((!empty($dataset['connector'])) && (!empty($dataset['entity'])) && (!empty($dataset['action']))) {
 
@@ -169,7 +171,21 @@ class CMRFViews {
       $views_fields = [];
       foreach ($fields['values'] as $field_name => $field_prop) {
         $original_field_name = $field_name;
-        $field_name = str_replace('.', '__', $field_name);
+        $field_name = CMRFViewsFieldNameUtil::normalize($field_name);
+        if (isset($views_fields[$field_name])) {
+          $this->logger->warning(
+            'The CiviCRM fields "@firstFieldName" and "@secondFieldName" of entity "@entityName" are mapped to '
+            . 'the same Views field "@normalizedFieldName". The second field won\'t be available in the View.',
+            [
+              '@firstFieldName' => $views_fields[$field_name]['cmrf_original_definition']['name'],
+              '@secondFieldName' => $original_field_name,
+              '@entityName' => $dataset['entity'],
+              '@normalizedFieldName' => $field_name,
+            ]
+          );
+          continue;
+        }
+
         $field_prop['api.version'] = $apiVersion;
 
         // If we don't have a field type, set it to 0.
