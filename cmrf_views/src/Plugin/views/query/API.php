@@ -36,6 +36,21 @@ class API extends QueryPluginBase {
   protected $viewsData;
 
   /**
+   * @var array
+   */
+  protected $fieldAliases = [];
+
+  /**
+   * @var array
+   */
+  protected $fields = [];
+
+  /**
+   * @var array
+   */
+  protected $where = [];
+
+  /**
    * API constructor.
    *
    * @param array                   $configuration
@@ -290,7 +305,11 @@ class API extends QueryPluginBase {
             foreach ($row as $key => $value) {
               if ($field_alias = self::getFieldAlias($view->storage->get('base_table'), $key)) {
                 // Explicit conversion of "" (empty) values to null values to prevent type errors when rendering of numeric values.
-                $base_result[$field_alias] = !empty($value) ? $value : null;
+                $value = !empty($value) ? $value : null;
+                if($view->field[$key]->pluginId=='numeric' && is_string($value)){
+                  $value = floatval($value);
+                }
+                $base_result[$field_alias] = $value;
               }
             }
             $view->result[] = new CMRFViewsResultRow($base_result);
