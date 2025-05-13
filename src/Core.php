@@ -9,10 +9,7 @@ class Core extends AbstractCore {
   protected $connections = [];
 
   public function __construct() {
-    $db         = \Drupal::database()->getConnectionOptions();
-    $table_name = trim(\Drupal::database()->prefixTables("{civicrm_api_call}"), '"');
-    $conn       = new \mysqli($db['host'], $db['username'], $db['password'], $db['database'], empty($db['port']) ? NULL : $db['port']);
-    $factory    = new CallFactory($conn, $table_name, ['\Drupal\cmrf_core\Call', 'createNew'], ['\Drupal\cmrf_core\Call', 'createWithRecord']);
+    $factory    = new CallFactory(['\Drupal\cmrf_core\Call', 'createNew'], ['\Drupal\cmrf_core\Call', 'createWithRecord']);
     $factory->setCore($this);
     parent::__construct($factory);
   }
