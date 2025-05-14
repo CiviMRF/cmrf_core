@@ -230,11 +230,9 @@ class API4 extends QueryPluginBase {
       }
 
       // Do sorting
-      if ([] !== $this->orderby) {
-        foreach ($this->orderby as $orderby) {
-          if ($orderby['api']) {
-            $parameters['orderBy'][$orderby['field']] = $orderby['direction'];
-          }
+      foreach ($this->orderby as $orderby) {
+        if ($orderby['api']) {
+          $parameters['orderBy'][$orderby['field']] = $orderby['direction'];
         }
       }
 
@@ -506,7 +504,11 @@ class API4 extends QueryPluginBase {
   ): void {
     if ($table != 'rand') {
       // The CiviCRM API requires the original field name.
-      $alias = CMRFViewsFieldNameUtil::normalize($field) ?: $this->getFieldByAlias($alias);
+      $alias = '' === $alias ? $field : $this->getFieldByAlias($alias);
+      if (NULL === $alias) {
+        // Invalid alias. Should not happen.
+        return;
+      }
     }
 
     $this->orderby[] = [
