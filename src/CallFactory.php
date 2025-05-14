@@ -33,7 +33,7 @@ class CallFactory extends AbstractCallFactory {
       $today = $today->format('Y-m-d H:i:s');
       $hash = $call->getHash();
 
-      $stmnt = $connection->query("SELECT * FROM `" . $this->table_name . "` WHERE `request_hash` = ? AND `connector_id` = ? AND `cached_until` = ?", array($hash, $connector_id, $today));
+      $stmnt = $connection->query("SELECT * FROM `" . $this->table_name . "` WHERE `request_hash` = ? AND `connector_id` = ? AND `cached_until` >= ? ORDER BY `cid` ASC LIMIT 1", array($hash, $connector_id, $today));
       $dataset = $stmnt->fetchObject();
       if ($dataset != NULL) {
         return $this->call_load($connector_id, $core, $dataset);
