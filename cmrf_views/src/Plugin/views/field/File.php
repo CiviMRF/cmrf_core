@@ -236,9 +236,9 @@ class File extends FieldPluginBase {
               }
               if (is_array($file)) {
                 $attachment = [
-                  'url' => $result[$file_api_url_param],
-                  'id' => $result[$file_api_id_param],
-                  'name' => $result[$file_api_name_param],
+                  'url' => $file[$file_api_url_param],
+                  'id' => $value,
+                  'name' => $file[$file_api_name_param],
                 ];
               }
             }
