@@ -50,3 +50,17 @@ function cmrf_core_update_8202() {
     $connector->save();
   }
 }
+
+/**
+ * Add columns "duration" to the "civicrm_api_call" database table.
+ */
+function cmrf_core_update_8203(&$sandbox) {
+  $durationField = array(
+    'type' => 'serial',
+    'unsigned' => TRUE,
+    'not null' => TRUE,
+    'description' => 'Call Duration',
+    'default' => 0,
+  );
+  \Drupal::database()->schema()->addField('civicrm_api_call', 'duration', $durationField);
+}

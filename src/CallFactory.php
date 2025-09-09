@@ -40,7 +40,7 @@ class CallFactory extends AbstractCallFactory {
       }
     }
 
-    $query = "INSERT INTO `{$this->table_name}` (`status`,`connector_id`,`entity`,`action`,`request`,`metadata`,`request_hash`,`create_date`,`scheduled_date`) VALUES (?,?,?,?,?,?,?,?,?)";
+    $query = "INSERT INTO `{$this->table_name}` (`status`,`connector_id`,`entity`,`action`,`request`,`metadata`,`request_hash`,`create_date`,`scheduled_date`, `duration`) VALUES (?,?,?,?,?,?,?,?,?,?)";
     $status = $call->getStatus();
     $connectorID=$call->getConnectorID();
     $entity=$call->getEntity();
@@ -49,12 +49,13 @@ class CallFactory extends AbstractCallFactory {
     $metadata=json_encode($call->getMetadata());
     $hash=$call->getHash();
     $date=date('Y-m-d H:i:s');
+    $duration = $call->getDuration();
     $scheduled_date = NULL;
     if($call->getScheduledDate() != NULL) {
       $scheduled_date=$call->getScheduledDate()->format('Y-m-d H:i:s');
     }
 
-    $connection->query($query, [$status,$connectorID,$entity,$action,$request,$metadata,$hash,$date, $scheduled_date]);
+    $connection->query($query, [$status,$connectorID,$entity,$action,$request,$metadata,$hash,$date, $scheduled_date, $duration]);
     $call->setID($connection->lastInsertId());
 
     return $call;
@@ -83,7 +84,8 @@ class CallFactory extends AbstractCallFactory {
         $scheduled_date=$call->getScheduledDate()->format('Y-m-d H:i:s');
       }
       $retrycount=$call->getRetryCount();
-      $connection->query("UPDATE `{$this->table_name}` set `status`=?,`reply`=?,`reply_date`=?,`scheduled_date`=?,`cached_until`=?,`retry_count`=? where `cid`=?", [$status,$reply,$reply_date,$scheduled_date,$cache_date,$retrycount,$id]);
+      $duration = $call->getDuration();
+      $connection->query("UPDATE `{$this->table_name}` set `status`=?,`reply`=?,`reply_date`=?,`scheduled_date`=?,`cached_until`=?,`retry_count`=?, `duration`=? where `cid`=?", [$status,$reply,$reply_date,$scheduled_date,$cache_date,$retrycount,$duration,$id]);
     }
 
   }

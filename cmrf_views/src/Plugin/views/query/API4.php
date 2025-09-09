@@ -2,6 +2,7 @@
 
 namespace Drupal\cmrf_views\Plugin\views\query;
 
+use Drupal;
 use Drupal\cmrf_core\Call;
 use Drupal\cmrf_core\Core;
 use Drupal\cmrf_views\CMRFViewsResultRow;

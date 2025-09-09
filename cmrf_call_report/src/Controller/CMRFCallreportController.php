@@ -58,6 +58,7 @@ class CMRFCallreportController extends ControllerBase {
       $request = json_encode($request, JSON_PRETTY_PRINT);
       $reply = json_encode(json_decode($call->reply,true), JSON_PRETTY_PRINT);
       $metadata = json_encode(json_decode($call->metadata,true), JSON_PRETTY_PRINT);
+      $duration = $call->duration;
       $scheduled_date = '';
       if (!empty($call->scheduled_date)) {
         $scheduled_date = new \DateTime($call->scheduled_date);
@@ -95,6 +96,10 @@ class CMRFCallreportController extends ControllerBase {
         [
           ['data' => t('Action'), 'header' => TRUE],
           ['data' => ['#markup' => '<pre>' . $action . '</pre>']],
+        ],
+        [
+          ['data' => t('Duration (ms)'), 'header' => TRUE],
+          ['data' => $duration],
         ],
         [
           ['data' => t('Request'), 'header' => TRUE],
