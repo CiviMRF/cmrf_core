@@ -56,7 +56,7 @@ function cmrf_core_update_8202() {
  */
 function cmrf_core_update_8203(&$sandbox) {
   $durationField = array(
-    'type' => 'serial',
+    'type' => 'int',
     'unsigned' => TRUE,
     'not null' => TRUE,
     'description' => 'Call Duration',
