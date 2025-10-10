@@ -60,7 +60,10 @@ class OptionList extends Standard implements MultiItemsFieldHandlerInterface {
     $alias = isset($field) ? $this->aliases[$field] : $this->field_alias;
     $options = $this->definition['options'];
     $key = $values->{$alias};
-    if (key_exists($key, $options)) {
+    if (is_array($key)) {
+      $key = $key[0];
+    }
+    if (array_key_exists($key, $options)) {
       return $options[$key];
     }
     return $key;
