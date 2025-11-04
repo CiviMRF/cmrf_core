@@ -1,14 +1,11 @@
 <?php namespace Drupal\cmrf_views\Plugin\views\field;
 
 use Drupal\cmrf_core\Core;
-use Drupal\Component\Utility\Crypt;
 use Drupal\Core\File\Exception\FileException;
 use Drupal\Core\File\Exception\InvalidStreamWrapperException;
 use Drupal\Core\File\FileSystemInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Link;
-use Drupal\Core\Site\Settings;
-use Drupal\Core\Url;
 use Drupal\image\Entity\ImageStyle;
 use Drupal\views\Plugin\views\field\FieldPluginBase;
 use Drupal\views\ResultRow;
@@ -62,6 +59,7 @@ class File extends FieldPluginBase {
     $options['image_path']         = ['default' => 'civicrm'];
     $options['image_class']        = ['default' => NULL];
     $options['image_fallback_url'] = ['default' => NULL];
+    $options['obfuscate_file_path'] = ['default' => FALSE];
 
     return $options;
   }
@@ -136,6 +134,16 @@ class File extends FieldPluginBase {
         ],
       ],
       '#default_value' => isset($this->options['image_fallback_url']) ? $this->options['image_fallback_url'] : NULL,
+    ];
+
+    $form['obfuscate_file_path'] = [
+      '#type'          => 'checkbox',
+      '#title'         => $this->t('Obfuscate file path'),
+      '#description'   => $this->t(
+        'If checked, attempt to obfuscate the path to saved files by placing them in subdirectories based on hashes of their URLs. ' .
+        'This should not be used as a replacement for proper security measures.'
+      ),
+      '#default_value' => !empty($this->options['obfuscate_file_path']),
     ];
 
     parent::buildOptionsForm($form, $form_state);
@@ -348,6 +356,14 @@ class File extends FieldPluginBase {
     $image_path = empty($this->options['image_path']) ? NULL : $this->options['image_path'];
     $uri_path   = 'public://' . $image_path;
     $real_path  = \Drupal::service('file_system')->realpath($uri_path);
+
+    // If obfuscation of file paths is enabled, place the file in a folder based on a hash of its URL
+    if ($this->options['obfuscate_file_path'] ?? FALSE) {
+      $file_url_hash = hash('sha256', $attachment['url']);
+      $uri_path .= '/' . $file_url_hash;
+      $real_path .= '/' . $file_url_hash;
+    }
+
     // Create destination if it doesn't exist.
     if (!file_exists($real_path)) {
       mkdir($real_path, 0755, TRUE);
@@ -359,6 +375,23 @@ class File extends FieldPluginBase {
     if (!empty($file['extension'])) {
       $ext = '.' . $file['extension'];
     }
+
+    // If the attachment URL is a civicrm file URL (/civicrm/file) with a file hash (fcs param) and no filename (filename params),
+    // pathinfo() could be retrieving an incorrect filename/extension because the file hash (fcs param) can contain periods.
+    // In this case, unset extension so it can be retrieved from the name instead.
+    if (strpos($attachment['url'], '/civicrm/file?') !== FALSE) {
+      $urlQueryString = parse_url($attachment['url'])['query'] ?? '';
+      $urlQueryParams = [];
+      parse_str($urlQueryString, $urlQueryParams);
+
+      if (
+        isset($urlQueryParams['fcs']) &&
+        !isset($urlQueryParams['filename'])
+      ) {
+        $ext = '';
+      }
+    }
+
     if (empty($ext) && isset($attachment['name'])) {
       $file = pathinfo($attachment['name']);
       if (!empty($file['extension'])) {
