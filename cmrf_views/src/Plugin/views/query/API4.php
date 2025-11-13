@@ -233,7 +233,8 @@ class API4 extends QueryPluginBase {
       // Do sorting
       foreach ($this->orderby as $orderby) {
         if ($orderby['api']) {
-          $parameters['orderBy'][$orderby['field']] = $orderby['direction'];
+          $original_field_name = $table_data[$orderby['field']]['cmrf_original_definition']['name'];
+          $parameters['orderBy'][$original_field_name] = $orderby['direction'];
         }
       }
 
