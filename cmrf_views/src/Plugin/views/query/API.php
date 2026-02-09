@@ -2,6 +2,7 @@
 
 namespace Drupal\cmrf_views\Plugin\views\query;
 
+use Drupal;
 use Drupal\cmrf_core\Call;
 use Drupal\cmrf_core\Core;
 use Drupal\cmrf_views\CMRFViewsResultRow;
@@ -23,7 +24,8 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  *   help = @Translation("Query against the CiviCRM API.")
  * )
  */
-class API extends QueryPluginBase {
+class API extends QueryPluginBase
+{
 
   /**
    * @var \Drupal\cmrf_core\Core
@@ -34,6 +36,21 @@ class API extends QueryPluginBase {
    * @var \Drupal\views\ViewsData
    */
   protected $viewsData;
+
+  /**
+   * @var array
+   */
+  protected $fieldAliases = [];
+
+  /**
+   * @var array
+   */
+  protected $fields = [];
+
+  /**
+   * @var array
+   */
+  protected $where = [];
 
   /**
    * API constructor.
@@ -82,7 +99,8 @@ class API extends QueryPluginBase {
    *
    * @return string
    */
-  public function ensureTable($table, $relationship = NULL) {
+  public function ensureTable($table, $relationship = NULL)
+  {
     return $table;
   }
 
@@ -96,7 +114,8 @@ class API extends QueryPluginBase {
    *
    * @return mixed
    */
-  public function addField($table, $field, $alias = '', $params = []) {
+  public function addField($table, $field, $alias = '', $params = [])
+  {
     // We check for this specifically because it gets a special alias.
     if ($table == $this->view->storage->get('base_table') && $field == $this->view->storage->get('base_field') && empty($alias)) {
       $alias = $this->view->storage->get('base_field');
@@ -111,10 +130,10 @@ class API extends QueryPluginBase {
 
     // Create a field info array.
     $field_info = [
-        'field' => $field,
-        'table' => $table,
-        'alias' => $alias,
-      ] + $params;
+      'field' => $field,
+      'table' => $table,
+      'alias' => $alias,
+    ] + $params;
 
     // Test to see if the field is actually the same or not. Due to
     // differing parameters changing the aggregation function, we need
@@ -142,7 +161,8 @@ class API extends QueryPluginBase {
    *
    * @see \Drupal\cmrf_views\Plugin\views\query\API::addField()
    */
-  protected function getFieldAlias($table_alias, $field) {
+  protected function getFieldAlias($table_alias, $field)
+  {
     $field = CMRFViewsFieldNameUtil::normalize($field);
     return isset($this->fieldAliases[$table_alias][$field]) ? $this->fieldAliases[$table_alias][$field] : FALSE;
   }
@@ -153,7 +173,8 @@ class API extends QueryPluginBase {
    * @param \Drupal\views\ViewExecutable $view
    *   The view which is executed.
    */
-  public function build(ViewExecutable $view) {
+  public function build(ViewExecutable $view)
+  {
     // Store the view in the object to be able to use it later.
     $this->view = $view;
 
@@ -161,6 +182,16 @@ class API extends QueryPluginBase {
 
     // Let the pager modify the query to add limits.
     $view->pager->query();
+  }
+
+  protected static function normaliseArray(&$array)
+  {
+    ksort($array);
+    foreach ($array as &$value) {
+      if (is_array($value)) {
+        self::normaliseArray($value);
+      }
+    }
   }
 
 
@@ -171,7 +202,10 @@ class API extends QueryPluginBase {
    * Values to set: $view->result, $view->total_rows, $view->execute_time,
    * $view->current_page.
    */
-  public function execute(ViewExecutable $view) {
+  public function execute(ViewExecutable $view)
+  {
+    static $_dataCache = [];
+
     $table_data = $this->viewsData->get($view->storage->get('base_table'));
     if (!empty($table_data)) {
       $api_entity       = $table_data['table']['base']['entity'];
@@ -186,17 +220,6 @@ class API extends QueryPluginBase {
 
       $parameters = [];
       $start      = microtime(TRUE);
-
-      // Set the return fields
-      $parameters['return'] = [];
-      foreach ($view->field as $field) {
-        if (!empty($table_data[$field->field]['cmrf_original_definition']['name'])) {
-          $original_field_name = $table_data[$field->field]['cmrf_original_definition']['name'];
-          if (!in_array($original_field_name, $parameters['return'])) {
-            $parameters['return'][] = $original_field_name;
-          }
-        }
-      }
 
       // Set the query parameters.
       if (!empty($this->where)) {
@@ -254,20 +277,6 @@ class API extends QueryPluginBase {
       $options['cache'] = empty($view->query->options['cache']) ? NULL : $view->query->options['cache'];
       $options['limit'] = 0;
 
-      // Count API call.
-      $call = $this->core->createCall($connector, $api_entity, $api_count_action, $parameters, $options, NULL, $api_version);
-      $this->core->executeCall($call);
-      if ($call->getStatus() == Call::STATUS_DONE) {
-        $result = $call->getReply();
-        if (!empty($result['result'])) {
-          $view->getPager()->total_items = $result['result'];
-          $view->total_rows              = $result['result'];
-        }
-      }
-
-      // Update pager.
-      $view->getPager()->updatePageInfo();
-
       // TODO: verify views cache.
       $options['limit']  = $view->getPager()->getItemsPerPage();
       $options['offset'] = $view->getCurrentPage() * $view->getPager()->getItemsPerPage();
@@ -275,33 +284,61 @@ class API extends QueryPluginBase {
       // View result init.
       $view->result = [];
 
-      // Data API call.
-      $call = $this->core->createCall($connector, $api_entity, $api_action, $parameters, $options, NULL, $api_version);
-      $this->core->executeCall($call);
-      if ($call->getStatus() == Call::STATUS_DONE) {
-        $result = $call->getReply();
-        if ((!empty($result['values'])) && (is_array($result['values']))) {
-          $index = 0;
-          foreach ($result['values'] as $row) {
-            // Mandatory field for views rows.
-            $row['index'] = $index++;
-            // Add row to view result.
-            $base_result = [];
-            foreach ($row as $key => $value) {
-              if ($field_alias = self::getFieldAlias($view->storage->get('base_table'), $key)) {
-                // Explicit conversion of "" (empty) values to null values to prevent type errors when rendering of numeric values.
-                $base_result[$field_alias] = !empty($value) ? $value : null;
-              }
+      $request = [$api_entity, $api_action, $parameters];
+      self::normaliseArray($request);
+      $hash = sha1(json_encode($request));
+      $result = [];
+      if (!isset($_dataCache[$hash])) {
+        // Data API call.
+        $call = $this->core->createCall($connector, $api_entity, $api_action, $parameters, $options, NULL, $api_version);
+        $this->core->executeCall($call);
+        if ($call->getStatus() == Call::STATUS_DONE) {
+          $result = $call->getReply();
+          $_dataCache[$hash] = $result;
+        }
+      } else {
+        $result = $_dataCache[$hash];
+      }
+
+      if ((!empty($result['values'])) && (is_array($result['values']))) {
+        $index = 0;
+        foreach ($result['values'] as $row) {
+          // Mandatory field for views rows.
+          $row['index'] = $index++;
+          // Add row to view result.
+          $base_result = [];
+          foreach ($row as $key => $value) {
+            if ($field_alias = self::getFieldAlias($view->storage->get('base_table'), $key)) {
+              // Explicit conversion of "" (empty) values to null values to prevent type errors when rendering of numeric values.
+              $base_result[$field_alias] = !empty($value) ? $value : null;
             }
-            $view->result[] = new CMRFViewsResultRow($base_result);
           }
-          // Set row indices for template_preprocess_views_view_fields to be
-          // able to retrieve the values.
-          array_walk($view->result, function (ResultRow $row, $index) {
-            $row->index = $index;
-          });
+          $view->result[] = new CMRFViewsResultRow($base_result);
+        }
+        // Set row indices for template_preprocess_views_view_fields to be
+        // able to retrieve the values.
+        array_walk($view->result, function (ResultRow $row, $index) {
+          $row->index = $index;
+        });
+      }
+      if (!empty($result['countMatched'])) {
+        $view->getPager()->total_items = $result['countMatched'];
+        $view->total_rows              = $result['countMatched'];
+      } else {
+        // Count API call.
+        $call = $this->core->createCall($connector, $api_entity, $api_count_action, $parameters, $options, NULL, $api_version);
+        $this->core->executeCall($call);
+        if ($call->getStatus() == Call::STATUS_DONE) {
+          $result = $call->getReply();
+          if (!empty($result['result'])) {
+            $view->getPager()->total_items = $result['result'];
+            $view->total_rows              = $result['result'];
+          }
         }
       }
+
+      // Update pager.
+      $view->getPager()->updatePageInfo();
 
       foreach ($view->relationship as $field_name => $relationship) {
         $field_name = self::getFieldAlias($view->storage->get('base_table'), $field_name);
@@ -409,7 +446,8 @@ class API extends QueryPluginBase {
    * @see \Drupal\Core\Database\Query\ConditionInterface::condition()
    * @see \Drupal\Core\Database\Query\Condition
    */
-  public function addWhere($group, $field, $value = NULL, $operator = NULL) {
+  public function addWhere($group, $field, $value = NULL, $operator = NULL)
+  {
     // Ensure all variants of 0 are actually 0. Thus '', 0 and NULL are all
     // the default group.
     if (empty($group)) {
@@ -431,13 +469,13 @@ class API extends QueryPluginBase {
   /**
    * Generates a unique placeholder used in the API query.
    */
-  public function placeholder($base = 'views') {
+  public function placeholder($base = 'views')
+  {
     static $placeholders = [];
     if (!isset($placeholders[$base])) {
       $placeholders[$base] = 0;
       return ':' . $base;
-    }
-    else {
+    } else {
       return ':' . $base . ++$placeholders[$base];
     }
   }
@@ -461,7 +499,8 @@ class API extends QueryPluginBase {
    *
    * @see QueryConditionInterface::where()
    */
-  public function addWhereExpression($group, $snippet, $args = []) {
+  public function addWhereExpression($group, $snippet, $args = [])
+  {
     // Ensure all variants of 0 are actually 0. Thus '', 0 and NULL are all
     // the default group.
     if (empty($group)) {
@@ -499,7 +538,8 @@ class API extends QueryPluginBase {
    * @param $params
    *   Any params that should be passed through to the addField.
    */
-  public function addOrderBy($table, $field = NULL, $order = 'ASC', $alias = '', $params = []) {
+  public function addOrderBy($table, $field = NULL, $order = 'ASC', $alias = '', $params = [])
+  {
     // Only ensure the table if it's not the special random key.
     // @todo: Maybe it would make sense to just add an addOrderByRand or something similar.
     if ($table && $table != 'rand') {
@@ -510,8 +550,7 @@ class API extends QueryPluginBase {
     // otherwise we assume it is a formula.
     if (!$alias && $table) {
       $as = $table . '_' . $field;
-    }
-    else {
+    } else {
       $as = $alias;
     }
 
@@ -520,7 +559,7 @@ class API extends QueryPluginBase {
     }
 
     $this->orderby[] = [
-//      'field'     => $as, // We need the real field name for sorting via API.
+      //      'field'     => $as, // We need the real field name for sorting via API.
       'field' => $field,
       'direction' => strtoupper($order),
     ];
@@ -535,11 +574,11 @@ class API extends QueryPluginBase {
    * @return array
    *   The API parameters array with filters and sorts added.
    */
-  protected function calculateApiParameters($parameters) {
+  protected function calculateApiParameters($parameters)
+  {
     // TODO: Add filters and sorts as API parameters.
     //   This might become a generic helper method for preparing API parameters
     //   from a view's filters and sorts.
     return $parameters;
   }
-
 }

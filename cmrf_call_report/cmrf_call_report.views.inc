@@ -35,9 +35,25 @@ function cmrf_call_report_views_data() {
       'id' => 'standard',
     ],
   ];
+  $data['civicrm_api_call']['duration'] = [
+    'title' => t('Duration (ms)'),
+    'help' => t('Duration of the call'),
+    'field' => [
+      'id' => 'standard',
+    ],
+    'argument' => [
+      'id' => 'numeric',
+    ],
+    'filter' => [
+      'id' => 'cmrf_call_report_duration',
+    ],
+    'sort' => [
+      'id' => 'standard',
+    ],
+  ];
   $data['civicrm_api_call']['status'] = [
     'title' => t('Status'),
-    'help' => t('Status van de request'),
+    'help' => t('Status of the request'),
     'field' => [
       'id' => 'standard',
     ],

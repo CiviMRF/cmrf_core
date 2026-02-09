@@ -6,4 +6,3 @@ core_version_requirement: ^8 || ^9 || ^10 || ^11
 package: CiviCRM
 dependencies:
   - cmrf_core
-  - cmrf_views

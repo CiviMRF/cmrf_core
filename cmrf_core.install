@@ -1,15 +1,15 @@
 <?php
 
-use Drupal\cmrf_core\CallFactory;
-use Drupal\cmrf_core\Entity\CMRFConnector;
-
 if (!class_exists('\CMRF\PersistenceLayer\SQLPersistingCallFactory')) {
   require_once dirname(__FILE__) . '/vendor/autoload.php';
 }
 
+use CMRF\PersistenceLayer\SQLPersistingCallFactory;
+use Drupal\cmrf_core\Entity\CMRFConnector;
+
 function cmrf_core_schema() {
   $array=array();
-  $array['civicrm_api_call'] = CallFactory::schema();
+  $array['civicrm_api_call'] = SQLPersistingCallFactory::schema();
   return $array;
 }
 
@@ -49,4 +49,18 @@ function cmrf_core_update_8202() {
     };
     $connector->save();
   }
+}
+
+/**
+ * Add columns "duration" to the "civicrm_api_call" database table.
+ */
+function cmrf_core_update_8203(&$sandbox) {
+  $durationField = array(
+    'type' => 'int',
+    'unsigned' => TRUE,
+    'not null' => TRUE,
+    'description' => 'Call Duration',
+    'default' => 0,
+  );
+  \Drupal::database()->schema()->addField('civicrm_api_call', 'duration', $durationField);
 }

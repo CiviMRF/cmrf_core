@@ -9,10 +9,7 @@ class Core extends AbstractCore {
   protected $connections = [];
 
   public function __construct() {
-    $db         = \Drupal::database()->getConnectionOptions();
-    $table_name = trim(\Drupal::database()->prefixTables("{civicrm_api_call}"), '"');
-    $conn       = new \mysqli($db['host'], $db['username'], $db['password'], $db['database'], empty($db['port']) ? NULL : $db['port']);
-    $factory    = new CallFactory($conn, $table_name, ['\Drupal\cmrf_core\Call', 'createNew'], ['\Drupal\cmrf_core\Call', 'createWithRecord']);
+    $factory    = new CallFactory(['\Drupal\cmrf_core\Call', 'createNew'], ['\Drupal\cmrf_core\Call', 'createWithRecord']);
     $factory->setCore($this);
     parent::__construct($factory);
   }
@@ -33,11 +30,15 @@ class Core extends AbstractCore {
   }
 
   public function getConnectionProfile($connector_id) {
-    $entity = CMRFConnector::load($connector_id);
-    if ($entity == NULL) {
+    $connector = CMRFConnector::load($connector_id);
+    if (NULL === $connector) {
       throw new \Exception("Unregistered connector '$connector_id'.", 1);
     }
-    return $this->getConnectionProfiles()[$entity->profile] ?? NULL;
+    $profiles = $this->getConnectionProfiles();
+    if (!isset($profiles[$connector->profile])) {
+      throw new \Exception("Unregistered profile '{$connector->profile}'.", 1);
+    }
+    return $profiles[$connector->profile];
   }
 
 
